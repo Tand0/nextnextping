@@ -1,0 +1,36 @@
+
+call labelAAA
+
+i = 11
+dummy "work" i
+
+result = 1
+
+if i != 11 then
+    dummy "ierror" i
+    result = 0
+    end
+endif
+
+i = 5
+
+if i != 5 then
+    result = 0
+    end
+endif
+
+result = 1
+
+
+exit
+
+
+:labelAAA
+
+
+i = 10
+
+return
+
+
+i = 12

@@ -1,0 +1,27 @@
+{
+    "wait_time": 3,
+    "loop": false,
+    "debug": true,
+    "data": [
+        {
+            "name": "ttl",
+            "ttl": true
+        },
+        {
+            "name": "ping",
+            "ttl": false, 
+            "command":"ping -n 1 %1",
+            "ok": "(0% loss)",
+            "returncode": false,
+            "timeout": 10
+        },
+        {
+            "name": "trace",
+            "ttl": false, 
+            "command":"tracert %1",
+            "ok": "Trace complete.",
+            "returncode": false,
+            "timeout": 10
+        }
+    ]
+}

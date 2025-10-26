@@ -1,0 +1,67 @@
+
+
+dummy 'abc'
+
+x=    123
+x=    -11
+    x = 'Hello, world'
+    y = "I can't do that"
+    z = "漢字も可能"
+
+x=    #65  ;   文字 "A"
+y=    #$41  ;  文字 "A"
+z=    #13    ; CR 文字
+
+e1=    'cat readme.txt'#13#10
+e2=    'abc'#$0d#$0a'def'#$0d#$0a'ghi'
+
+d = 1
+d = 1 + 1
+d = 1 || 1
+
+a = 1 + 1
+a = a + 1
+a = 2 + 1 + a
+
+b = 3+ 1
+
+c = (2 + 1)
+
+
+
+
+
+result=0 
+if result==0 dummy "xyz..."
+if result==1 dummy "XYZ..."
+
+result = 1
+if result==0 then
+    dummy
+elseif result==0 then
+    dummy
+else
+    dummy
+endif
+
+if result==1 then
+    dummy
+else
+    dummy
+endif
+
+; 10回繰り返す。
+i = 10
+while i>0
+  i = i - 1
+  dummy i
+endwhile
+dummy "end"
+dummy "end"
+dummy "end"
+dummy "end"
+
+
+
+result = 1
+

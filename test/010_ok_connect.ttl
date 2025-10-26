@@ -1,0 +1,141 @@
+
+
+; testlink
+testlink
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+
+; SSH接続
+connect 'localhost:2200 /ssh'
+dummy "state" error
+if result != 0 then
+    ; ユーザー名の指定がないのでエラー
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+
+;この方法は、SSHバージョンを指定せずにSSH接続をします。
+connect 'localhost:2200 /ssh /1'
+if result != 0 then
+    ; SSH1 は未サポート
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+dummy "closettt start"
+closett
+dummy "closettt end"
+
+
+; /1 と /2 のオプションは、SSH1およびSSH2であることを指定します。
+error=''
+dummy "connect start"
+connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
+if result == 2 then
+    ; 接続できている
+    dummy "connect OK" error
+else
+    ; 接続失敗
+    dummy "connect NG" error
+    result = 0
+    end
+endif
+closett
+
+; /1 入っていたらエラー
+connect 'localhost:2200 /ssh /1 /auth=password /user=username /passwd=password'
+if result != 0 then
+    ; SSH1は未サポート
+    dummy "connect NG!" result
+    result = 0
+    end
+endif
+closett
+; 以下同様なのでスキップ
+;connect 'localhost:2200 /ssh /1 /auth=challenge /user=username /passwd=password'
+;connect 'localhost:2200 /ssh /1 /auth=publickey /user=username /passwd=password /keyfile=test_rsa.key'
+;connect 'localhost:2200 /ssh /1 /auth=pageant /user=username'
+
+; できるはず
+connect 'localhost:2200 /ssh /2 /auth=publickey /user=username /passwd=password /keyfile=test_rsa.key'
+if result != 2 then
+    dummy "connect NG" error
+    result = 0
+    end
+endif
+closett
+pause 2
+
+; ask4passwd が入っていたらエラー
+connect 'myserve /ssh /auth=password /user=username /ask4passwd'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /1 /auth=password /user=username /ask4passwd'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /2 /auth=password /user=username /ask4passwd'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /1 /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /2 /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
+connect 'myserve /ssh /auth=challenge /user=username /ask4passwd'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /1 /auth=challenge /user=username /ask4passwd'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+connect 'localhost:2200 /ssh /2 /auth=challenge /user=username /ask4passwd'
+if result != 0 then
+    dummy "connect NG!"
+    result = 0
+    end
+endif
+closett
+
+; COMポート接続 はできません
+connect '/C=x'
+if result != 0 then
+    dummy "COM port NG!"
+    result = 0
+    end
+endif
+
+error=''
+result = 1

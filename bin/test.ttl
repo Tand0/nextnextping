@@ -1,0 +1,36 @@
+; 接続する
+error=''
+strvar = param1
+strconcat strvar ' /user=aaa /passwd=bbb'
+connect strvar
+if result == 2 then
+    ; 接続できている
+    dummy "connect OK" error
+else
+    ; 接続失敗
+    dummy "connect NG" error
+    result = 0
+    end
+endif
+
+result = 0
+wait '#'
+if result != 1 then
+    dummy "wait fail" error
+    result = 0
+    end
+endif
+
+; text
+sendln 'ping 192.168.10.1'
+result = 0
+wait '#' ':'
+if result != 1 then
+    dummy "wait fail" error
+    result = 0
+    end
+endif
+disconnect
+
+error=''
+result = 1

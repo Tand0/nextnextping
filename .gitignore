@@ -1,3 +1,13 @@
+# SSH key!
+*.key
+srrc/build/
+srrc/dist/
+src/*.spec
+
+# ANTLR
+.antlr/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

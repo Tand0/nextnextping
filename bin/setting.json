@@ -1,0 +1,20 @@
+
+(ttl)./sample_connect.ttl, localhost
+(ttl)./test.ttl, localhost:2200
+
+; コメント
+# コメント
+localhost
+10.10.10.0
+127.0.0.1
+
+(traceroute)10.10.10.0
+(traceroute)localhost
+
+
+
+
+
+
+
+

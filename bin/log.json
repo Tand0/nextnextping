@@ -1,0 +1,43 @@
+{
+    "ttl": {
+        "./sample_connect.ttl, localhost": {
+            "stdout": "### x=error value=\r\n### x=result value=1\r\n### x=param0 value=./sample_connect.ttl\r\n### x=param1 value=localhost\r\n### x=error value=FileNotFoundError f=./sample_connect.ttl e=[Errno 2] No such file or directory: './sample_connect.ttl' error!\r\n### x=result value=0\r\n",
+            "result": "NG",
+            "date": "2025/10/26 17:48:01"
+        },
+        "./test.ttl, localhost:2200": {
+            "stdout": "### x=error value=\r\n### x=result value=1\r\n### x=param0 value=./test.ttl\r\n### x=param1 value=localhost:2200\r\n### x=error value=\r\n\t### command value=dummy line=3\r\n\t### debug value=connect start\r\n### x=result value=2\r\n\t### command value=dummy line=7\r\n\t### debug value=connect OK\r\n\t### debug value=\r\n### x=result value=0\r\n#### x=result value=1\r\n### x=result value=0\r\nping 192.168.10.1\r\n#### x=result value=1\r\n### x=error value=\r\n### x=result value=1\r\n",
+            "result": "OK",
+            "date": "2025/10/26 17:48:06"
+        }
+    },
+    "ping": {
+        "10.10.10.0": {
+            "stdout": "\nPinging 10.10.10.0 with 32 bytes of data:\nRequest timed out.\n\nPing statistics for 10.10.10.0:\n    Packets: Sent = 1, Received = 0, Lost = 1 (100% loss),\n",
+            "result": "NG",
+            "date": "2025/10/26 17:48:32"
+        },
+        "localhost": {
+            "stdout": "\nPinging t-ando [::1] with 32 bytes of data:\nReply from ::1: time<1ms \n\nPing statistics for ::1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
+            "result": "OK",
+            "date": "2025/10/26 17:48:19"
+        },
+        "127.0.0.1": {
+            "stdout": "\nPinging 127.0.0.1 with 32 bytes of data:\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\n\nPing statistics for 127.0.0.1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
+            "result": "OK",
+            "date": "2025/10/26 17:48:45"
+        }
+    },
+    "trace": {
+        "10.10.10.0": {
+            "stdout": "\nTracing route to 10.10.10.0 over a maximum of 30 hops\n\n  1     3 ms     3 ms     2 ms  OpenWrt.lan [192.168.179.1] \n  2     *      ",
+            "result": "NG",
+            "date": "2025/10/26 17:49:02"
+        },
+        "localhost": {
+            "stdout": "\nTracing route to t-ando [::1]\nover a maximum of 30 hops:\n\n  1    <1 ms    <1 ms    <1 ms  t-ando [::1] \n\nTrace complete.\n",
+            "result": "OK",
+            "date": "2025/10/26 17:49:15"
+        }
+    }
+}

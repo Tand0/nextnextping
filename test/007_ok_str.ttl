@@ -1,0 +1,85 @@
+; 文字列の接続
+x = "aaa"'bbb'
+
+strcompare "aaabbb" x
+if result != 0 then
+    dummy "error" x result
+    result = 0
+    end
+endif
+
+
+; この評価
+str2int intvar "12"
+
+; 12が入っているか？
+if intvar != 12 then
+    dummy "error" intvar
+    result = 0
+    end
+endif
+
+; この評価
+strcompare "aa1" "aa1"
+if result != 0 then
+    dummy "error" result
+    result = 0
+    end
+endif
+
+
+; この評価
+strcompare "aa1" "aa2"
+if result != -1 then
+    dummy "error" result
+    result = 0
+    end
+endif
+
+; この評価
+strcompare "aa2" "aa1"
+if result != 1 then
+    dummy "error" result
+    result = 0
+    end
+endif
+
+; この評価
+strvar = "aa2"
+strconcat strvar "aa1"
+strcompare "aa2aa1" strvar
+if result != 0 then
+    dummy "error" strvar result
+    result = 0
+    end
+endif
+
+; この評価
+strlen "aa2"
+if result != 3 then
+    dummy "error" result
+    result = 0
+    end
+endif
+
+; この評価
+strscan "aa2" "b"
+/*
+if result != 0 then
+    dummy "error" result
+    result = 0
+    end
+endif
+
+
+; この評価
+strscan "ab2" "b"
+if result != 2 then
+    dummy "error" result
+    result = 0
+    end
+endif
+*/
+
+result = 1
+

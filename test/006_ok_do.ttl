@@ -1,0 +1,59 @@
+
+
+i = 0
+do i<10
+  i = i + 1
+  if i == 5 break
+loop 
+
+; 値チェック
+if i != 5 then
+    dummy "do1 error" i
+    result = 0
+    end
+endif
+
+
+i = 0
+do i<10
+  i = i + 1
+loop
+
+; 値チェック
+if i != 10 then
+    dummy "do2 error" i
+    result = 0
+    end
+endif
+
+
+i = 0
+do
+  i = i + 1
+loop i<10
+
+; 値チェック
+if i != 10 then
+    dummy "do3 error" i
+    result = 0
+    end
+endif
+
+
+i = 0
+do
+  i = i + 1
+  if i == 5 break
+loop
+
+; 値チェック
+if i != 5 then
+    result = 0
+    end
+endif
+
+
+
+
+result = 1
+
