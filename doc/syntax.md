@@ -1,7 +1,7 @@
 
-# マクロ言語 "Tera Tkekitou Language (TTL)"
+# マクロ言語 "Terawaros Tkekitou Language (TTL)"
 
-- [Antlr 文法で頑張って書きました](./src/grammer/TtlParser.g4) 
+- [Antlr 文法で頑張って書きました](../src/grammer/TtlParser.g4) 
 - 間違っていたら指摘ください。
 
 
@@ -97,7 +97,8 @@ label: ':' KEYWORD ;
 
 ## 行の形式
 
-- 行の形式は以下に分類できる。どの行も ";" 文字で始まるコメントを含むことができる。また、C言語風コメント（/* 〜 */）も使用可能。
+- 行の形式は以下に分類できる。どの行も ";" 文字で始まるコメントを含むことができる。
+  また、C言語風コメント（/* 〜 */）も使用可能。
 - コメントは MACRO の実行に影響を与えない。
 
 1) 改行
@@ -111,6 +112,7 @@ RN: '\r'? '\n'
 1) ホワイトスペース
 
   Antlr 文法での通り。ホワイトスペースとして文字区切りに使われる。
+
 ```
 WS1 : [ \t]+ -> skip ;
 WS2 : '/*' ~[/]* '*/' -> skip ;
@@ -237,124 +239,5 @@ endwhile
 whileEndwhile
     : 'while' p11Expression RN line+ 'endwhile';
 ```
-
-
-# Tera Tkekitou Language コマンドリファレンス
-
-## break/ continue
-
-- for, while文で戻るのに使います。
-
-## call/retun
-
-- サブルーチンをコールするのに使います。
-
-## end/exit
-
-- 終了するのに使います。
-
-## import
-- ttl ファイルを読み込むのみ使います。
-
-## dummy
-- こんなコマンドは本来(?)のttlにはありませんが、評価用に作成しました。
-- 引数に何を入れてもなにもしません。
-
-## str2int
-
-文字列を整数値に変換する。
-```
-str2int <intvar> <string>
-```
-
-## strcompare
-
-文字列を比較する。比較は pythonの文字列として行う。
-```
-strcompare <string1> <string2>
-```
-
-2つの文字列 string1, string2 を比較し、結果をシステム変数 result に代入する。
-文字列の文字コード表現を符号なし整数(最初の文字が最上位バイト)とみなし、2つの文字列に対応する整数値の大小関係を求め、それに応じて以下のようにresult の値が決定される。
-
-```
-大小関係	resultの値
-<string1> < <string2>	-1
-<string1> = <string2>	0
-<string1> > <string2>	1
-```
-
-
-## strconcat
-
-文字列を継ぎ足す。
-```
-strconcat <strvar> <string>
-```
-
-## strlen
-
-文字列の長さを返す。
-```
-strlen <string>
-```
-
-## strscan
-部分文字列の位置を返す。
-```
-strscan <string> <substring>
-```
-  Python側では以下の式でresultを決定している。
-```python
-                    result = left.find(right)
-                    if left < 0:
-                        result = 0
-                    else:
-                        result = result + 1
-```
-
-## mpause
-休止する。単位はミリ秒
-```
-mpause <time>
-```
-
-
-## pause
-休止する。単位は秒
-```
-mpause <time>
-```
-
-
-## connect
-
-- SSH接続する。
-- pythonのparamikoを使って接続します。
-- 注意！：ssh接続をするには接続先のサーバが必要です。
-
-```
-connect 'myserver /ssh'
-```
-
-## closett/disconnect
-クローズします。
-
-## testlink
-
-現在のリンクおよび接続の状態を報告する。
-
-```
-値	状態
-0	ホストへの接続はされていない。
-2	ホストへの接続はされている。
-```
-
-
-
-
-
-
-
 
 

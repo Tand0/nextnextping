@@ -16,6 +16,7 @@ from grammer.TtlParserWorker import TtlPaserWolker
 
 
 class MyTtlPaserWolker(TtlPaserWolker):
+    """ パサーをオーバーライドしてgui周りの処理を行わせる """
     def __init__(self, log_type_param, init):
         super().__init__()
         self.log_type_param = log_type_param
@@ -32,6 +33,7 @@ class MyTtlPaserWolker(TtlPaserWolker):
             for data in data_list:
                 data = self.getData(data)
                 self.setLog(f"\t### debug value={data}\r\n")
+        super.commandContext(name, line, data_list)
         #
 
     def setValue(self, x, y):
@@ -88,6 +90,7 @@ class MyThread():
                 #
                 self.next_next_ping.root.after(
                     0, lambda: self.next_next_ping.command_ping_threading(result, type, date, command))
+                self.command_status_threading(f"{result} ({type}) {command}")
                 #
                 if not self.stop_flag:
                     break
@@ -110,10 +113,12 @@ class MyThread():
         try:
             self.myTtlPaserWolker = MyTtlPaserWolker(self.next_next_ping.log[type][param], self.next_next_ping.init)
             self.myTtlPaserWolker.execute(filename, param_list_next)
-        except TypeError:
+        except Exception:
+            return 0  # this is NG!
+        finally:
+            # なにがあろうとworkerは絶対に殺す
             if self.myTtlPaserWolker is not None:
                 self.myTtlPaserWolker.stop()
-            return 0  # this is NG!
         return int(self.myTtlPaserWolker.getValue('result')) != 0
 
     def subprocess_result(self, type, command_dict, command):
@@ -183,6 +188,10 @@ class MyThread():
             self.myTtlPaserWolker.stop()
         self.stop_flag = False
 
+    def command_status_threading(self, message: str):
+        self.next_next_ping.root.after(
+            0, lambda: self.next_next_ping.command_status_threading(message))
+
 
 class NextNextPing():
     def __init__(self):
@@ -195,6 +204,7 @@ class NextNextPing():
         self.tree = ""
         self.my_thread = None
         self.root = None
+        self.status_var = None
 
     def next_next_load(self, file_name: str):
         setting = {}
@@ -274,10 +284,11 @@ class NextNextPing():
             date = '--'
             result = '--'
             if type in self.log:
-                if 'result' in self.log[type][line]:
-                    result = self.log[type][line]['result']
-                if 'date' in self.log[type][line]:
-                    date = self.log[type][line]['date']
+                if line in self.log[type]:
+                    if 'result' in self.log[type][line]:
+                        result = self.log[type][line]['result']
+                    if 'date' in self.log[type][line]:
+                        date = self.log[type][line]['date']
             values = (result, type, date, line)
             self.tree.insert("", "end", values=values)
 
@@ -287,7 +298,9 @@ class NextNextPing():
         self.log = {}
         #
         if self.my_thread is None:
-            messagebox.showinfo("Info", "Ping start!")
+            message = "Info", "Ping start!"
+            self.command_status_threading(message)
+            messagebox.showinfo("Info", message)
             #
             children = self.tree.get_children()
             values_values = []
@@ -299,15 +312,19 @@ class NextNextPing():
             self.my_thread.set_therad(self, thread, values_values)
             thread.start()
         else:
-            messagebox.showinfo("Info", "Ping already start!")
+            message = "Ping already start!"
+            self.command_status_threading(message)
+            messagebox.showinfo("Info", message)
             self.stop()
 
     def command_stop(self):
         if self.my_thread is None:
-            messagebox.showinfo("Info", "Ping already stop!")
+            message = "Ping already stop!"
         else:
-            messagebox.showinfo("Info", "Ping stop!")
+            message = "Ping stop!"
             self.stop()
+        self.command_status_threading(message)
+        messagebox.showinfo("Info", message)
 
     def stop(self):
         my_thread = self.my_thread
@@ -318,18 +335,26 @@ class NextNextPing():
     def command_debug(self):
         if self.init['debug']:
             self.init['debug'] = False
-            messagebox.showinfo("Info", "Change to debug=False")
+            message = "Change to debug=False"
+            self.command_status_threading(message)
+            messagebox.showinfo("Info", message)
         else:
             self.init['debug'] = True
-            messagebox.showinfo("Info", "Change to debug=True")
+            message = "Change to debug=True"
+            self.command_status_threading(message)
+            messagebox.showinfo("Info", message)
 
     def command_loop(self):
         if self.init['loop']:
             self.init['loop'] = False
-            messagebox.showinfo("Info", "Change to loop=False")
+            message = "Change to loop=False"
+            self.command_status_threading(message)
+            messagebox.showinfo("Info", message)
         else:
             self.init['loop'] = True
-            messagebox.showinfo("Info", "Change to loop=True")
+            message = "Change to loop=True"
+            self.command_status_threading(message)
+            messagebox.showinfo("Info", message)
 
     def command_ping_threading(self, result, type, date, command):
         """ 戻り処理 """
@@ -341,6 +366,24 @@ class NextNextPing():
                 values[2] = date
             self.tree.item(child, values=values)
 
+    def command_status_threading(self, data: str):
+        """ 戻り処理 """
+        message = ''
+        if self.init['loop']:
+            message = 'L(True) '
+        else:
+            message = 'L(False) '
+        if self.init['debug']:
+            message = message + "D(True) "
+        else:
+            message = message + "D(False) "
+        if isinstance(data, str):
+            message = message + data
+        elif isinstance(data, list) or isinstance(data, tuple):
+            for d in data:
+                message = message + str(d)
+        self.status_var.set(message)
+
     def on_select(self, _):
         selected = self.tree.selection()
         if not selected:
@@ -350,7 +393,7 @@ class NextNextPing():
         type = values[1]
         command = values[3]
         string = "empty"
-        # print(f"t={type} c=/{command}/")
+        self.command_status_threading(f"touch t={type} c=/{command}/")
         if type not in self.log:
             self.log[type] = {}
         if command not in self.log[type]:
@@ -443,8 +486,14 @@ class NextNextPing():
         self.log_text.insert(1.0, self.log)
         self.log_text.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         #
-        notebook.pack(expand=True, fill='both', padx=10, pady=10)
+        self.status_var = tk.StringVar()
+        self.command_status_threading("This is status bar")
+        # ステータスバー（Label）を下部に配置
+        status_bar = tk.Label(self.root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         #
+        notebook.pack(expand=True, fill='both', padx=10, pady=10)
+
         self.root.mainloop()
         #
 

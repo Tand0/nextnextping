@@ -242,7 +242,13 @@ class TtlPaserWolker():
                 self.setValue(strvar, data)
             elif 'CommandContext' == name:
                 command_name = x['child'][0]
-                if "break" == command_name:
+                if "dummy" == command_name:
+                    print(f"### l={line} c={name}", end="")
+                    for data in x['child'][1:]:
+                        result = self.getData(data)
+                        print(f" p={result}", end="")
+                    print()
+                elif "break" == command_name:
                     raise TtlBreakFlagException("break")
                 elif "continue" == command_name:
                     raise TtlContinueFlagException("Continue")
@@ -347,10 +353,7 @@ class TtlPaserWolker():
                 break
 
     def commandContext(self, name, line, data_list):
-        print(f"command={name} line={line}")
-        for data in data_list:
-            result = self.getData(data)
-            print(f"\ttype={type(result).__name__} value={result}")
+        self.stop(error=f"Unsupport command n={name} line={line}")
 
     def callContext(self, label):
         #

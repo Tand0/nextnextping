@@ -7,6 +7,8 @@ src/*.spec
 # ANTLR
 .antlr/
 
+# for pytest
+test/build/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

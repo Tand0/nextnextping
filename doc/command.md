@@ -141,7 +141,7 @@ wait <string1> [<string2> ...]
 0	タイムアウト。どの文字列も来なかった。
 1	<string1> を受信した。
 2	<string2> を受信した。
-n	<stringn> を受信した。n=1..10
+n	<stringn> を受信した。n=1..n
 ```
 
 ## waitln
@@ -163,7 +163,7 @@ wait <string1> [<string2> ...]
 0	タイムアウト。どの文字列も来なかった。
 1	<string1> を受信した。
 2	<string2> を受信した。
-n	<stringn> を受信した。n=1..10
+n	<stringn> を受信した。n=1..n
 ```
 
 
