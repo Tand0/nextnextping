@@ -1,15 +1,16 @@
 from grammer.TtlParserLexer import TtlParserLexer
 from grammer.TtlParserParser import TtlParserParser
-from antlr4.error.ErrorListener import ErrorListener
-import time
 from antlr4.InputStream import InputStream
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.tree.Tree import ParseTreeVisitor
+from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.ErrorStrategy import BailErrorStrategy
 from antlr4.error.Errors import ParseCancellationException
+import time
 import paramiko
 import socket
 import re
+import subprocess
 
 
 class TtlContinueFlagException(Exception):
@@ -95,6 +96,7 @@ class TtlPaserWolker():
         self.client = None
         self.shell = None
         self.stdout = ''
+        self.process = None
 
     def stop(self, error=None):
         """ 強制停止処理 """
@@ -125,6 +127,14 @@ class TtlPaserWolker():
         if shell is not None:
             try:
                 shell.close()
+            except Exception:
+                # どんなエラーがでようと必ず殺す
+                pass
+        process = self.process
+        self.process = None
+        if process is not None:
+            try:
+                process.terminate()
             except Exception:
                 # どんなエラーがでようと必ず殺す
                 pass
@@ -318,10 +328,7 @@ class TtlPaserWolker():
                 elif 'closett' == command_name or 'disconnect' == command_name:
                     self.closeClient()
                 elif 'testlink' == command_name:
-                    if self.client is None or self.shell is None or not self.shell.active:
-                        self.setValue('result', 0)
-                    else:
-                        self.setValue('result', 2)
+                    self.doTestlink()
                 elif 'send' == command_name:
                     self.doSend(x['child'][1:])
                 elif 'sendln' == command_name:
@@ -757,6 +764,7 @@ class TtlPaserWolker():
         passwd = None
         keyfile = None
         port_number = 22
+        param_cmd = False
         for param in param_list:
             if len(param) <= 0:
                 continue
@@ -785,6 +793,8 @@ class TtlPaserWolker():
                     return
                 elif '2' == param:
                     pass  # SSH2
+                elif 'cmd' == param:
+                    param_cmd = True
                 elif 'ask4passwd' == param:
                     self.setValue('error', "Not Support ask4passwd error!")
                     self.setValue('result', 0)
@@ -811,40 +821,53 @@ class TtlPaserWolker():
         self.closeClient()
         #
         # ここから接続処理
-        try:
-            self.client = paramiko.SSHClient()
-            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            #
-            # print(f"p1 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
-            self.client.connect(server, port=port_number, username=user, password=passwd, key_filename=keyfile)
-            # print(f"p2 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
-            #
-            self.shell = self.client.invoke_shell()
-            if self.shell is None:
-                raise paramiko.SSHException("shell is None")
-            # print(f"p3 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+        if not param_cmd:
+            try:
+                self.client = paramiko.SSHClient()
+                self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                #
+                # print(f"p1 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+                self.client.connect(server, port=port_number, username=user, password=passwd, key_filename=keyfile)
+                # print(f"p2 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+                #
+                self.shell = self.client.invoke_shell()
+                if self.shell is None:
+                    raise paramiko.SSHException("shell is None")
+                # print(f"p3 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+                #
+                # 接続成功
+                #
+                self.setValue('result', 2)
+                # print("connect OK !")
+                #
+            except socket.gaierror as e:
+                self.setValue('error', f"gaierror line={line} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+            except paramiko.ssh_exception.NoValidConnectionsError as e:
+                self.setValue('error', f"gaierror line={line} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+            except paramiko.AuthenticationException as e:
+                self.setValue('error', f"AuthenticationException line={line} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+            except paramiko.SSHException as e:
+                self.setValue('error', f"SSHException line={line} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+        else:
+            # ここからcmd起動
+            self.process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             #
             # 接続成功
-            #
             self.setValue('result', 2)
-            # print("connect OK !")
-            #
-        except socket.gaierror as e:
-            self.setValue('error', f"gaierror line={line} e={e}")
+ 
+    def doTestlink(self):
+        if (self.client is None or self.shell is None or not self.shell.active) and (self.process is None):
             self.setValue('result', 0)
-            self.closeClient()
-        except paramiko.ssh_exception.NoValidConnectionsError as e:
-            self.setValue('error', f"gaierror line={line} e={e}")
-            self.setValue('result', 0)
-            self.closeClient()
-        except paramiko.AuthenticationException as e:
-            self.setValue('error', f"AuthenticationException line={line} e={e}")
-            self.setValue('result', 0)
-            self.closeClient()
-        except paramiko.SSHException as e:
-            self.setValue('error', f"SSHException line={line} e={e}")
-            self.setValue('result', 0)
-            self.closeClient()
+        else:
+            self.setValue('result', 2)
 
     def doSend(self, data_list):
         # print(f"doSend() d={data_list}")
@@ -863,17 +886,32 @@ class TtlPaserWolker():
 
     def doSendAll(self, message):
         # print(f"doSendAll d={message}")
-        while True:
-            shell = self.shell
-            if shell is None:
-                # print("doSendAll shell None")
-                break
-            elif shell.send_ready():
-                # print(f"send! f=/{message}/")
-                shell.send(message)
-                break
-            else:
-                time.sleep(0.1)
+        if self.process is None:
+            while not self.end_flag:
+                shell = self.shell
+                if shell is None:
+                    # print("doSendAll shell None")
+                    break
+                elif shell.send_ready():
+                    # print(f"send! f=/{message}/")
+                    shell.send(message)
+                    break
+                else:
+                    time.sleep(0.1)
+        else:
+            # ここからCMD
+            while not self.end_flag:
+                process = self.process
+                if process is None:
+                    # print("doSendAll shell None")
+                    break
+                elif process.stdin.writable():
+                    # print(f"send! f=/{message}/")
+                    process.stdin.write(message)
+                    process.stdin.flush()
+                    break
+                else:
+                    time.sleep(0.1)
 
     def doWait(self, data_list):
         result_list = []
@@ -900,31 +938,66 @@ class TtlPaserWolker():
                     # タイムアウトを超えた
                     result = 0
                     break
-            shell = self.shell
-            if shell is None:
-                return
             #
-            # m_timeout は Noneの時無限待ちになる
-            if shell.recv_ready():
-                # 最後の時間更新
-                now_time = int(time.time() * 1000)
-                output = shell.recv(1024).decode("utf-8")
-                self.setLog(output)
-                self.stdout = self.stdout + output
-                result = 1
-                for reslut_text in result_list:
-                    index = self.stdout.find(reslut_text)
-                    # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
-                    if 0 <= index:
-                        # 見つかった地点まで切り飛ばす
-                        self.stdout = self.stdout[index + len(reslut_text):]
-                        # print(f"remain={self.stdout}")
-                        hit_flag = True
-                        # hitした
-                        break
-                    result = result + 1
+            process = self.process
+            if self.process is None:
+                shell = self.shell
+                if shell is None:
+                    break
+                #
+                # m_timeout は Noneの時無限待ちになる
+                if shell.recv_ready():
+                    # 最後の時間更新
+                    now_time = int(time.time() * 1000)
+                    output = shell.recv(1024).decode("utf-8")
+                    self.setLog(output)
+                    self.stdout = self.stdout + output
+                    result = 1
+                    for reslut_text in result_list:
+                        index = self.stdout.find(reslut_text)
+                        # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
+                        if 0 <= index:
+                            # 見つかった地点まで切り飛ばす
+                            self.stdout = self.stdout[index + len(reslut_text):]
+                            # print(f"remain={self.stdout}")
+                            hit_flag = True
+                            # hitした
+                            break
+                        result = result + 1
+                else:
+                    time.sleep(0.1)
             else:
-                time.sleep(0.1)
+                # ここからcmd
+                # print("x4")
+                if process.poll() is not None:
+                    # process not alive
+                    self.closeClient()
+                    break
+                if process.stdout.readable():
+                    # 最後の時間更新
+                    # print("x3")
+                    now_time = int(time.time() * 1000)
+                    # 読み込み
+                    output = process.stdout.read(1)
+                    # print("x2")
+                    self.setLog(output)
+                    self.stdout = self.stdout + output
+                    result = 1
+                    for reslut_text in result_list:
+                        index = self.stdout.find(reslut_text)
+                        # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
+                        if 0 <= index:
+                            # 見つかった地点まで切り飛ばす
+                            self.stdout = self.stdout[index + len(reslut_text):]
+                            # print(f"remain={self.stdout}")
+                            hit_flag = True
+                            # hitした
+                            break
+                        result = result + 1
+                else:
+                    # print("x5")
+                    time.sleep(0.1)
+        #
         if hit_flag:
             self.setValue('result', result)
         else:

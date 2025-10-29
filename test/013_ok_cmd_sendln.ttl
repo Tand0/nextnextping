@@ -1,0 +1,71 @@
+
+; なんかいたら消す
+testlink
+if result == 2 then
+    closett
+endif
+
+
+; 接続する
+error=''
+dummy "connect start"
+connect '/cmd'
+if result == 2 then
+    ; 接続できている
+    dummy "connect OK" error
+else
+    ; 接続失敗
+    dummy "connect NG" error
+    result = 0
+    end
+endif
+
+
+result = 0
+wait '>'
+if result != 1 then
+    dummy "wait fail" error
+    result = 0
+    end
+endif
+
+; text
+result = 0
+sendln 'echo hell-world'
+wait '>' '#' 
+if result != 1 then
+    dummy "wait fail" result error
+    result = 0
+    end
+endif
+
+; text
+sendln 'dir'
+result = 0
+wait '#' '>'
+if result != 2 then
+    dummy "wait fail" error
+    result = 0
+    end
+endif
+
+pause 1
+
+; exit
+send 'exit'
+sendln
+pause 2
+disconnect
+testlink
+if result == 2 then
+    ; まだ接続できている
+    dummy "exit fail"
+    result = 0
+    end
+endif
+closett
+
+pause 1
+
+error=''
+result = 1

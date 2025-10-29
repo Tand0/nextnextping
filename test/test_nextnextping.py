@@ -76,10 +76,10 @@ class ServerStarter():
     def __init__(self, port: int, prompt='$'):
         """ コンストラクタ """
         if os.path.isfile(ServerStarter.KEY_FILE):
-            self.host_key = paramiko.RSAKey(filename="test_rsa.key")
+            self.host_key = paramiko.RSAKey(filename=ServerStarter.KEY_FILE)
         else:
             self.host_key = paramiko.RSAKey.generate(2048)
-            self.host_key.write_private_key_file("test_rsa.key")
+            self.host_key.write_private_key_file(ServerStarter.KEY_FILE)
         #
         self.DoGSSAPIKeyExchange = True
         self.port = port

@@ -89,12 +89,15 @@ mpause <time>
 
 ## connect
 
-- SSH接続する。
+- SSH接続する。telnet接続やSSH1接続はできません。
 - pythonのparamikoを使って接続します。
 - 注意！：ssh接続をするには接続先のサーバが必要です。
 
 ```
-connect 'myserver /ssh'
+connect 'myserver /ssh    /user=username /passwd=password'
+connect 'myserver /ssh /2 /user=username /passwd=password'
+connect 'myserver /ssh    /user=username /passwd=password /keyfile=private-key-file'
+connect 'myserver /ssh /2 /user=username /passwd=password /keyfile=private-key-file'
 ```
 
 ## closett/disconnect
