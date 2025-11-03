@@ -775,7 +775,7 @@ class TtlPaserWolker():
             self.printCommand(name, line, data_list)
             self.setValue('result', 0)
             self.setValue('inputstr', "tmp.txt")
-        elif name in ['yesnobox', 'listbox' ]:
+        elif name in ['yesnobox', 'listbox']:
             self.printCommand(name, line, data_list)
             self.setValue('result', 0)
         elif name in ['showtt']:

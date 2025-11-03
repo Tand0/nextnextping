@@ -199,7 +199,7 @@
   - [inputbox](https://teratermproject.github.io/manual/5/ja/macro/command/inputbox.html)  // GUI表示しない
   - [intdim](https://teratermproject.github.io/manual/5/ja/macro/command/intdim.html)
   - [listbox](https://teratermproject.github.io/manual/5/ja/macro/command/listbox.html)  // GUI表示しない
-  - [messagebox](https://teratermproject.github.io/manual/5/ja/macro/command/messagebox.html) -->
+  - [messagebox](https://teratermproject.github.io/manual/5/ja/macro/command/messagebox.html)  // GUI表示しない
   - [random](https://teratermproject.github.io/manual/5/ja/macro/command/random.html)
   <!-- - [rotateleft](https://teratermproject.github.io/manual/5/ja/macro/command/rotateleft.html) -->
   <!-- - [rotateright](https://teratermproject.github.io/manual/5/ja/macro/command/rotateright.html) -->
