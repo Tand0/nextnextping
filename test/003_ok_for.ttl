@@ -1,24 +1,18 @@
 
 ; 10回繰り返す。
 for i 1 10
-  dummy i
+  assert 1 i
 next
 
-if i != 11 then
-    dummy "i != 10" i
-    result = 0
-    end
-endif
+assert i == 11 "for loop ++" i
+
 
 ; 5回繰り返す。
 for i 5 1
-  dummy i
+  assert 1 i
 next
 
-if i != 0 then
-    result = 0
-    end
-endif
+assert i == 0 "for loop --" i
 
 result = 1
 

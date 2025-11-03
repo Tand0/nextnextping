@@ -1,0 +1,2105 @@
+from grammer.TtlParserLexer import TtlParserLexer
+from grammer.TtlParserParser import TtlParserParser
+from antlr4.InputStream import InputStream
+from antlr4.CommonTokenStream import CommonTokenStream
+from antlr4.tree.Tree import ParseTreeVisitor
+from antlr4.error.ErrorListener import ErrorListener
+from antlr4.error.ErrorStrategy import BailErrorStrategy
+from antlr4.error.Errors import ParseCancellationException
+import time
+import paramiko
+import socket
+import re
+import subprocess
+import os
+from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
+import pathlib
+import json
+import base64
+import random
+import uptime
+
+
+class TtlContinueFlagException(Exception):
+    """ continue 用の例外 """
+    def __init__(self, message):
+        """ コンストラクタ """
+        super().__init__(message)
+
+
+class TtlBreakFlagException(Exception):
+    """ break 用の例外 """
+    def __init__(self, message):
+        """ コンストラクタ """
+        super().__init__(message)
+
+
+class TtlReturnFlagException(Exception):
+    """ return 用の例外 """
+    def __init__(self, message):
+        """ コンストラクタ """
+        super().__init__(message)
+
+
+class TtlExitFlagException(Exception):
+    """ exit 用の例外 """
+    def __init__(self, message):
+        """ コンストラクタ """
+        super().__init__(message)
+
+
+class TtlParseTreeVisitor(ParseTreeVisitor):
+    def visit(self, tree):
+        return tree.accept(self)
+
+    def visitChildren(self, node):
+        result = {}
+        result['name'] = node.__class__.__name__
+        line_number = node.start.line
+        result['line'] = line_number
+        #
+        n = node.getChildCount()
+        if n == 0:
+            return result
+        worker_list = []
+        for i in range(n):
+            c = node.getChild(i)
+            childResult = c.accept(self)
+            if childResult is not None:
+                worker_list.append(childResult)
+        if worker_list != 0:
+            result["child"] = worker_list
+        return result
+
+    def visitTerminal(self, node):
+        type = node.getSymbol().type
+        # print(f"visitErrorNode type={type} text={node.getText()}")
+        if type < 0:
+            return None
+        x = TtlParserLexer.ruleNames[type - 1]
+        if x == "RN" or x == "WS":
+            return None
+        return node.getText()
+
+    def visitErrorNode(self, node):
+        x = node.getSymbol().type
+        x = TtlParserLexer.ruleNames[x - 1]
+        y = node.getText()
+        raise TypeError(f"visitErrorNode type={x} text={y}")
+
+
+class ThrowingErrorListener(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise TypeError(f"Token recognition error at line {line}:{column} - {msg}")
+
+
+class TtlPaserWolker():
+    """ tera tekitou lang の実装部分(GUI除く) """
+
+    def __init__(self):
+        """" init """
+        self.value_list = {}
+        self.result_file_json = {}
+        self.end_flag = False
+        self.client = None
+        self.shell = None
+        self.stdout = ''
+        self.process = None
+        self.file_handle_list = {}
+        self.title = "dummy"
+        self.title = self.getTitle()  # オーバーライドされたときにタイトルを差し替える
+        self.log_file_handle = None
+        self.log_start = True
+        self.log_timestamp_type = -1
+        self.log_login_time = time.time()
+        self.log_connect_time = None
+
+    def stop(self, error=None):
+        """ 強制停止処理 """
+        if error is not None:
+            self.setValue('error', error)
+            self.setValue('result', 0)
+        self.end_flag = True
+        #
+        # SSH接続していたら止める
+        self.closeClient()
+        #
+        # ファイルハンドルがいたら止める
+        for k in list(self.file_handle_list.keys()):
+            self.doFileclose(k)
+        #
+        # ログファイルハンドルがいたら止める
+        self.doLogclose()
+
+    def closeClient(self):
+        """ SSH接続していたら止める """
+        # print("closeClient()")
+        self.stdout = ''
+        self.log_connect_time = None
+        #
+        client = self.client
+        self.client = None
+        if client is not None:
+            try:
+                client.close()
+            except Exception:
+                # どんなエラーがでようと必ず殺す
+                pass
+                client = self.client
+        shell = self.shell
+        self.shell = None
+        if shell is not None:
+            try:
+                shell.close()
+            except Exception:
+                # どんなエラーがでようと必ず殺す
+                pass
+        process = self.process
+        self.process = None
+        if process is not None:
+            try:
+                process.terminate()
+            except Exception:
+                # どんなエラーがでようと必ず殺す
+                pass
+
+    def execute(self, filename: str, param_list: list):
+        try:
+            #
+            # default値の設定
+            self.setValue('error', "")
+            self.setValue('result', 1)
+            #
+            # 初期パラメータの設定
+            i = 0
+            # print(f" data={json.dumps(param_list, indent=2)}")
+            for param in param_list:
+                self.setValue('param' + str(i), param)
+                i = i + 1
+            #
+            # 一発目のinclude
+            self.include(filename)
+            #
+        finally:
+            # なにがあろうとセッションは必ず殺す
+            self.closeClient()
+
+    def include(self, filename: str):
+        if self.end_flag:
+            return
+        try:
+            #
+            result_json = {}
+            # print(f"filename={filename} param={self.result_file_json}")        
+            if filename in self.result_file_json:
+                result_json = self.result_file_json[filename]
+            else:
+                with open(filename, 'r', encoding='utf-8') as f:
+                    data = f.read()
+                result_json = self.include_data(data)
+                #
+                # for call command
+                self.result_file_json[filename] = result_json
+                #
+            self.execute_result(result_json['child'])
+            #
+        except TtlExitFlagException:
+            # exitコマンドが呼び出されときは正常終了です
+            pass
+        except (ParseCancellationException,
+                TypeError,
+                KeyError,
+                Exception) as e:
+            self.stop(f"{type(e).__name__} f={filename} e={e} error!")
+            raise e
+
+    def include_data(self, data: str):
+        if self.end_flag:
+            return
+        #
+        input_stream = InputStream(data + "\n")
+        lexer = TtlParserLexer(input_stream)
+        lexer.removeErrorListeners()
+        lexer.addErrorListener(ThrowingErrorListener())
+        token_stream = CommonTokenStream(lexer)
+        parser = TtlParserParser(token_stream)
+        #
+        # パーサが失敗していたら止める
+        parser._errHandler = BailErrorStrategy()
+        #
+        tree = parser.statement()
+        visitor = TtlParseTreeVisitor()
+        return tree.accept(visitor)
+
+    def setValue(self, strvar: str, data):
+        """ 変数を設定する """
+        # print(f"setValue={strvar} data={data}")
+        self.value_list[strvar] = data
+
+    def getValue(self, strvar: str, error_stop=True):
+        """ 変数を取得する """
+        if strvar not in self.value_list:
+            for k in self.value_list:
+                if strvar + "[" in k:
+                    return 'ARRAY'  # 配列指定がある
+            if error_stop:
+                raise TypeError(f"Value not found err value={strvar}")
+            return None
+        return self.value_list[strvar]
+
+    def execute_result(self, x_list, ifFlag=1):
+        """execute_result"""
+        if self.end_flag:
+            return
+        for x in x_list:
+            name = x['name']
+            line = x['line']
+            # print(f"CommandlineContext name={name}")
+            if 'CommandlineContext' == name:
+                if ifFlag != 0:
+                    self.commandlineContext(x['child'])
+            elif 'ElseifContext' == name:
+                if ifFlag == 0:
+                    first = int(self.getData(x['child'][1]))
+                    if first != 0:
+                        self.execute_result(x['child'][3:])
+                        ifFlag = 1
+            elif 'ElseContext' == name:
+                if ifFlag == 0:
+                    self.execute_result(x['child'][1:])
+            else:
+                self.stop(error=f"execute_result Unkown name={name} line={line} x={x}")
+            if self.end_flag:
+                break
+
+    def commandlineContext(self, token_list):
+        for x in token_list:
+            # print(f"commandlineContext data={json.dumps(x, indent=2)}")
+            name = x['name']
+            line = x['line']
+            if 'InputContext' == name:
+                strvar = self.getKeywordName(x['child'][0])
+                data = x['child'][2]
+                data = self.getData(data)
+                self.setValue(strvar, data)
+            elif 'CommandContext' == name:
+                command_name = x['child'][0]
+                if 'assert' == command_name:
+                    message = self.printCommand(command_name, line, x['child'][1:])
+                    p1 = self.getData(x['child'][1])
+                    if p1 == 0:
+                        raise TypeError(message)
+                elif 'dispstr' == command_name:
+                    self.doDispstr(x['child'][1:])
+                elif 'break' == command_name:
+                    raise TtlBreakFlagException(command_name)
+                elif 'continue' == command_name:
+                    raise TtlContinueFlagException(command_name)
+                elif 'end' == command_name:
+                    self.end_flag = True
+                elif 'exit' == command_name:
+                    raise TtlExitFlagException(command_name)
+                elif 'return' == command_name:
+                    raise TtlReturnFlagException(command_name)
+                elif 'include' == command_name:
+                    filename = self.getData(x['child'][1])
+                    self.include(filename)
+                elif 'call' == command_name:
+                    label = x['child'][1]
+                    # print(f"call label={label}")
+                    self.callContext(label)
+                elif 'str2int' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    right = int(self.getData(x['child'][2]))
+                    self.setValue(left, right)
+                elif 'code2str' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    right = x['child'][2]
+                    right = self.getData(right)
+                    if right == 0:
+                        self.setValue(left, '')
+                    else:
+                        right = self.getChrSharp(right)
+                        self.setValue(left, right)
+                elif 'strcompare' == command_name:
+                    left = str(self.getData(x['child'][1]))
+                    right = str(self.getData(x['child'][2]))
+                    result = 0
+                    if left == right:
+                        result = 0
+                    elif left < right:
+                        result = -1
+                    else:
+                        result = 1
+                    self.setValue('result', result)
+                elif 'strconcat' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    left_str = self.getValue(left)
+                    right_str = x['child'][2]
+                    left_str = left_str + self.getData(right_str)
+                    self.setValue(left, left_str)
+                elif 'strlen' == command_name:
+                    left = len(self.getData(x['child'][1]))
+                    self.setValue('result', left)
+                elif 'strmatch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doStrmatch(p1, p2)
+                elif 'strscan' == command_name:
+                    left = str(self.getData(x['child'][1]))
+                    right = str(self.getData(x['child'][2]))
+                    index = left.find(right)
+                    if index < 0:
+                        index = 0
+                    else:
+                        index = index + 1
+                    # print(f"strscan {index}")
+                    self.setValue('result', index)
+                elif 'strtrim' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_var = self.getData(p1)
+                    p2 = self.getData(x['child'][2])
+                    p1_var = self.doStrtrim(p1_var, p2)
+                    self.setValue(p1, p1_var)
+                elif 'tolower' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    right = str(self.getData(x['child'][2]))
+                    right = right.lower()
+                    self.setValue(left, right)
+                elif 'toupper' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    right = str(self.getData(x['child'][2]))
+                    right = right.upper()
+                    self.setValue(left, right)
+                elif 'int2str' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    right = str(self.getData(x['child'][2]))
+                    self.setValue(left, right)
+                elif 'str2code' == command_name:
+                    # print("str2code")
+                    left = self.getKeywordName(x['child'][1])
+                    right = x['child'][2]
+                    # print(f"rightA={right}")
+                    right = self.getData(right)
+                    # print(f"rightB={right}")
+                    right = self.getSharpChr(right)
+                    # print(f"rightC={right}")
+                    self.setValue(left, right)
+                elif 'strcopy' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = int(self.getData(x['child'][3]))
+                    p4 = self.getKeywordName(x['child'][4])
+                    if p2 < 0:
+                        p2 = 0
+                    p1 = p1[p2:p2 + p3]
+                    self.setValue(p4, p1)
+                elif 'strinsert' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = str(self.getData(x['child'][3]))
+                    p1_val = self.getData(p1)
+                    # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
+                    p1_val = p1_val[:p2] + p3 + p1_val[p2:]
+                    self.setValue(p1, p1_val)
+                elif 'strjoin' == command_name:
+                    # print(f"### l={line} {command_name}")
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = 9
+                    # print(f"len {len(x['child'])}")
+                    if 4 <= len(x['child']):
+                        p3 = int(self.getData(x['child'][3]))
+                    p1_val = ''
+                    for i in range(p3):
+                        if i != 0:
+                            p1_val = p1_val + p2
+                        p1_val = p1_val + self.getValue('groupmatchstr' + str(i + 1))
+                    self.setValue(p1, p1_val)
+                elif 'strreplace' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getData(p1)
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = str(self.getData(x['child'][3]))
+                    p4 = str(self.getData(x['child'][4]))
+                    self.doStrreplace(p1, p1_val, p2, p3, p4)
+                elif 'strremove' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = int(self.getData(x['child'][3]))
+                    p1_val = self.getData(p1)
+                    # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
+                    p1_val = p1_val[:p2] + p1_val[p2 + p3:]
+                    self.setValue(p1, p1_val)
+                elif 'strspecial' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getData(p1)
+                    if 3 <= len(x['child']):
+                        p1_val = str(self.getData(x['child'][2]))
+                    p1_val = p1_val.encode().decode("unicode_escape")
+                    self.setValue(p1, p1_val)
+                elif 'strsplit' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getData(p1)
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = 10
+                    if 4 <= len(x['child']):
+                        p3 = int(self.getData(x['child'][3]))
+                    for i in range(9):
+                        self.setValue('groupmatchstr' + str(i + 1), '')
+                    i = 0
+                    while i < p3 - 1:
+                        index = p1_val.find(p2)
+                        if (0 <= index):
+                            # print(f"aa i{i + 1} {p3} /{p1_val[0:index]}/ /{p1_val[index + len(p2):]}/")
+                            self.setValue('groupmatchstr' + str(i + 1), p1_val[0:index])
+                            p1_val = p1_val[index + len(p2):]
+                        else:
+                            break
+                        i = i + 1
+                    if 0 < len(p1_val):
+                        # print(f"bb i{i + 1} {p3} /{p1_val}/")
+                        self.setValue('groupmatchstr' + str(i + 1), p1_val)
+                    i = i + 1
+                    # print(f"i={i}")
+                    self.setValue('result', i)
+                elif 'mpause' == command_name:
+                    left = int(self.getData(x['child'][1]))
+                    self.doPause(left / 1000)
+                elif 'pause' == command_name:
+                    left = int(self.getData(x['child'][1]))
+                    self.doPause(left)
+                elif 'connect' == command_name:
+                    self.doConnect(self.getData(x['child'][1]), line)
+                elif command_name in ['closett', 'disconnect', 'unlink']:
+                    self.closeClient()
+                elif 'testlink' == command_name:
+                    self.doTestlink()
+                elif command_name in ['send', 'sendbinary', 'sendtext']:
+                    self.doSend(x['child'][1:])
+                elif 'sendln' == command_name:
+                    self.doSendln(x['child'][1:])
+                elif 'sendbreak' == command_name:
+                    self.doSendbreak()
+                elif 'wait' == command_name:
+                    self.doWait(x['child'][1:])
+                elif 'waitln' == command_name:
+                    self.doWaitln(x['child'][1:])
+                elif 'recvln' == command_name:
+                    self.doRecvln()
+                elif 'exec' == command_name:
+                    self.doExec(line, x['child'][1:])
+                elif 'execcmnd' == command_name:
+                    left = self.getData(x['child'][1])
+                    result_json = self.include_data(left)
+                    self.execute_result(result_json['child'])
+                elif 'getenv' == command_name:
+                    left = str(self.getData(x['child'][1]))
+                    right = self.getKeywordName(x['child'][2])
+                    # print(f"getenv1 c=({command_name}) l={left} r={right}")
+                    left = os.getenv(left)
+                    if left is None:
+                        left = ''
+                    # print(f"getenv2 c=({command_name}) l={left} r={right}")
+                    self.setValue(right, left)
+                elif 'setenv' == command_name:
+                    left = str(self.getData(x['child'][1]))
+                    right = str(self.getData(x['child'][2]))
+                    os.environ[left] = right
+                    # print(f"setenv2 c=({command_name}) l={left} r={right}")
+                elif 'gettitle' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getTitle()
+                    self.setValue(p1, p1_val)
+                elif 'settitle' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.setTitle(p1)
+                elif 'expandenv' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    right = ''
+                    if 3 <= len(x['child']):
+                        right = self.getData(x['child'][2])
+                    else:
+                        right = self.getData(left)
+                    right = os.path.expandvars(right)
+                    # print(f"left={left} right={right}")
+                    self.setValue(left, right)
+                elif 'getdate' == command_name:
+                    self.doGetdate(x['child'][1:])
+                elif 'gettime' == command_name:
+                    self.doGetdate(x['child'][1:], format='%H:%M:%S')
+                elif 'sprintf' == command_name:
+                    self.doSprintf('inputstr', x['child'][1:])
+                elif 'sprintf2' == command_name:
+                    left = x['child'][1]
+                    left = self.getKeywordName(left)
+                    self.doSprintf(left, x['child'][2:])
+                elif command_name in ['setdir', 'changedir']:
+                    left = x['child'][1]
+                    left = self.getData(left)
+                    path = pathlib.Path(left)
+                    if path.is_absolute():
+                        # print(f"pathA={path}")
+                        os.chdir(path)
+                    else:
+                        path = pathlib.Path.cwd() / path
+                        os.chdir(path)
+                elif 'makepath' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getData(x['child'][3]))
+                    self.doMakepath(p1, p2, p3)
+                elif 'basename' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p2 = os.path.basename(p2)
+                    self.setValue(p1, str(p2))
+                elif 'dirname' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    # print(f"p2a={p2}")
+                    p2 = re.sub(r"[\/]$", '', p2)
+                    p2 = pathlib.Path(p2)
+                    # print(f"p2b={p2}")
+                    p2 = p2.parent
+                    # print(f"p2c={p2}")
+                    self.setValue(p1, str(p2))
+                elif 'getdir' == command_name:
+                    left = self.getKeywordName(x['child'][1])
+                    path = pathlib.Path.cwd()
+                    self.setValue(left, str(path))
+                elif 'intdim' == command_name:
+                    left = x['child'][1]
+                    right = int(str(self.getData(x['child'][2])))
+                    for i in range(right):
+                        self.setValue(left + '[' + str(i) + ']', 0)
+                elif 'strdim' == command_name:
+                    left = x['child'][1]
+                    right = int(str(self.getData(x['child'][2])))
+                    for i in range(right):
+                        self.setValue(left + '[' + str(i) + ']', '')
+                elif command_name in ["setpassword", "setpassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = self.getData(x['child'][3])
+                    self.doSetpassword(p1, p2, p3)
+                elif command_name in ["getpassword", "getpassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = self.getKeywordName(x['child'][3])
+                    self.doGetpassword(p1, p2, p3)
+                elif command_name in ["ispassword", "ispassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doIspassword(p1, p2)
+                elif command_name in ["delpassword", "delpassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doDelpassword(p1, p2)
+                elif 'fileopen' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = int(self.getData(x['child'][3]))
+                    p4 = 0
+                    if 5 <= len(x['child']):
+                        p4 = self.getData(x['child'][4])
+                    self.doFileopen(p1, p2, p3, p4)
+                elif 'filecreate' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doFileopen(p1, p2, 0, 0)
+                elif 'fileclose' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    self.doFileclose(p1)
+                elif 'filewrite' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doFilewrite(line, p1, p2)
+                elif 'filewriteln' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2]) + "\n"
+                    self.doFilewrite(line, p1, p2)
+                elif 'fileread' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2]))
+                    p3 = self.getKeywordName(x['child'][3])
+                    self.doFileread(line, p1, p2, p3)
+                elif 'filereadln' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doFilereadln(line, p1, p2)
+                elif 'fileconcat' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doFileconcat(p1, p2)
+                elif 'filecopy' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doFilecopy(p1, p2)
+                elif 'filedelete' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFiledelete(p1)
+                elif 'filerename' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doFilerename(p1, p2)
+                elif 'filesearch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFilesearch(p1)
+                elif 'filestat' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    p3 = None
+                    if 4 <= len(x['child']):
+                        p3 = str(self.getKeywordName(x['child'][3]))
+                    p4 = None
+                    if 4 <= len(x['child']):
+                        p4 = str(self.getKeywordName(x['child'][4]))
+                    self.doFilestat(p1, p2, p3, p4)
+                elif 'foldercreate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFoldercreate(p1)
+                elif 'folderdelete' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFolderdelete(p1)
+                elif 'foldersearch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFoldersearch(p1)
+                elif 'getipv4addr' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doGetipv4addr(p1, p2)
+                elif 'getipv6addr' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doGetipv6addr(p1, p2)
+                elif 'gethostname' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    self.doGethostname(p1)
+                elif 'getver' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = None
+                    if 3 <= len(x['child']):
+                        p2 = float(self.getData(x['child'][2]))
+                    self.doGetver(p1, p2)
+                elif 'ifdefined' == command_name:
+                    p1 = str(x['child'][1])
+                    self.doIfdefined(p1)
+                elif 'random' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = int(self.getData(x['child'][2]))
+                    p1_val = random.randint(0, p2)
+                    self.setValue(p1, p1_val)
+                elif 'uptime' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    self.setValue(p1, int(uptime.uptime() * 1000))
+                elif 'logautoclosemode' == command_name:
+                    p1 = int(self.getData(x['child'][1]))
+                    self.doLogautoclosemode(command_name, line, p1)
+                elif 'logclose' == command_name:
+                    self.doLogclose()
+                elif 'loginfo' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    self.doLoginfo(command_name, line, p1)
+                elif 'logopen' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = int(self.getData(x['child'][2]))
+                    p3 = int(self.getData(x['child'][3]))
+                    p_len = len(x['child'])
+                    p4 = 0
+                    if 5 < p_len:
+                        p4 = int(self.getData(x['child'][4]))
+                    p5 = 0
+                    if 6 <= p_len:
+                        p5 = int(self.getData(x['child'][5]))
+                    p6 = 0
+                    if 7 <= p_len:
+                        p6 = int(self.getData(x['child'][6]))
+                    p7 = 0
+                    if 8 <= p_len:
+                        p7 = int(self.getData(x['child'][7]))
+                    p8 = 0
+                    if 9 <= p_len:
+                        p8 = int(self.getData(x['child'][8]))
+                    self.doLogopen(p1, p2, p3, p4, p5, p6, p7, p8)
+                elif 'logpause' == command_name:
+                    self.doLogpause()
+                elif 'logrotate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p_len = len(self.getData(x['child']))
+                    p2 = None
+                    if 3 < p_len:
+                        p2 = int(self.getData(x['child'][2]))
+                    self.doLogrotate(command_name, line, p1, p2)
+                elif 'logstart' == command_name:
+                    self.doLogstart()
+                elif 'logwrite' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doLogwrite(p1)
+                else:
+                    # コマンドが分からない
+                    self.commandContext(command_name, line, x['child'][1:])
+            elif 'ForNextContext' == name:
+                self.forNextContext(x['child'])
+            elif 'WhileEndwhileContext' == name:
+                self.whileEndwhileContext(x['child'])
+            elif 'UntilEnduntilContext' == name:
+                self.untilEnduntilContext(x['child'])
+            elif 'DoLoopContext' == name:
+                self.doLoopContext(x['child'])
+            elif 'If1Context' == name:
+                self.if1Context(x['child'])
+            elif 'If2Context' == name:
+                self.if2Context(x['child'])
+            elif 'LabelContext' != name:
+                pass
+            else:
+                self.stop(error=f"Unkown name={name} line={line}")
+            if self.end_flag:
+                break
+
+    def commandContext(self, name, line, data_list):
+        """ (GUI系を)オーバーライドさせて使う """
+        # GUIでしかできないのでダニーを入れておく
+        if name in ['passwordbox', 'inputbox']:
+            self.printCommand(name, line, data_list)
+            self.setValue('inputstr', 'aaa')
+        elif name in ['bringupbox', 'closesbox', 'messagebox', 'statusbox', 'setdlgpos']:
+            self.printCommand(name, line, data_list)
+        elif 'dirnamebox' == name:
+            self.printCommand(name, line, data_list)
+            self.setValue('result', 1)
+            self.setValue('inputstr', str(os.getcwd()))
+        elif 'filenamebox' == name:
+            self.printCommand(name, line, data_list)
+            self.setValue('result', 0)
+            self.setValue('inputstr', "tmp.txt")
+        elif name in ['yesnobox', 'listbox' ]:
+            self.printCommand(name, line, data_list)
+            self.setValue('result', 0)
+        elif name in ['showtt']:
+            self.printCommand(name, line, data_list)
+            self.setValue(self.getKeywordName(data_list[0]), 0)
+        elif name in ['setdlgpos', 'show', 'callmenu', 'enablekeyb']:
+            pass
+        else:
+            raise TypeError(f"### l={line} Unsupport command={name}")
+
+    def printCommand(self, name, line, data_list):
+        message = f"### l={line} c={name}"
+        for data in data_list:
+            result = self.getData(data)
+            message = message + f" p({result})"
+        print(message)
+        return message
+
+    def doDispstr(self, data_list):
+        for data in data_list:
+            result = self.getData(data)
+            if isinstance(result, int):
+                result = chr(data & 0xFF)
+            self.setLogInner(result)
+
+    def callContext(self, label):
+        #
+        try:
+            for token_list in self.result_file_json.values():
+                token_list = token_list['child']  # StatementContext
+                i = 0
+                label_found_flag = True
+                while i < len(token_list):
+                    targetContext = token_list[i]['child']
+                    if label_found_flag:
+                        j = 0
+                        while j < len(targetContext):
+                            # print(f"xxx data={json.dumps(targetContext, indent=2)}")
+                            context = targetContext[j]
+                            name = context['name']
+                            if 'LabelContext' == name:
+                                label_name = context['child']
+                                if label == label_name[1]:
+                                    label_found_flag = False
+                                    break
+                            j = j + 1
+                            if self.end_flag:
+                                break
+                    else:
+                        self.commandlineContext(targetContext)
+                    i = i + 1
+                    if not label_found_flag:
+                        break
+                    if self.end_flag:
+                        break
+                if not label_found_flag:
+                    break
+                if self.end_flag:
+                    break
+            if label_found_flag:
+                # 一つもヒットしていない
+                self.stop(error=f"No hit label error label={label}")
+        except TtlReturnFlagException:
+            pass
+        #
+
+    def forNextContext(self, data_list):
+        intvar = self.getKeywordName(data_list[1])
+        first = int(self.getData(data_list[2]))
+        self.setValue(intvar, first)
+        last = int(self.getData(data_list[3]))
+        # print(f"for intvar={intvar} first={first} last={last}")
+        add = -1
+        if first < last:
+            add = 1
+        while True:
+            #
+            try:
+                self.execute_result(data_list[4:-1])
+                #
+                if self.end_flag:
+                    break
+                #
+                self.setValue(intvar, self.getValue(intvar) + add)
+                if (0 < add):
+                    if last < self.getValue(intvar):
+                        break
+                else:
+                    if self.getValue(intvar) < last:
+                        break
+            except TtlContinueFlagException:
+                pass
+            except TtlBreakFlagException:
+                break
+
+    def whileEndwhileContext(self, data_list):
+        while int(self.getData(data_list[1])) != 0:
+            try:
+                #
+                self.execute_result(data_list[2:-1])
+                #
+                if self.end_flag:
+                    break
+            except TtlContinueFlagException:
+                pass
+            except TtlBreakFlagException:
+                break
+
+    def untilEnduntilContext(self, data_list):
+        while int(self.getData(data_list[1])) == 0:
+            try:
+                #
+                self.execute_result(data_list[2:-1])
+                #
+                if self.end_flag:
+                    break
+            except TtlContinueFlagException:
+                pass
+            except TtlBreakFlagException:
+                break
+
+    def doLoopContext(self, data_list):
+        while True:
+            try:
+                for data in data_list:
+                    if isinstance(data, str):
+                        # do/loop
+                        # print(f"do/loop={data}")
+                        pass
+                    elif 'CommandlineContext' == data['name']:
+                        # print(f"LineContext={data}")
+                        self.execute_result([data])
+                    else:
+                        # print(f"data={data['name']}")
+                        value = int(self.getData(data))
+                        # print(f"value ={value}")
+                        if value == 0:
+                            # print(f"data ok={data}")
+                            raise TtlBreakFlagException('doLoopContext')
+            except TtlContinueFlagException:
+                pass
+            except TtlBreakFlagException:
+                break
+
+    def if1Context(self, data_list):
+        first = int(self.getData(data_list[1]))
+        # print(f"if1 first={first}")
+        if 0 != first:
+            self.execute_result(data_list[2:])
+
+    def if2Context(self, data_list):
+        first = int(self.getData(data_list[1]))
+        # print(f"if2 first={first}")
+        self.execute_result(data_list[3:-1], first)
+
+    def getData(self, data):
+        """ 構文解析からデータを抽出する """
+        result = ""
+        if isinstance(data, str):
+            result = self.getValue(data)
+        elif 'P11ExpressionContext' == data['name']:
+            result = self.p11ExpressionContext(data['child'])
+        elif 'P10ExpressionContext' == data['name']:
+            result = self.p10ExpressionContext(data['child'])
+        elif 'P9ExpressionContext' == data['name']:
+            result = self.p9ExpressionContext(data['child'])
+        elif 'P8ExpressionContext' == data['name']:
+            result = self.p8ExpressionContext(data['child'])
+        elif 'P7ExpressionContext' == data['name']:
+            result = self.p8ExpressionContext(data['child'])
+        elif 'P6ExpressionContext' == data['name']:
+            result = self.p7ExpressionContext(data['child'])
+        elif 'P6ExpressionContext' == data['name']:
+            result = self.p6ExpressionContext(data['child'])
+        elif 'P5ExpressionContext' == data['name']:
+            result = self.p5ExpressionContext(data['child'])
+        elif 'P4ExpressionContext' == data['name']:
+            result = self.p4ExpressionContext(data['child'])
+        elif 'P3ExpressionContext' == data['name']:
+            result = self.p3ExpressionContext(data['child'])
+        elif 'P2ExpressionContext' == data['name']:
+            result = self.p2ExpressionContext(data['child'])
+        elif 'P1ExpressionContext' == data['name']:
+            result = self.p1ExpressionContext(data['child'])
+        elif 'IntExpressionContext' == data['name']:
+            result = self.intExpressionContext(data['child'])
+        elif 'StrExpressionContext' == data['name']:
+            result = self.strExpressionContext(data['child'])
+        elif 'IntContextContext' == data['name']:
+            result = self.intContext(data['child'])
+        elif 'StrContextContext' == data['name']:
+            result = self.strContext(data['child'])
+        elif 'KeywordContext' == data['name']:
+            result = self.keywordContext(data)
+        else:
+            self.stop(error=f"unkown keyword n={data['name']}")
+            result = data
+        return result
+
+    def p11ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = self.getData(data[0])
+        val2 = self.getData(data[2])
+        return val1 or val2
+
+    def p10ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = self.getData(data[0])
+        val2 = self.getData(data[2])
+        return val1 and val2
+
+    def p9ExpressionContext(self, data: list):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        # print(f"p9ExpressionContext count={count} data={data[0]['name']} child={data[0]['child'][0]} ")
+        # print("xxx 1")
+        val1 = int(self.getData(data[0]))
+        # print("xxx 2")
+        oper = data[1]
+        # print(f"p9ExpressionContext count={1} data={oper}")
+        # print(f"p9ExpressionContext count={2} data={data[2]['name']} child={data[2]['child']} ")
+        val2 = int(self.getData(data[2]))
+        result = 0
+        if '==' == oper or '=' == oper:
+            result = val1 == val2
+        else:  # <> or !=
+            result = val1 != val2
+        if result:
+            return 1
+        return 0
+
+    def p8ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        oper = data[1]
+        val2 = int(self.getData(data[2]))
+        result = 0
+        if '<' == oper:
+            result = val1 < val2
+        elif '<=' == oper:
+            result = val1 <= val2
+        elif '>' == oper:
+            result = val1 > val2
+        else:  # '>='
+            result = val1 >= val2
+        if result:
+            return 1
+        return 0
+
+    def p7ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        val2 = int(self.getData(data[2]))
+        result = val1 or val2
+        if result:
+            return 1
+        return 0
+
+    def p6ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        val2 = int(self.getData(data[2]))
+        result = val1 ^ val2
+        if result:
+            return 1
+        return 0
+
+    def p5ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        val2 = int(self.getData(data[2]))
+        result = val1 and val2
+        if result:
+            return 1
+        return 0
+
+    def p4ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        oper = data[1]
+        val2 = int(self.getData(data[2]))
+        result = 0
+        if '>>>' == oper:
+            result = val1 >> val2
+        elif '>>' == oper:
+            result = val1 >> val2
+        elif '<<' == oper:
+            result = val1 << val2
+        return result
+
+    def p3ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        oper = data[1]
+        val2 = int(self.getData(data[2]))
+        result = 0
+        if '+' == oper:
+            result = val1 + val2
+        elif '-' == oper:
+            result = val1 - val2
+        return result
+
+    def p2ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[0]))
+        oper = data[1]
+        val2 = int(self.getData(data[2]))
+        result = 0
+        if '*' == oper:
+            result = val1 * val2
+        elif '/' == oper:
+            try:
+                result = val1 // val2
+            except ZeroDivisionError as e:
+                raise TypeError(f"ZeroDivisionError e={str(e)}")
+        elif '%' == oper:
+            try:
+                result = val1 % val2
+            except ZeroDivisionError as e:
+                raise TypeError(f"ZeroDivisionError e={str(e)}")
+        return result
+
+    def p1ExpressionContext(self, data):
+        count = len(data)
+        if count == 1:
+            return self.getData(data[0])
+        val1 = int(self.getData(data[1]))
+        if 0 == val1:
+            return 1
+        return 0
+
+    def intExpressionContext(self, data_list):
+        count = len(data_list)
+        if count == 1:
+            return self.getData(data_list[0])
+        else:
+            # ()表現=data_list[0]には'('が入っている
+            return self.getData(data_list[1])
+
+    def strExpressionContext(self, data_list):
+        return self.getData(data_list[0])
+
+    def strContext(self, data_list):
+        # print(f"str={data_list}")
+        result = ""
+        for data in data_list:
+            state = 0
+            old = ''
+            for i in range(len(data)):
+                hit_flag = False
+                ch0 = data[i]
+                # print(f"\tch0={ch0}")
+                if state == 0:
+                    if ch0 == '\'':
+                        state = 1
+                        hit_flag = True
+                    elif ch0 == '\"':
+                        state = 2
+                        hit_flag = True
+                    elif ch0 == '#':
+                        hit_flag = True
+                    else:
+                        old = old + ch0
+                    if hit_flag:
+                        result = result + self.getChrSharp_str(old)
+                        old = ''  # clear
+                        if ch0 == '#':
+                            old = ch0
+                elif state == 1:
+                    if ch0 == '\'':
+                        state = 0
+                    else:
+                        result = result + ch0
+                elif state == 2:
+                    if ch0 == '\"':
+                        state = 0
+                    else:
+                        result = result + ch0
+            result = result + self.getChrSharp_str(old)
+        # print(f"result={result}")
+        return result
+
+    def getChrSharp_str(self, base) -> str:
+        if len(base) <= 0:
+            return ''
+        #
+        # print(f"\tbaseB={base}")
+        if '#' == base[0]:
+            # print(f"\tbaseC={base} data={base[1:]}")
+            base = self.getChrSharp(self.getAsciiNum(base[1:]))
+            # print(f"\tbaseD={base} data={base[1:]}")
+        elif '$' == base[0]:
+            base = self.getAsciiNum(base)
+        return base
+
+    def getChrSharp(self, data: int) -> str:
+        if data <= 0:
+            return chr(data & 0xFF)
+        result = ''
+        while 0 < data:
+            result = chr(data & 0xFF) + result
+            data = data >> 8
+        return result
+
+    def getSharpChr(self, data: str) -> int:
+        # print(f"getSharpChr {data}")
+        if len(data) <= 0:
+            return ''
+        result = 0
+        while '' != data:
+            result = (result * 256) + ord(data[0])
+            data = data[1:]
+        return result
+
+    def intContext(self, data_list):
+        # print(f"intContext={data_list}")
+        result = 0
+        data = data_list[0]
+        if 0 < len(data) and data[0] == '$':
+            result = self.getAsciiNum(data)
+        else:
+            result = int(data)
+        return result
+
+    def getAsciiNum(self, data: str) -> int:
+        # print(f"getAsciiNum={data} len={len(data)} data[0]={data[0]}")
+        if (0 < len(data)) and ('$' == data[0]):
+            ans = int(data[1:], 16)
+            # print(f"data[1:]={data[1:]} ans={ans}")
+            return ans
+        return int(data)
+
+    def getKeywordName(self, data):
+        """ 構文内のキーワード名を取得する """
+        # print(f"keywordName {data}")
+        if 'name' not in data:
+            if isinstance(data, str):
+                return data
+            elif isinstance(data, list):
+                return data[0]
+            raise TypeError("keywordName name not in data")
+        #
+        # this is dict
+        if 'KeywordContext' != data['name']:
+            raise TypeError(f"keywordName name is not KeywordContext line={data['line']}")
+        #
+        data = data['child']
+        # print(f"data={data} len={len(data)}")
+        if len(data) == 1:
+            # 単純指定
+            return data[0]
+        else:
+            # 配列対策
+            index = data[2]
+            index = self.getData(index)
+            return data[0] + '[' + str(int(index)) + ']'
+
+    def keywordContext(self, data):
+        """ 構文内のキーワードから値を抽出する """
+        # print(f"keywordContext data={data}")
+        return self.getValue(self.getKeywordName(data))
+
+    def doConnect(self, data: str, line):
+        ''' 接続する '''
+        # print(f"do connect data={data}")
+        if self.client is not None:
+            self.setValue('error', "Already connected")
+            self.setValue('result', 0)
+            return
+        param_list = re.split(r'[ \t]+', data)
+        server = "localhost"
+        user = None
+        passwd = None
+        keyfile = None
+        port_number = 22
+        param_cmd = False
+        for param in param_list:
+            if len(param) <= 0:
+                continue
+            if param[0] != '/':
+                server = param.split(':')
+                if len(server) == 1:
+                    server = server[0]
+                elif len(server) == 2:
+                    port_number = int(server[1])
+                    server = server[0]
+                else:
+                    self.setValue('error', "Invalid server name")
+                    self.setValue('result', 0)
+                    return
+            else:
+                user_string = "user="
+                passwd_string = "passwd="
+                keyfile_string = "keyfile="
+                param = param[1:]
+                # print(f"\tparam={param}")
+                if 'ssh' == param:
+                    pass
+                elif '1' == param:
+                    self.setValue('error', "SSH1 not support")
+                    self.setValue('result', 0)
+                    return
+                elif '2' == param:
+                    pass  # SSH2
+                elif 'cmd' == param:
+                    param_cmd = True
+                elif 'ask4passwd' == param:
+                    self.setValue('error', "Not Support ask4passwd error!")
+                    self.setValue('result', 0)
+                    return
+                elif 'auth=password' == param:
+                    pass  # わからん
+                elif 'auth=publickey' == param:
+                    pass  # わからん
+                elif 'auth=challenge' == param:
+                    pass  # わからん
+                elif re.search('^' + user_string, param):
+                    user = param[len(user_string):]
+                elif re.search('^' + passwd_string, param):
+                    passwd = param[len(passwd_string):]
+                elif re.search('^' + keyfile_string, param):
+                    keyfile = param[len(keyfile_string):]
+                else:
+                    # 知らないパラメータが来たら停止する
+                    self.setValue('error', f"unkown paramater={param}")
+                    self.setValue('result', 0)
+                    return
+        #
+        # 前の接続は削除
+        self.closeClient()
+        #
+        # ここから接続処理
+        if not param_cmd:
+            try:
+                self.client = paramiko.SSHClient()
+                self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                #
+                # print(f"p1 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+                self.client.connect(server, port=port_number, username=user, password=passwd, key_filename=keyfile)
+                # print(f"p2 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+                #
+                self.shell = self.client.invoke_shell()
+                if self.shell is None:
+                    raise paramiko.SSHException("shell is None")
+                # print(f"p3 {server}, port={port_number}, username={user}, password={passwd}, key_filename={keyfile}")
+                #
+                # 接続成功
+                #
+                self.setValue('result', 2)
+                self.log_connect_time = time.time()
+                # print("connect OK !")
+                #
+            except (socket.gaierror,
+                    paramiko.ssh_exception.NoValidConnectionsError,
+                    paramiko.AuthenticationException,
+                    paramiko.SSHException) as e:
+                self.setValue('error', f"### l={line} {type(e).__name__} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+        else:
+            # ここからcmd起動
+            self.process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            #
+            # 接続成功
+            self.setValue('result', 2)
+
+    def doTestlink(self):
+        if (self.client is None or self.shell is None or not self.shell.active) and (self.process is None):
+            self.setValue('result', 0)
+        else:
+            self.setValue('result', 2)
+
+    def doSend(self, data_list):
+        # print(f"doSend() d={data_list}")
+        for data in data_list:
+            result = self.getData(data)
+            self.doSendAll(result)
+
+    def doSendln(self, data_list):
+        # print(f"doSendln() d={data_list}")
+        if len(data_list) <= 0:
+            self.doSendAll("\n")
+        else:
+            for data in data_list:
+                message = self.getData(data)
+                self.doSendAll(message + "\n")
+
+    def doSendbreak(self):
+        # print(f"doSendbreak() d={data_list}")
+        self.doSendAll("\x03")
+
+    def doSendAll(self, message):
+        # print(f"doSendAll d={message}")
+        if self.process is None:
+            while not self.end_flag:
+                shell = self.shell
+                if shell is None:
+                    # print("doSendAll shell None")
+                    break
+                elif shell.send_ready():
+                    # print(f"send! f=/{message}/")
+                    shell.send(message)
+                    break
+                else:
+                    time.sleep(0.1)
+        else:
+            # ここからCMD
+            while not self.end_flag:
+                process = self.process
+                if process is None:
+                    # print("doSendAll shell None")
+                    break
+                elif process.stdin.writable():
+                    # print(f"send! f=/{message}/")
+                    process.stdin.write(message)
+                    process.stdin.flush()
+                    break
+                else:
+                    time.sleep(0.1)
+
+    def doWait(self, data_list):
+        result_list = []
+        for data in data_list:
+            result = self.getData(data)
+            result_list.append(result)
+        self.doWaitAll(result_list)
+
+    def doWaitln(self, data_list):
+        result_list = []
+        for data in data_list:
+            result = self.getData(data) + "\n"
+            result_list.append(result)
+        self.doWaitAll(result_list)
+
+    def doRecvln(self):
+        result_list = ["\n"]
+        self.doWaitAll(result_list)
+
+    def doWaitAll(self, result_list):
+        m_timeout = self.getTimer()
+        now_time = int(time.time() * 1000)
+        result = 0
+        hit_flag = False
+        while m_timeout is None and not self.end_flag and not hit_flag:
+            if m_timeout is not None:
+                if (now_time + m_timeout) < int(time.time()):
+                    # タイムアウトを超えた
+                    result = 0
+                    break
+            #
+            process = self.process
+            if self.process is None:
+                shell = self.shell
+                if shell is None:
+                    break
+                #
+                # m_timeout は Noneの時無限待ちになる
+                if shell.recv_ready():
+                    # 最後の時間更新
+                    now_time = int(time.time() * 1000)
+                    output = shell.recv(1024).decode("utf-8")
+                    if output is None:
+                        break
+                    self.setLogInner(output)
+                    #
+                    self.stdout = self.stdout + output
+                    result = 1
+                    for reslut_text in result_list:
+                        index = self.stdout.find(reslut_text)
+                        # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
+                        if 0 <= index:
+                            # 見つかった地点まで切り飛ばす
+                            self.stdout = self.stdout[index + len(reslut_text):]
+                            # print(f"remain={self.stdout}")
+                            hit_flag = True
+                            # hitした
+                            break
+                        result = result + 1
+                else:
+                    time.sleep(0.1)
+            else:
+                # ここからcmd
+                # print(f"x4 {flushrecv}")
+                if process.poll() is not None:
+                    # process not alive
+                    self.closeClient()
+                    break
+                if process.stdout.readable():
+                    # 最後の時間更新
+                    now_time = int(time.time() * 1000)
+                    # 読み込み
+                    # print(f"x3 /*{process.stdout}+/")
+                    output = process.stdout.read(1)
+                    # print("x2")
+                    if output is None:
+                        break
+                    self.setLogInner(output)
+                    #
+                    self.stdout = self.stdout + output
+                    result = 1
+                    for reslut_text in result_list:
+                        index = self.stdout.find(reslut_text)
+                        # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
+                        if 0 <= index:
+                            # 見つかった地点まで切り飛ばす
+                            self.stdout = self.stdout[index + len(reslut_text):]
+                            # print(f"remain={self.stdout}")
+                            hit_flag = True
+                            # hitした
+                            break
+                        result = result + 1
+                else:
+                    # print("x5")
+                    time.sleep(0.1)
+        #
+        if hit_flag:
+            self.setValue('result', result)
+        else:
+            self.setValue('result', 0)
+
+    def doGethostname(self, p1):
+        """ ホスト名の取得"""
+        if self.client is not None and self.shell is not None and self.shell.active:
+            # 外部と接続しているとき
+            ip_address = self.client.get_transport().getpeername()[0]
+            self.setValue(p1, ip_address)
+        else:
+            #
+            # 何もリンクしていない、または cmdと接続しているとき
+            hostname = socket.gethostname()
+            self.setValue(p1, hostname)
+
+    def getTimer(self):
+        m_timeout = None
+        x = self.getValue('timeout', error_stop=False)
+        if x is not None:
+            m_timeout = int(x) * 1000
+        x = self.getValue('mtimeout', error_stop=False)
+        if x is not None:
+            if m_timeout is None:
+                m_timeout = 0
+            m_timeout = m_timeout + int(x)
+        return m_timeout
+
+    def doLogautoclosemode(self, name, line, p1):
+        self.commandContext(name, line, (p1))
+
+    def doLogclose(self):
+        log_file_handle = self.log_file_handle
+        self.log_file_handle = None
+        if log_file_handle is not None:
+            try:
+                log_file_handle.close()
+            except Exception:
+                pass
+        #
+        # 他も初期化する
+        self.log_start = True
+        self.log_timestamp_type = -1
+        self.log_connect_time = None
+
+    def doLoginfo(self, name, line, p1):
+        self.commandContext(name, line, (p1))
+
+    def doLogopen(self, filename, binary_flag, append_flag,
+                  plain_text_flag, timestamp_flag, hide_dialog_flag,
+                  include_screen_buffer_flag, timestamp_type):
+        """ open the log """
+        # 開いているものがあったらクローズする
+        self.doLogclose()
+        #
+        option = ''
+        # print(f"append_flag={append_flag}")
+        if append_flag != 0:
+            option = "ab"
+        else:
+            option = "wb"
+        if binary_flag != 0:
+            # plain_text_flag = 0
+            timestamp_flag = 0
+        if timestamp_flag == 0:
+            timestamp_type = -1
+        #
+        # タイムスタンプの変数を入れる
+        self.log_timestamp_type = timestamp_type
+        #
+        self.log_file_handle = open(filename, option)
+        #
+        # タイムスタンプありなら最初に書き込む
+        if self.log_timestamp_type != -1:
+            self.log_file_handle.write(self.getTimestamp().encode('utf-8'))
+
+    def doLogpause(self):
+        self.log_start = False
+
+    def doLogrotate(self, name, line, p1, p2):
+        """ 必要ならオーバーライドしてください """
+        self.commandContext(name, line, (p1, p2))
+
+    def doLogstart(self):
+        self.log_start = True
+
+    def doLogwrite(self, strvar: str):
+        """ 無条件で書き込む """
+        if self.log_file_handle is None:
+            # ログが開かれていない
+            return
+        #
+        if self.log_timestamp_type == -1:
+            # タイムスタンプは不要
+            if isinstance(strvar, str):
+                strvar = strvar.encode('utf-8')
+            self.log_file_handle.write(strvar)
+        else:
+            # タイムスタンプを付ける必要がある
+            while True:
+                if strvar == '':
+                    break
+                index = strvar.find('\n')
+                if index < 0:
+                    if isinstance(strvar, str):
+                        strvar = strvar.encode('utf-8')
+                    self.log_file_handle.write(strvar)
+                    break
+                target = strvar[:index + 1]
+                if isinstance(target, str):
+                    target = target.encode('utf-8')
+                self.log_file_handle.write(target)
+                self.log_file_handle.write(self.getTimestamp().encode('utf-8'))
+                strvar = strvar[index + 1:]
+
+    def getTimestamp(self) -> str:
+        """ タイムスタンプを入れる """
+        if self.log_timestamp_type == 0:
+            # ローカルタイム
+            return '[' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ']'
+        elif self.log_timestamp_type == 1:
+            # UTC
+            return '[' + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + ']'
+        elif self.log_timestamp_type == 2:
+            # 経過時間 (Logging)
+            return self.getTimestampElapsed(self.log_login_time)
+        else:
+            # 経過時間 (Connection)
+            return self.getTimestampElapsed(self.log_connect_time)
+
+    def getTimestampElapsed(self, start) -> str:
+        """ 経過時間を文字に変換する """
+        total_seconds = 0
+        if start is not None:
+            total_seconds = int(start - time.time())
+        day = (total_seconds // (60 * 60 * 24))
+        hours = (total_seconds // (60 * 60)) % 24
+        minutes = (total_seconds // 60) % 3600
+        seconds = total_seconds % 60
+        return f"[{day} {hours:02}:{minutes:02}:{seconds:02}]"
+
+    def setLogInner(self, strvar: str):
+        """ ログファイル書き込みが必要ならこちらを使います """
+        #
+        # ログ出力/オーバーライドする方に渡す
+        self.setLog(strvar)
+        #
+        # ログ出力処理
+        if self.log_start:
+            self.doLogwrite(strvar)
+
+    def setLog(self, strvar: str):
+        """ オーバーライドして使用します """
+        print(strvar, end='')
+
+    def doExec(self, line, data_line):
+        # print(f"### l={line} doExec() ")
+        data_len = len(data_line)
+        command = self.getData(data_line[0])
+        command_list = re.split(r'[ \t]+', command)
+        show = 1  # SW_SHOWNORMAL
+        if 2 <= (data_len):
+            show = self.getData(data_line[1]).lower()
+            if 'show' == show:
+                pass
+            elif 'minimize' == show:
+                show = 6  # SW_MINIMIZE
+            elif 'maximize' == show:
+                show = 3  # SW_MAXIMIZE
+            elif 'hide' == show:
+                show = 0  # SW_HIDE
+            else:
+                raise TypeError(f"doExec type error l={line}")
+        wait = 0
+        if 3 <= (data_len):
+            wait = int(self.getData(data_line[2]))
+        current_directory = '.'
+        if 4 <= (data_len):
+            current_directory = self.getData(data_line[3])
+        # print(f"\tcommand_list={command_list}")
+        # print(f"\tshow={show}")
+        # print(f"\twait={wait}")
+        # print(f"\tcurrent_directory={current_directory}")
+        #
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = 0  # SW_HIDE
+        p = subprocess.Popen(command_list, startupinfo=si, cwd=current_directory, shell=True)
+        if wait != 0:
+            p.wait()  # プロセスが終了するまで待機
+            self.setValue('result', p.returncode)
+
+    def doGetdate(self, data_line, format='%Y-%m-%d'):
+        date = self.getKeywordName(data_line[0])
+        data_len = len(data_line)
+        if 2 <= data_len:
+            format = self.getData(data_line[1])
+        #
+        local_timezone = None
+        # print(f"timezone={local_timezone}")
+        if 3 <= data_len:
+            local_timezone = self.getData(data_line[2])
+        date_str = ''
+        if local_timezone is None:
+            local_now = datetime.now()
+        else:
+            local_now = datetime.now(ZoneInfo(local_timezone))
+        date_str = local_now.strftime(format)
+        self.setValue(date, date_str)
+
+    def doSprintf(self, inputstr, data_line):
+        format = self.getData(data_line[0])
+        data_new = []
+        for data in data_line[1:]:
+            data_new.append(self.getData(data))
+        # print(f"format={format}")
+        # print(f"data_new={tuple(data_new)}")
+        strvar = format % tuple(data_new)
+        # print(f"strvar={strvar}")
+        self.setValue(inputstr, strvar)
+        self.setValue('result', 0)
+
+    def doPause(self, left):
+        """ 指定された秒数待つ """
+        # print(f"pause {left}")
+        if self.end_flag:
+            return
+
+        # 1秒未満の待ち
+        mtime = left - int(left)
+        if 0 < mtime:
+            time.sleep(mtime)
+
+        # 1秒以上の待ちは1秒づつ end_flagが立っていないか見る
+        for _ in range(int(left)):
+            if self.end_flag:
+                break
+            time.sleep(1)
+
+    def doStrtrim(self, p1_var: str, p2: str) -> str:
+        # エスケープを変換する
+        p2 = p2.encode().decode("unicode_escape")
+
+        # 前方方向
+        while 0 < len(p1_var):
+            ch = p1_var[0]
+            if ch not in p2:
+                break
+            p1_var = p1_var[1:]
+
+        # 後方方向
+        while 0 < len(p1_var):
+            ch = p1_var[-1]
+            if ch not in p2:
+                break
+            p1_var = p1_var[:-1]
+        return p1_var
+
+    def doSetpassword(self, filename: str, password_name: str, password: str):
+        worker = self.encrypt_decrypt(filename)
+        worker[password_name] = password
+        self.encrypt_encrypt(filename, worker)
+        self.setValue('result', 1)
+
+    def doGetpassword(self, filename: str, password_name: str, p3: str):
+        # print(f"doGetpassword p3={p3}")
+        worker = self.encrypt_decrypt(filename)
+        # print(f"doGetpassword worker={worker}")
+        if password_name in worker:
+            self.setValue(p3, worker[password_name])
+            self.setValue('result', 1)
+        else:
+            self.setValue('result', 0)
+
+    def doIspassword(self, filename: str, password_name: str):
+        # print(f"doGetpassword p3={p3}")
+        worker = self.encrypt_decrypt(filename)
+        # print(f"doGetpassword worker={worker}")
+        if password_name in worker:
+            self.setValue('result', 1)
+        else:
+            self.setValue('result', 0)
+
+    def doDelpassword(self, filename: str, password_name: str):
+        # print(f"doGetpassword p3={p3}")
+        worker = self.encrypt_decrypt(filename)
+        # print(f"doGetpassword worker={worker}")
+        if password_name in worker:
+            del worker[password_name]
+        self.encrypt_encrypt(filename, worker)
+
+    def encrypt_encrypt(self, filename, worker) -> str:
+        """ データを暗号化する """
+        # エンコードしたい元の文字列
+        original_text = json.dumps(worker)
+        #
+        # UTF-8でバイト列に変換
+        byte_data = original_text.encode("utf-8")
+        #
+        # Base64でエンコード
+        encoded = base64.b64encode(byte_data)
+        #
+        # ファイルへの書き込み
+        with open(filename, "wb") as f:
+            f.write(encoded)
+
+    def encrypt_decrypt(self, filename):
+        """ 暗号ファイルを復号化する """
+        binary_data = None
+        try:
+            with open(filename, "rb") as f:
+                binary_data = f.read()
+        except FileNotFoundError:
+            return {}
+        #
+        # Base64でデコード
+        decoded = base64.b64decode(binary_data)
+        #
+        # バイト列を元の文字列に戻す
+        decoded_text = decoded.decode("utf-8")
+        #
+        # jsonをdictに変換する
+        worker = json.loads(decoded_text)
+        #
+        return worker
+
+    def doFileopen(self, file_handle, filename: str, append_flag: int, readonly_flag: int):
+        """ ファイルハンドルを作る """
+        if file_handle in self.file_handle_list:
+            self.doFileClose(file_handle)
+        self.file_handle_list[file_handle] = {}
+        self.file_handle_list[file_handle]['file_handle'] = None
+        self.file_handle_list[file_handle]['filename'] = filename
+        self.file_handle_list[file_handle]['append_flag'] = append_flag
+        self.file_handle_list[file_handle]['readonly_flag'] = readonly_flag
+        self.getValue('result', 0)
+
+    def doFileclose(self, file_handle):
+        """ ファイルハンドルがいたら消す """
+        if file_handle not in self.file_handle_list:
+            return
+        file_handle_base = self.file_handle_list[file_handle]
+        #
+        self.file_handle_list[file_handle] = None
+        del self.file_handle_list[file_handle]
+        #
+        file_handle_file = file_handle_base['file_handle']
+        if file_handle_file is None:
+            return
+        try:
+            self.file_handle.close()
+        except Exception:
+            pass
+
+    def doFilewrite(self, line, file_handle, data):
+        if file_handle not in self.file_handle_list:
+            raise TypeError(f"### l={line} file_handle not found f={file_handle}")
+        file_handle_base = self.file_handle_list[file_handle]
+        file_handle_file = file_handle_base['file_handle']
+        if file_handle_file is None:
+            option = ''
+            if file_handle_base['append_flag'] != 0:
+                option = 'ab'
+            else:
+                option = 'wb'
+            file_handle_file = open(file_handle_base['filename'], option)
+            file_handle_base['file_handle'] = file_handle_file
+        file_handle_file.write(data.encode('utf-8'))
+
+    def openHandle(self, line, file_handle,):
+        if file_handle not in self.file_handle_list:
+            raise TypeError(f"### l={line} file_handle not found f={file_handle}")
+        file_handle_base = self.file_handle_list[file_handle]
+        file_handle_file = file_handle_base['file_handle']
+        if file_handle_file is None:
+            file_handle_file = open(file_handle_base['filename'], 'rb')
+            file_handle_base['file_handle'] = file_handle_file
+        return file_handle_file
+
+    def doFileread(self, line, file_handle, read_byte, strvar):
+        file_handle_file = self.openHandle(line, file_handle)
+        #
+        text = file_handle_file.read(read_byte)
+        if text is not None:
+            self.setValue(strvar, text.decode())
+            self.setValue('result', 1)
+        else:
+            self.setValue(strvar, '')
+            self.setValue('result', 0)
+
+    def doFilereadln(self, line, file_handle, strvar):
+        file_handle_file = self.openHandle(line, file_handle)
+        #
+        text = file_handle_file.readline()
+        self.setValue(strvar, text.decode())
+
+    def doFileconcat(self, p1, p2):
+        if p1 == p2:
+            self.setValue('result', 0)
+            return
+        try:
+            with open(p1, "ab") as f1:
+                with open(p2, "rb") as f2:
+                    f1.write(f2.read())
+            self.setValue('result', 1)
+        except Exception:
+            self.setValue('result', 0)
+
+    def doFilecopy(self, p1, p2):
+        if p1 == p2:
+            self.setValue('result', 0)
+            return
+        try:
+            with open(p1, "rb") as f1:
+                with open(p2, "wb") as f2:
+                    f2.write(f1.read())
+            self.setValue('result', 1)
+        except Exception:
+            self.setValue('result', 0)
+
+    def doFiledelete(self, filename):
+        if not os.path.exists(filename):
+            self.setValue('result', 0)
+            return
+        try:
+            os.remove(filename)
+            self.setValue('result', 1)
+        except Exception:
+            self.setValue('result', 0)
+
+    def doFilerename(self, p1, p2):
+        print(f"doFilerename0 {p1} {p2}")
+        if p1 == p2:
+            print(f"doFilerename1 {p1} {p2}")
+            self.setValue('result', 1)
+            return
+        if not os.path.exists(p1):
+            print(f"doFilerename2 {p1} {p2}")
+            self.setValue('result', 1)
+            return
+        self.doFiledelete(p2)
+        try:
+            os.rename(p1, p2)
+            self.setValue('result', 0)
+        except Exception:
+            self.setValue('result', 1)
+
+    def doStrreplace(self, strvar, strvar_val, index, regex, newstr):
+        strvar_pre = strvar_val[0:index]
+        strvar_val = strvar_val[index:]
+        strvar_val = strvar_pre + re.sub(regex, newstr, strvar_val)
+        try:
+            self.setValue(strvar, strvar_val)
+            self.setValue('result', 1)
+        except (re.error, TypeError, ValueError):
+            self.setValue('result', 0)
+
+    def doStrmatch(self, target_string, string_with_regular_expressio):
+        # print(f"strmatch {target_string} {string_with_regular_expressio}")
+        match = re.search(string_with_regular_expressio, target_string)
+        if match:
+            # print(f"hit strmatch {target_string} {string_with_regular_expressio}")
+            self.setValue('result', match.start() + 1)
+            i = 0
+            for grp in match.groups():
+                self.setValue('groupmatchstr' + str(i + 1), grp)
+                i = i + 1
+                if 10 <= i:
+                    break
+        else:
+            self.setValue('result', 0)
+
+    def doFilesearch(self, filename):
+        if os.path.exists(filename):
+            self.setValue('result', 1)
+        else:
+            self.setValue('result', 0)
+
+    def doFilestat(self, filename, size, mtime, drive):
+        try:
+            size_val = os.path.getsize(filename)
+            self.setValue(size, size_val)
+            if mtime is not None:
+                timestamp = os.path.getmtime(filename)
+                dt = datetime.fromtimestamp(timestamp)
+                self.setValue(mtime, dt)
+            if drive is not None:
+                drive_val, xx = os.path.splitdrive(filename)
+                self.setValue(drive, drive_val)
+            self.setValue('result', 0)
+        except FileNotFoundError:
+            self.setValue(size, 0)
+            if mtime is not None:
+                self.setValue(mtime, '')
+            if drive is not None:
+                self.setValue(drive, '')
+            self.setValue('result', -1)
+
+    def doFoldercreate(self, folder_name):
+        try:
+            os.mkdir(folder_name)
+            self.setValue('result', 1)
+        except FileNotFoundError:
+            self.setValue('result', 0)
+
+    def doFolderdelete(self, folder_path):
+        if not os.path.isdir(folder_path):
+            self.setValue('result', 0)
+            return
+        try:
+            os.rmdir(folder_path)
+            self.setValue('result', 1)
+        except OSError:
+            self.setValue('result', 0)
+
+    def doFoldersearch(self, folder_path):
+        if os.path.isdir(folder_path):
+            self.setValue('result', 1)
+        else:
+            self.setValue('result', 0)
+
+    def doMakepath(self, strvar, dir, name):
+        result = os.path.abspath(dir)
+        result = os.path.join(result, name)
+        self.setValue(strvar, result)
+
+    def doGetipv4addr(self, string_array, intvar):
+        ip = socket.gethostbyname(socket.gethostname())
+        if ip is None:
+            self.setValue(intvar, 0)
+            return
+        self.setValue(string_array + '[0]', ip)
+        self.setValue(intvar, 1)
+
+    def doGetipv6addr(self, string_array, intvar):
+        infos = socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6)
+        i = 0
+        if infos is None:
+            self.setValue(intvar, 0)
+            self.setValue('result', 0)
+            return
+        for info in infos:
+            ipv6 = info[4][0]
+            # print("IPv6アドレス:", ipv6)
+            self.setValue(f"{string_array}[{str(i)}]", ipv6)
+            i = i + 1
+        self.setValue(intvar, i)
+        if 0 < i:
+            self.setValue('result', 1)
+        else:
+            self.setValue('result', 0)
+
+    def doGetver(self, strvar: str, target_version: float):
+        """ バージョン情報 オーバーライドして使ってください """
+        # print("doGetver")
+        now_version = float(1.0)
+        self.setValue(strvar, str(now_version))
+        if target_version is not None:
+            if now_version == target_version:
+                self.setValue('result', 0)
+            elif now_version < target_version:
+                self.setValue('result', -1)
+            else:
+                self.setValue('result', 1)
+        # print("doGetver end")
+
+    def setTitle(self, title: str):
+        """ タイトルの設定 オーバーライドして使ってください """
+        self.title = title
+
+    def getTitle(self) -> str:
+        """ タイトルの取得 オーバーライドして使ってください """
+        return self.title
+
+    def doIfdefined(self, strvar: str):
+        # print(f"doIfdefined v={strvar}")
+        if strvar in self.value_list:
+            result = self.getValue(strvar)
+            if isinstance(result, int):
+                self.setValue('result', 1)
+            else:
+                self.setValue('result', 3)
+        else:
+            for value in self.value_list:
+                if strvar + "[" in value:
+                    if isinstance(self.getValue(value), int):
+                        self.setValue('result', 5)
+                    else:
+                        self.setValue('result', 6)
+                    return
+            self.setValue('result', 0)
+#

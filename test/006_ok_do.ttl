@@ -7,11 +7,7 @@ do i<10
 loop 
 
 ; 値チェック
-if i != 5 then
-    dummy "do1 error" i
-    result = 0
-    end
-endif
+assert i == 5  "do1 check" i
 
 
 i = 0
@@ -20,11 +16,7 @@ do i<10
 loop
 
 ; 値チェック
-if i != 10 then
-    dummy "do2 error" i
-    result = 0
-    end
-endif
+assert i == 10 "do2 check" i
 
 
 i = 0
@@ -33,11 +25,7 @@ do
 loop i<10
 
 ; 値チェック
-if i != 10 then
-    dummy "do3 error" i
-    result = 0
-    end
-endif
+assert i == 10  "do3 check" i
 
 
 i = 0
@@ -47,10 +35,7 @@ do
 loop
 
 ; 値チェック
-if i != 5 then
-    result = 0
-    end
-endif
+assert i == 5  "do3 check" i
 
 
 

@@ -1,0 +1,105 @@
+
+assert 1 "log test" 
+filename = "test/build/log001.txt"
+logopen filename 0 0
+logwrite 'Log start'#13#10
+logwrite '*****************************************************'#13#10
+logclose
+
+
+assert 1 "add log test"
+logopen filename 0 1
+logwrite 'next'#13#10
+logwrite '*****************************************************'#13#10
+logclose
+
+; とりあえず呼べるか？
+logpause
+
+; とりあえず呼べるか？
+logstart
+
+; 書き込めているかチェックする
+fileopen handle filename 0
+fileread handle 1024 strvar
+assert 1 strvar  ; 書き込んだものを表示
+strscan strvar "Log start"
+assert 0 < result "logwrite test" result
+strscan strvar "next"
+assert 0 < result "logwrite append test" result
+fileclose handle
+
+
+; local timeで書き込めるか？
+assert 1 "timestamp test"
+logopen filename 0 0 0 1
+logwrite 'p1'#13#10
+logwrite 'p2'#13#10
+logclose
+
+; 書き込めているかチェックする
+fileopen handle filename 0
+fileread handle 1024 strvar
+assert 1 strvar  ; 書き込んだものを表示
+strscan strvar "]p1"
+assert 0 < result "timestamp test" result
+strscan strvar "]p2"
+assert 0 < result "timestamp test" result
+fileclose handle
+
+
+; UTC時間で書き込めるか？
+assert 1 "timestamp test"
+logopen filename 0 0 0 1 0 0 1
+logwrite 'x1'#13#10
+logwrite 'x2'#13#10
+logclose
+
+; 書き込めているかチェックする
+fileopen handle filename 0
+fileread handle 1024 strvar
+assert 1 strvar  ; 書き込んだものを表示
+strscan strvar "]x1"
+assert 0 < result "timestamp test" result
+strscan strvar "]x2"
+assert 0 < result "timestamp test" result
+fileclose handle
+
+
+
+; 起動時間で書き込めるか？
+assert 1 "timestamp test"
+logopen filename 0 0 0 1 0 0 2
+logwrite 'y1'#13#10
+logwrite 'y2'#13#10
+logclose
+
+; 書き込めているかチェックする
+fileopen handle filename 0
+fileread handle 1024 strvar
+assert 1 strvar  ; 書き込んだものを表示
+strscan strvar "]y1"
+assert 0 < result "timestamp test" result
+strscan strvar "]y2"
+assert 0 < result "timestamp test" result
+fileclose handle
+
+
+
+
+; connect timeで書き込めるか？
+assert 1 "timestamp test"
+logopen filename 0 0 0 1 0 0 3
+logwrite 'z1'#13#10
+logwrite 'z2'#13#10
+logclose
+
+; 書き込めているかチェックする
+fileopen handle filename 0
+fileread handle 1024 strvar
+assert 1 strvar  ; 書き込んだものを表示
+strscan strvar "]z1"
+assert 0 < result "timestamp test" result
+strscan strvar "]z2"
+assert 0 < result "timestamp test" result
+fileclose handle

@@ -2,7 +2,7 @@
  * export CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar:$CLASSPATH"
  * alias antlr4='java -jar /usr/local/lib/antlr-4.13.2-complete.jar'
  * alias grun='java org.antlr.v4.runtime.misc.TestRig'
- * cd /mnt/d/gitwork/NextNextPing/src/grammer/
+ * cd /mnt/d/gitwork/nextnextping/nextnextping/grammer/
  * antlr4 -visitor -Dlanguage=Python3 TtlParser.g4
  */
 grammar TtlParser;
@@ -20,7 +20,9 @@ strContext: STRING1;
 
 
 KEYWORD: [_a-zA-Z][_a-zA-Z0-9]*;
-keyword: KEYWORD;
+keyword: KEYWORD (LEFT_KAKKO (intExpression| strExpression) RIGHT_KAKKO)?;
+LEFT_KAKKO: '[';
+RIGHT_KAKKO: ']';
 
 strExpression: strContext| keyword;
 
@@ -108,6 +110,7 @@ RN: '\r'? '\n'
 WS1 : [ \t]+ -> skip;
 WS2 : '/*' ~[/]* '*/'-> skip;
 
+
 command
     : 'bplusrecv'
     | 'bplussend' strExpression
@@ -121,9 +124,9 @@ command
     | 'dispstr' strExpression+
     | 'enablekeyb' p11Expression
     | 'flushrecv' 
-    | 'gethostname' KEYWORD
-    | 'getmodemstatus' KEYWORD
-    | 'gettitle' KEYWORD
+    | 'gethostname' keyword
+    | 'getmodemstatus' keyword
+    | 'gettitle' keyword
     | 'getttpos' p11Expression p11Expression p11Expression p11Expression p11Expression p11Expression p11Expression p11Expression p11Expression
     | 'kmtfinish'
     | 'kmtget' strExpression
@@ -135,7 +138,7 @@ command
     | 'loginfo' strExpression
     | 'logopen' strExpression p11Expression+
     | 'logpause'
-    | 'logrotate' strExpression p11Expression?
+    | 'logrotate' strExpression p11Expression p11Expression (p11Expression (p11Expression (p11Expression (p11Expression p11Expression?) ?) ? )? )?
     | 'logstart' 
     | 'logwrite' strExpression
     | 'quickvanrecv'
@@ -196,122 +199,122 @@ command
     | 'pause' p11Expression
     | 'return'
 
-    | 'code2str' KEYWORD p11Expression
-    | 'expandenv' KEYWORD strExpression?
-    | 'int2str' KEYWORD p11Expression
+    | 'code2str' keyword p11Expression
+    | 'expandenv' keyword strExpression?
+    | 'int2str' keyword p11Expression
     | 'regexoption' strExpression+
     | 'sprintf' strExpression (strExpression|p11Expression)*
-    | 'sprintf2' KEYWORD strExpression (strExpression|p11Expression)*
-    | 'str2code' KEYWORD strExpression
-    | 'str2int' KEYWORD strExpression
+    | 'sprintf2' keyword strExpression (strExpression|p11Expression)*
+    | 'str2code' keyword strExpression
+    | 'str2int' keyword strExpression
     | 'strcompare' strExpression strExpression
-    | 'strconcat' KEYWORD strExpression
-    | 'strcopy' strExpression p11Expression p11Expression strExpression
-    | 'strinsert' KEYWORD p11Expression strExpression
-    | 'strjoin ' KEYWORD strExpression p11Expression?
+    | 'strconcat' keyword strExpression
+    | 'strcopy' strExpression p11Expression p11Expression keyword
+    | 'strinsert' keyword p11Expression strExpression
+    | 'strjoin' keyword strExpression p11Expression?
     | 'strlen' strExpression
     | 'strmatch' strExpression strExpression
-    | 'strremove' KEYWORD p11Expression p11Expression
-    | 'strreplace' KEYWORD p11Expression strExpression strExpression
+    | 'strremove' keyword p11Expression p11Expression
+    | 'strreplace' keyword p11Expression strExpression strExpression
     | 'strscan' strExpression strExpression
-    | 'strspecial' KEYWORD strExpression
-    | 'strsplit' KEYWORD strExpression p11Expression?
-    | 'strtrim' KEYWORD strExpression
-    | 'tolower' KEYWORD strExpression
-    | 'toupper' KEYWORD strExpression
-    | 'basename' KEYWORD strExpression
-    | 'dirname' KEYWORD strExpression
-    | 'fileclose' KEYWORD
+    | 'strspecial' keyword strExpression?
+    | 'strsplit' keyword strExpression p11Expression?
+    | 'strtrim' keyword strExpression
+    | 'tolower' keyword strExpression
+    | 'toupper' keyword strExpression
+    | 'basename' keyword strExpression
+    | 'dirname' keyword strExpression
+    | 'fileclose' keyword
     | 'fileconcat' strExpression strExpression
     | 'filecopy' strExpression strExpression
-    | 'filecreate' strExpression strExpression
+    | 'filecreate' keyword strExpression
     | 'filedelete' strExpression
-    | 'filelock' KEYWORD p11Expression?
-    | 'filemarkptr' KEYWORD
-    | 'fileopen' KEYWORD strExpression p11Expression p11Expression?
-    | 'filereadln' KEYWORD KEYWORD
-    | 'fileread' KEYWORD p11Expression KEYWORD
+    | 'filelock' keyword p11Expression?
+    | 'filemarkptr' keyword
+    | 'fileopen' keyword strExpression p11Expression p11Expression?
+    | 'filereadln' keyword keyword
+    | 'fileread' keyword p11Expression keyword
     | 'filerename' strExpression strExpression
     | 'filesearch' strExpression
-    | 'fileseek' KEYWORD strExpression
-    | 'fileseekback' KEYWORD
-    | 'filestat' strExpression p11Expression p11Expression? p11Expression?
-    | 'filestrseek' KEYWORD strExpression
-    | 'filestrseek2' KEYWORD strExpression
+    | 'fileseek' keyword strExpression
+    | 'fileseekback' keyword
+    | 'filestat' strExpression keyword (keyword keyword?)?
+    | 'filestrseek' keyword strExpression
+    | 'filestrseek2' keyword strExpression
     | 'filetruncate' strExpression p11Expression
-    | 'fileunlock' KEYWORD
-    | 'filewrite' KEYWORD (strExpression|p11Expression)*
-    | 'filewriteln' KEYWORD (strExpression|p11Expression)*
-    | 'findfirst' KEYWORD strExpression KEYWORD
-    | 'findnext' KEYWORD KEYWORD
-    | 'findclose' KEYWORD
+    | 'fileunlock' keyword
+    | 'filewrite' keyword (strExpression|p11Expression)*
+    | 'filewriteln' keyword (strExpression|p11Expression)*
+    | 'findfirst' keyword strExpression keyword
+    | 'findnext' keyword keyword
+    | 'findclose' keyword
     | 'foldercreate' strExpression
     | 'folderdelete' strExpression
     | 'foldersearch' strExpression
-    | 'getdir' KEYWORD
+    | 'getdir' keyword
     | 'getfileattr' strExpression
-    | 'makepath' KEYWORD strExpression p11Expression
+    | 'makepath' keyword strExpression strExpression
     | 'setdir' strExpression
     | 'setfileattr' strExpression p11Expression
     | 'delpassword' strExpression strExpression
     | 'delpassword2' strExpression strExpression
-    | 'getpassword' strExpression strExpression KEYWORD
-    | 'getpassword2' strExpression strExpression KEYWORD p11Expression
+    | 'getpassword' strExpression strExpression keyword
+    | 'getpassword2' strExpression strExpression keyword p11Expression
     | 'ispassword' strExpression strExpression
     | 'ispassword2' strExpression strExpression
     | 'passwordbox' strExpression strExpression p11Expression?
-    | 'setpassword' strExpression strExpression KEYWORD
-    | 'setpassword2' strExpression strExpression KEYWORD strExpression
+    | 'setpassword' strExpression strExpression keyword
+    | 'setpassword2' strExpression strExpression keyword strExpression
 
     | 'beep' p11Expression?
     | 'bringupbox'
-    | 'checksum8' KEYWORD strExpression
-    | 'checksum8file' KEYWORD strExpression
-    | 'checksum16' KEYWORD strExpression
-    | 'checksum16file' KEYWORD strExpression
-    | 'checksum32' KEYWORD strExpression
-    | 'checksum32file' KEYWORD strExpression
+    | 'checksum8' keyword strExpression
+    | 'checksum8file' keyword strExpression
+    | 'checksum16' keyword strExpression
+    | 'checksum16file' keyword strExpression
+    | 'checksum32' keyword strExpression
+    | 'checksum32file' keyword strExpression
     | 'closesbox'
-    | 'clipb2var' KEYWORD p11Expression
-    | 'crc16' KEYWORD strExpression
-    | 'crc16file' KEYWORD strExpression
-    | 'crc32' KEYWORD strExpression
-    | 'crc32file' KEYWORD strExpression
-    | 'exec' strExpression strExpression? p11Expression? strExpression?
+    | 'clipb2var' keyword p11Expression
+    | 'crc16' keyword strExpression
+    | 'crc16file' keyword strExpression
+    | 'crc32' keyword strExpression
+    | 'crc32file' keyword strExpression
+    | 'exec' strExpression (strExpression (p11Expression strExpression?) ? )?
     | 'dirnamebox' strExpression p11Expression?
     | 'filenamebox' strExpression p11Expression? strExpression?
-    | 'getdate' KEYWORD strExpression? strExpression?
-    | 'getenv' strExpression KEYWORD
-    | 'getipv4addr' strExpression p11Expression
-    | 'getipv6addr' strExpression p11Expression
+    | 'getdate' keyword (strExpression strExpression? )?
+    | 'getenv' strExpression keyword
+    | 'getipv4addr' keyword keyword
+    | 'getipv6addr' keyword keyword
     | 'getspecialfolder' p11Expression strExpression
-    | 'gettime' KEYWORD strExpression? strExpression?
-    | 'getttdir' KEYWORD
-    | 'getver' KEYWORD p11Expression
+    | 'gettime' keyword strExpression? strExpression?
+    | 'getttdir' keyword
+    | 'getver' keyword strExpression?
     | 'ifdefined' KEYWORD
     | 'inputbox' strExpression strExpression strExpression? p11Expression?
-    | 'intdim' strExpression p11Expression
-    | 'listbox' strExpression strExpression KEYWORD p11Expression? strExpression*
+    | 'intdim' KEYWORD p11Expression
+    | 'listbox' strExpression strExpression keyword p11Expression? strExpression*
     | 'messagebox' strExpression strExpression p11Expression?
-    | 'random' KEYWORD p11Expression
-    | 'rotateleft' KEYWORD p11Expression p11Expression
-    | 'rotateright' KEYWORD p11Expression p11Expression
+    | 'random' keyword p11Expression
+    | 'rotateleft' keyword p11Expression p11Expression
+    | 'rotateright' keyword p11Expression p11Expression
     | 'setdate' strExpression
     | 'setdlgpos' p11Expression*
-    | 'setenv' strExpression strExpression
+    | 'setenv' strExpression keyword
     | 'setexitcode' p11Expression
     | 'settime' strExpression
     | 'show' p11Expression
     | 'statusbox' strExpression strExpression p11Expression?
     | 'strdim' KEYWORD p11Expression
-    | 'uptime' KEYWORD
+    | 'uptime' keyword
     | 'var2clipb' strExpression
     | 'yesnobox' strExpression strExpression p11Expression?
-    | 'dummy' (strExpression|p11Expression)*
+    | 'assert' p11Expression (strExpression|p11Expression)*
     ;
 
 forNext
-    : 'for' KEYWORD p11Expression p11Expression RN commandline+ 'next';
+    : 'for' keyword p11Expression p11Expression RN commandline+ 'next';
 
 whileEndwhile
     : 'while' p11Expression RN commandline+ 'endwhile';
@@ -332,7 +335,7 @@ elseif:'elseif' p11Expression 'then' RN commandline+;
 
 else: 'else' RN commandline+;
 
-input: KEYWORD '=' (strExpression | p11Expression);
+input: keyword '=' (strExpression | p11Expression);
 
 label: ':' KEYWORD ;
 

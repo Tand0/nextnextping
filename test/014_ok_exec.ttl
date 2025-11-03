@@ -1,0 +1,42 @@
+
+assert 1  "aaa"
+
+; 「メモ帳」を起動
+exec 'echo notepad readme.txt'
+exec 'echo notepad readme.txt' 'HIDE' 
+exec 'echo notepad readme.txt' 'HIDE' 1
+exec 'echo notepad readme.txt' 'HIDE' 1 'c:\'
+
+
+; 「メモ帳」を最大化表示で起動
+exec 'echo notepad readme.txt' 'maximize'
+
+; 「メモ帳」をカレントディレクトリ指定で起動
+exec 'echo notepad readme.txt' 'show' 0 '.'
+
+
+assert 1  "bbb"
+
+; バッチファイルを起動する
+username1 = "aaa"
+userpass1 = "bbb"
+address = "ccc"
+tmp='echo cmd /c c:\echo.bat'
+strconcat tmp username1 
+strconcat tmp ' '
+strconcat tmp userpass1 
+strconcat tmp ' '
+strconcat tmp address
+;messagebox tmp 'exec'
+exec tmp
+
+userprof = "c:/"
+
+getdate logdir "log-%Y%m%d"
+assert 1  logdir
+sprintf2 cmd 'echo cmd /c mkdir "%s\My Documents\%s"' userprof logdir
+exec cmd "HIDE"
+
+; OK
+result = 1
+

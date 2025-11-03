@@ -1,0 +1,11 @@
+; ディレクトリを作る
+userprof = 'user profiele'
+setenv "USERPROFILE" userprof
+assert 1 userprof
+userprof = 'bbb'
+getenv "USERPROFILE" userprof
+assert 1 userprof
+strcompare userprof 'user profiele'
+assert result == 0  "user profiele OK" userprof result ; 接続失敗
+
+result = 1

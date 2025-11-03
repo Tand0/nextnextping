@@ -1,0 +1,50 @@
+
+
+passwordbox 'Enter password' 'Login'
+
+bringupbox
+
+closesbox
+
+inputstr = "aaa"
+
+dirnamebox 'select a directory'
+if result<>0 then
+	messagebox inputstr 'selected directory'
+endif
+
+
+connect '/C=11'
+filenamebox 'File selection' 0
+if result<>0 then
+	messagebox inputstr 'title' 0
+endif
+
+assert 1
+inputbox 'Password:' 'Login'
+
+strdim msg 4
+msg[0] = 'バナナ'
+msg[1] = 'りんご'
+msg[2] = 'みかん'
+
+assert 1 msg[0]
+
+listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
+
+; 表示位置を指定
+setdlgpos 200 200
+; ダイアログボックスを表示
+statusbox 'Message' 'Title'
+; pause 3
+; ダイアログボックスを移動
+setdlgpos 0 0
+; pause 3
+; ダイアログボックスを閉じる
+closesbox
+
+
+yesnobox 'もう一回やりますか?' 'Tera Term'
+
+
+result = 1

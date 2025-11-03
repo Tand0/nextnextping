@@ -4,8 +4,10 @@ import socket
 import threading
 import paramiko
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-from grammer.TtlParserWorker import TtlPaserWolker
+import pathlib
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../nextnextping")))
+# from grammer.TtlParserWorker import TtlPaserWolker
+from ttlmacro import ttlmacro
 
 
 class Server(paramiko.ServerInterface):
@@ -273,6 +275,9 @@ def test_mkdir():
 
 def test_load_ttl():
     """ ttlファイルが動作するか確認する """
+    # カレントフォルダを取得する
+    current_dir = pathlib.Path.cwd()
+    #
     serverStarter = ServerStarter(2200, prompt="#")
     # スレッドオブジェクトを作成
     th = threading.Thread(target=serverStarter.start)
@@ -282,9 +287,11 @@ def test_load_ttl():
         files = os.listdir('test')
         for file in files:
             #
-            #
             if '.ttl' not in file:
                 continue
+            #
+            # カレントフォルダを戻す
+            os.chdir(current_dir)
             #
             ok_flag = False
             if 'ok' in file:
@@ -294,8 +301,14 @@ def test_load_ttl():
             print()
             print(f"test file={file}")
             #
-            ttlPaserWolker = TtlPaserWolker()
-            ttlPaserWolker.execute(file, [])
+            dummy_argv = ["python", file, 'param1', 'param2', 'param3']
+            try:
+                ttlPaserWolker = ttlmacro(dummy_argv)
+            except Exception as e:
+                if not ok_flag:
+                    continue  # OKフラグがFalseなら正常
+                else:
+                    assert False, str(e)
             result = ttlPaserWolker.getValue('result')
             error_data = ttlPaserWolker.getValue('error')
             print(f"test result={result}")

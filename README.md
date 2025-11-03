@@ -55,5 +55,7 @@
 
 Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムです。マクロ言語 "Terawaros Tekitou Language (TTL)" によって、NextNextPing を制御し、オートダイアル、オートログインなどの機能を実現することができます。
 
+- 使い方
+  - [マクロの実行方法](./doc/howtorun.md)
 - [MACRO言語 "Terawaros Tekitou Language (TTL)"](./doc/syntax.md)　
 - [TTL コマンドリファレンス](./doc/command.md)　

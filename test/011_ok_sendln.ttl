@@ -8,56 +8,36 @@ endif
 
 ; 接続する
 error=''
-dummy "connect start"
+assert 1  "connect start"
 connect 'localhost:2200 /user=aaa /passwd=bbb'
-if result == 2 then
-    ; 接続できている
-    dummy "connect OK" error
-else
-    ; 接続失敗
-    dummy "connect NG" error
-    result = 0
-    end
-endif
+assert result ==2  "connect start" error
 
 
 result = 0
 wait '#'
-if result != 1 then
-    dummy "wait fail" error
-    result = 0
-    end
-endif
+assert result ==1  "wait test" error
 
 ; text
 sendln 'test'
 result = 0
 wait '#' ':'
-if result != 1 then
-    dummy "wait fail" error
-    result = 0
-    end
-endif
+assert result ==1  "wait test" error
 
 ; text
 sendln 'work'
 result = 0
 wait ':' '#'
-if result != 2 then
-    dummy "wait fail" error
-    result = 0
-    end
-endif
+assert result ==2  "wait test" error
 
 ; タイムアウトを発生させる
 timeout = 1
 wait 'xxxx'
-if result != 0 then
-    dummy timeout error
-    result = 0
-    end
-endif
+assert result ==0  "timeout test" error
 
+gethostname hostname
+assert 1 "gethostname test" hostname
+
+sendbreak
 
 ; exit
 send 'exit'
@@ -65,13 +45,10 @@ sendln
 pause 2
 disconnect
 testlink
-if result == 2 then
-    ; まだ接続できている
-    dummy "exit fail"
-    result = 0
-    end
-endif
+
+assert result != 2  "exit test" error ; まだ接続できている
 closett
+assert 1 "gethostname test" hostname
 
 
 error=''

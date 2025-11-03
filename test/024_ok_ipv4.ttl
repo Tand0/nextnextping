@@ -1,0 +1,14 @@
+
+
+getipv4addr stringarray ipaddr_size
+
+for i 0  (ipaddr_size - 1)
+    assert 1 i ipaddr_size stringarray[ i ] 
+next
+
+getipv6addr stringarray ipaddr_size
+
+for i 0  (ipaddr_size - 1)
+    assert 1 i ipaddr_size stringarray[ i ] 
+next
+

@@ -1,8 +1,10 @@
 # SSH key!
 *.key
-srrc/build/
-srrc/dist/
-src/*.spec
+
+# for exe
+nextnextping/build/
+nextnextping/dist/
+nextnextping/*.spec
 
 # ANTLR
 .antlr/

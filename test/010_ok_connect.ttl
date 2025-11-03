@@ -2,140 +2,74 @@
 
 ; testlink
 testlink
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert result == 0  "connect OK!"
 
 ; SSH接続
 connect 'localhost:2200 /ssh'
-dummy "state" error
-if result != 0 then
-    ; ユーザー名の指定がないのでエラー
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert 1  "state" error
+assert result == 0  "connect OK!" ; ユーザー名の指定がないのでエラー
+
 
 ;この方法は、SSHバージョンを指定せずにSSH接続をします。
 connect 'localhost:2200 /ssh /1'
-if result != 0 then
-    ; SSH1 は未サポート
-    dummy "connect NG!"
-    result = 0
-    end
-endif
-dummy "closettt start"
+assert result == 0  "connect OK!" ; SSH1 は未サポート
+assert 1  "closettt start"
 closett
-dummy "closettt end"
+assert 1  "closettt end"
 
 
 ; /1 と /2 のオプションは、SSH1およびSSH2であることを指定します。
 error=''
-dummy "connect start"
+assert 1  "connect start"
 connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
-if result == 2 then
-    ; 接続できている
-    dummy "connect OK" error
-else
-    ; 接続失敗
-    dummy "connect NG" error
-    result = 0
-    end
-endif
+assert result == 2  "connect" ; 接続できている
 closett
 
 ; /1 入っていたらエラー
 connect 'localhost:2200 /ssh /1 /auth=password /user=username /passwd=password'
-if result != 0 then
-    ; SSH1は未サポート
-    dummy "connect NG!" result
-    result = 0
-    end
-endif
+assert  result == 0   "connect OK!" result ; SSH1は未サポート
 closett
 ; 以下同様なのでスキップ
-;connect 'localhost:2200 /ssh /1 /auth=challenge /user=username /passwd=password'
+;connect 'localhost:2200 /ssh /1 /auth=challeOKe /user=username /passwd=password'
 ;connect 'localhost:2200 /ssh /1 /auth=publickey /user=username /passwd=password /keyfile=test_rsa.key'
 ;connect 'localhost:2200 /ssh /1 /auth=pageant /user=username'
 
 ; できるはず
 connect 'localhost:2200 /ssh /2 /auth=publickey /user=username /passwd=password /keyfile=test_rsa.key'
-if result != 2 then
-    dummy "connect NG" error
-    result = 0
-    end
-endif
+assert  result == 2   "connect OK!" result ; SSH1は未サポート
 closett
-pause 2
+pause 1
 
-; ask4passwd が入っていたらエラー
+
 connect 'myserve /ssh /auth=password /user=username /ask4passwd'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
 connect 'localhost:2200 /ssh /1 /auth=password /user=username /ask4passwd'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
 connect 'localhost:2200 /ssh /2 /auth=password /user=username /ask4passwd'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
 connect 'localhost:2200 /ssh /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
 connect 'localhost:2200 /ssh /1 /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
 connect 'localhost:2200 /ssh /2 /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
-connect 'myserve /ssh /auth=challenge /user=username /ask4passwd'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+connect 'myserve /ssh /auth=challeOKe /user=username /ask4passwd'
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
-connect 'localhost:2200 /ssh /1 /auth=challenge /user=username /ask4passwd'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+connect 'localhost:2200 /ssh /1 /auth=challeOKe /user=username /ask4passwd'
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
-connect 'localhost:2200 /ssh /2 /auth=challenge /user=username /ask4passwd'
-if result != 0 then
-    dummy "connect NG!"
-    result = 0
-    end
-endif
+connect 'localhost:2200 /ssh /2 /auth=challeOKe /user=username /ask4passwd'
+assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
 closett
 
 ; COMポート接続 はできません
 connect '/C=x'
-if result != 0 then
-    dummy "COM port NG!"
-    result = 0
-    end
-endif
+assert  result == 0   "COM port OK!" result ;  ask4passwd が入っていたらエラー
 
 error=''
 result = 1

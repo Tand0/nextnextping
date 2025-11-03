@@ -2,84 +2,419 @@
 x = "aaa"'bbb'
 
 strcompare "aaabbb" x
-if result != 0 then
-    dummy "error" x result
-    result = 0
-    end
-endif
+assert result == 0  "OK" x result
 
 
 ; この評価
 str2int intvar "12"
 
 ; 12が入っているか？
-if intvar != 12 then
-    dummy "error" intvar
-    result = 0
-    end
-endif
+assert intvar == 12   "OK" intvar
 
 ; この評価
 strcompare "aa1" "aa1"
-if result != 0 then
-    dummy "error" result
-    result = 0
-    end
-endif
+assert result == 0  "OK" result
 
 
 ; この評価
 strcompare "aa1" "aa2"
-if result != -1 then
-    dummy "error" result
-    result = 0
-    end
-endif
+assert result == -1  "OK" result
 
 ; この評価
 strcompare "aa2" "aa1"
-if result != 1 then
-    dummy "error" result
-    result = 0
-    end
-endif
+assert result == 1  "OK" result
 
 ; この評価
 strvar = "aa2"
 strconcat strvar "aa1"
 strcompare "aa2aa1" strvar
-if result != 0 then
-    dummy "error" strvar result
-    result = 0
-    end
-endif
+assert result == 0  "OK" strvar result
 
 ; この評価
 strlen "aa2"
-if result != 3 then
-    dummy "error" result
-    result = 0
-    end
-endif
+assert result == 3   "OK" result
 
 ; この評価
 strscan "aa2" "b"
-/*
-if result != 0 then
-    dummy "error" result
-    result = 0
-    end
-endif
-
+assert result == 0  "OK" result
 
 ; この評価
 strscan "ab2" "b"
-if result != 2 then
-    dummy "error" result
-    result = 0
-    end
-endif
-*/
+assert result == 2   "OK" result
+
+tolower aaa "AaA"
+strcompare aaa "aaa"
+assert result == 0 "OK" aaa result
+
+toupper aaa "AaA"
+strcompare aaa "AAA"
+assert result == 0 "OK" aaa result
+
+code2str aaa[0] $41
+strcompare aaa[0] "A"
+assert result == 0 "OK" aaa[0] result
+
+code2str aaa $4142
+strcompare aaa "AB"
+assert result == 0 "OK" aaa result
+
+code2str aaa $414243
+strcompare aaa "ABC"
+assert result == 0 "OK" aaa result
+
+code2str aaa $41424344
+strcompare aaa "ABCD"
+assert result == 0 "OK" aaa result
+
+code2str aaa 0
+strcompare aaa ''
+assert result == 0 "OK" aaa result
+
+
+x=    #65  ;   文字 "A"
+strcompare x "A"
+assert result == 0 "OK" x result
+
+y=    #$41  ;  文字 "A"
+strcompare y "A"
+assert result == 0 "OK" y result
+
+z=    #13    ; CR 文字
+strcompare z #13
+assert result == 0 "Z OK" z result
+
+
+strdim strmsg 4
+strmsg[0] = 'バナナ'
+strmsg[1] = 'りんご'
+strmsg[2] = 'みかん'
+assert 1 strmsg[0]
+assert 1 strmsg[1]
+assert 1 strmsg[2]
+assert 1 strmsg[3]
+
+strdim intmsg 2
+intmsg[0] = 1
+intmsg[1] = 2
+assert 1 intmsg[0]
+assert 1 intmsg[1]
+
+str = "%WINDIR%\notepad.exe"
+expandenv str
+messagebox str "env"    ; C:\WINDOWS\notepad.exe
+tolower str str
+strscan str "windows"
+assert 0 != result "expandenv" str result
+
+expandenv str "%WINDIR%\notepad.exe"
+messagebox str "env"    ; C:\WINDOWS\notepad.exe
+tolower str str
+strscan str "windows"
+assert 0 != result "expandenv" str result
+
+expandenv str "%test%\notepad.exe"
+messagebox str "env"    ; %test%\notepad.exe
+strscan str "%test%"
+assert 0 != result "expandenv %test%" str result
+
+
+; valstrに '123' を代入
+int2str valstr 123
+messagebox valstr "str"     ; 123
+strcompare valstr '123'
+assert 0 == result "intstr" valstr
+
+num = 123
+sprintf2 valstr "%d" num
+messagebox valstr "str"     ; 123
+strcompare valstr '123'
+assert 0 == result "sprintf2" valstr
+
+str2code val 'A'
+assert val==65 "(ASCII コード)" val  ; val=65 ("A" のASCII コード)
+
+xxx = (65 * 256) + 66  ; val=65*256+66
+assert (xxx == 16706) "(65*256)+66=" xxx
+str2code val 'AB'
+assert val==xxx "(ASCII コード)" val  ; val=65 ("A" のASCII コード)
+
+
+strcopy 'terawaros tekitou' 6 4 substr
+strcompare substr 'aros'
+assert result == 0 "str copy test" substr
+
+strcopy 'terawaros tekitou' 0 4 substr
+strcompare substr 'tera'
+assert result == 0 "str copy test" substr
+
+s='abc'
+strinsert s 3 'XYZ'  ; 'abXYZc'
+messagebox s s
+strcompare s 'abXYZc'
+assert result == 0 "strinsert test" s
+
+s='abc'
+strinsert s 1 'XYZ'  ; 'XYZabc'
+messagebox s s
+strcompare s 'XYZabc'
+assert result == 0 "strinsert test" s
+
+s='abc'
+strinsert s -1 'XYZ'  ; シンタックスエラー
+messagebox s s
+
+s='abc'
+strinsert s 0 'XYZ'  ; シンタックスエラー
+messagebox s s
+
+s='abc'
+strinsert s 4 'XYZ'  ; 'abcXYZ'
+messagebox s s
+strcompare s 'abcXYZ'
+assert result == 0 "strinsert test" s
+
+s='abc'
+strinsert s 5 'XYZ'  ; シンタックスエラー
+messagebox s s
+
+groupmatchstr1="Jan"
+groupmatchstr2="Feb"
+groupmatchstr3="Mar"
+groupmatchstr4="Apr"
+groupmatchstr5="May"
+groupmatchstr6="Jun"
+groupmatchstr7="Jul"
+groupmatchstr8="Aug"
+groupmatchstr9="Sep"
+strjoin strvar ","
+messagebox strvar "strvar"   ; 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep'
+strcompare strvar 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep'
+assert result == 0 "strjoin test" strvar
+
+
+groupmatchstr1="Jan"
+groupmatchstr2="Feb"
+groupmatchstr3="Mar"
+groupmatchstr4="Apr"
+groupmatchstr5="May"
+groupmatchstr6="Jun"
+groupmatchstr7="Jul"
+groupmatchstr8="Aug"
+groupmatchstr9="Sep"
+strjoin strvar " and " 6
+messagebox strvar "strvar"   ; 'Jan and Feb and Mar and Apr and May and Jun'
+strcompare strvar 'Jan and Feb and Mar and Apr and May and Jun'
+assert result == 0 "strjoin test" strvar
+
+groupmatchstr1="Jan"
+groupmatchstr2="Feb"
+groupmatchstr3="Mar"
+groupmatchstr4="Apr"
+groupmatchstr5="May"
+groupmatchstr6="Jun"
+groupmatchstr7=""
+groupmatchstr8=""
+groupmatchstr9=""
+strjoin strvar "," 9
+messagebox strvar "strvar"   ; 'Jan,Feb,Mar,Apr,May,Jun,,,'
+strcompare strvar 'Jan,Feb,Mar,Apr,May,Jun,,,'
+assert result == 0 "strjoin test" strvar
+
+
+s = '123abc456'
+strremove s 4 3  ; '123456'
+messagebox s s
+strcompare s '123456'
+assert result == 0 "strremove test" strvar
+
+
+s = '123abc456'
+strremove s 1 3  ; 'abc456'
+messagebox s s
+strcompare s 'abc456'
+assert result == 0 "strremove test" strvar
+
+s = '123abc456'
+strremove s -1 3 ; シンタックスエラー
+messagebox s s
+
+s = '123abc456'
+strremove s 0 3  ; シンタックスエラー
+messagebox s s
+
+s = '123abc456'
+strremove s 9 1  ; '123abc45'
+messagebox s s
+strcompare s '123abc45'
+assert result == 0 "strremove test" strvar
+
+s = '123abc456'
+strremove s 9 2  ; シンタックスエラー
+messagebox s s
+
+s = '123abc456'
+strremove s 10 1 ; シンタックスエラー
+messagebox s s
+
+s = '123abc456'
+strremove s 4 0  ; シンタックスエラー
+messagebox s s
+
+str = "AB\tCD\nEF\\nGH"
+strspecial str
+messagebox str "special"
+str2 = "AB"#9"CD"#10"EF\nGH"
+strcompare str str2
+assert result = 0 "strspecial test" str str2
+
+; strspecial str "AB\tCD\nEF\\nGH"
+messagebox str "special"
+
+src=',,Sun,Mon,Tue,,Thu,Fri,Sat'
+strsplit src ',' 7
+assert result == 7 result
+strcompare groupmatchstr1 ''
+assert result == 0 groupmatchstr1 ; ''
+strcompare groupmatchstr2 ''
+assert result == 0 groupmatchstr2 ; ''
+strcompare groupmatchstr3 'Sun'
+assert result == 0 groupmatchstr3 ; 'Sun'
+strcompare groupmatchstr4 'Mon'
+assert result == 0 groupmatchstr4 ; 'Mon'
+strcompare groupmatchstr5 'Tue'
+assert result == 0 groupmatchstr5 ; 'Tue'
+strcompare groupmatchstr6 ''
+assert result == 0 groupmatchstr6 ; ''
+strcompare groupmatchstr7 'Thu,Fri,Sat'
+assert result == 0 groupmatchstr7 ; 'Thu,Fri,Sat'
+
+
+src='Sun,Mon,Tue,Wed,Thu,Fri,Sat'
+strsplit src ',' 7
+assert result == 7 result
+strcompare groupmatchstr1 'Sun'
+assert result == 0 groupmatchstr1 "groupmatchstr1" ; 'Sun'
+strcompare groupmatchstr2 'Mon'
+assert result == 0 groupmatchstr2 "groupmatchstr2" ; 'Mon'
+strcompare groupmatchstr3 'Tue'
+assert result == 0 groupmatchstr3 "groupmatchstr3" ; 'Tue'
+strcompare groupmatchstr4 'Wed'
+assert result == 0 groupmatchstr4 "groupmatchstr4" ; 'Wed'
+strcompare groupmatchstr5 'Thu'
+assert result == 0 groupmatchstr5 "groupmatchstr5" ; 'Thu'
+strcompare groupmatchstr6 'Fri'
+assert result == 0 groupmatchstr6 "groupmatchstr6" ; 'Fri'
+strcompare groupmatchstr7 'Sat'
+assert result == 0 groupmatchstr7 "groupmatchstr7" ; 'Sat'
+strcompare groupmatchstr8 ''
+assert result == 0 groupmatchstr8 "groupmatchstr8" ; ''
+strcompare groupmatchstr9 ''
+assert result == 0 groupmatchstr9 "groupmatchstr9" ; ''
+
+src='A string'#10'of ,,tokens'#10'and some  more tokens'
+strsplit src #10 9
+assert result == 3 result
+strcompare groupmatchstr1 'A string'
+assert result == 0 groupmatchstr1 "groupmatchstr1" ; 'A string'
+strcompare groupmatchstr2 'of ,,tokens'
+assert result == 0 groupmatchstr2 "groupmatchstr2" ; 'of ,,tokens'
+strcompare groupmatchstr3 'and some  more tokens'
+assert result == 0 groupmatchstr3 "groupmatchstr3" ; 'and some  more tokens'
+
+src='1,2,3,4,5,6,7,8,9,0'
+strsplit src ','
+assert result == 10 result
+strcompare groupmatchstr1 '1'
+assert result == 0 groupmatchstr1 "groupmatchstr1" ; '1'
+strcompare groupmatchstr2 '2'
+assert result == 0 groupmatchstr2 "groupmatchstr2" ; '2'
+strcompare groupmatchstr3 '3'
+assert result == 0 groupmatchstr3 "groupmatchstr3" ; '3'
+strcompare groupmatchstr4 '4'
+assert result == 0 groupmatchstr4 "groupmatchstr4" ; '4'
+strcompare groupmatchstr5 '5'
+assert result == 0 groupmatchstr5 "groupmatchstr5" ; '5'
+strcompare groupmatchstr6 '6'
+assert result == 0 groupmatchstr6 "groupmatchstr6" ; '6'
+strcompare groupmatchstr7 '7'
+assert result == 0 groupmatchstr7 "groupmatchstr7" ; '7'
+strcompare groupmatchstr8 '8'
+assert result == 0 groupmatchstr8 "groupmatchstr8" ; '8'
+strcompare groupmatchstr9 '9'
+assert result == 0 groupmatchstr9 "groupmatchstr9" ; '9'
+
+str1='#include <stdio.h>'
+str2=str1
+strcompare str1 str2
+assert result == 0  str 'result'
+
+str='   '#9' #include <stdio.h>      '#9' '
+strtrim str ' \t'
+strcompare str '#include <stdio.h>'
+assert result == 0  str 'result'          ; '#include <stdio.h>'
+
+str='         #include <stdio.h>         '
+strtrim str ' '
+strcompare str '#include <stdio.h>'
+assert result == 0  str 'result'          ; '#include <stdio.h>'
+
+str='*;|@123***456@|;'
+strtrim str '*;|@'
+strcompare str '123***456'
+assert result == 0  str 'result'          ; '123***456'
+
+str='*;|@123***456@|;'
+strtrim str '*;|@123456'
+strcompare str ''
+assert result == 0  str 'result'          ; ''
+
+str='#*;|@123***456@|;'
+strtrim str '*;|@'
+strcompare str '#*;|@123***456'
+assert result == 0  str 'result'          ; '#*;|@123***456'
+
+str='*;|@123***456@|;#'
+strtrim str '*;|@'
+strcompare str '123***456@|;#'
+assert result == 0  str 'result'          ; '123***456@|;#'
+
+
+src='linux.txt'
+strreplace src 1 '\.txt' '.doc'
+assert result != 0 src 'strreplace test'
+strcompare src 'linux.doc'
+assert result == 0 src           ; linux.doc
+
+src='I can do it.'
+strreplace src 1 'can\s' ''
+strcompare src 'I do it.'
+assert result == 0 src 'result'     ; 'I do it.'
+
+src='Microsoft Windows XP [Version 5.1.2600]'
+strmatch src '(Version \d+.\d+.)\d+'
+assert result == 23 result src groupmatchstr1
+int2str s result
+pos=result                ; 23
+strcompare pos "23"
+assert result == 0 s pos groupmatchstr1
+mstr=groupmatchstr1       ; Version 5.1.
+strcompare groupmatchstr1 "Version 5.1."
+assert result == 0 s pos groupmatchstr1 mstr
+
+strreplace src pos mstr 'Build '
+assert result != 0 src 'strreplace test'
+strcompare src 'Microsoft Windows XP [Build 2600]'
+assert result == 0 src  ; Microsoft Windows XP [Build 2600]
+
+
+settitle "aaa"
+gettitle titleStr
+strcompare "aaa" titleStr
+assert result == 0 "gettitle/gettitle test" titleStr
+
+dispstr 'ABC'#13
+
 
 result = 1
+
 

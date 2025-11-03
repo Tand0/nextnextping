@@ -1,6 +1,6 @@
 
 
-dummy 'abc'
+assert 1 'abc'
 
 x=    123
 x=    -11
@@ -8,12 +8,23 @@ x=    -11
     y = "I can't do that"
     z = "漢字も可能"
 
+assert 1 x
+assert 1 y
+assert 1 z
+
 x=    #65  ;   文字 "A"
 y=    #$41  ;  文字 "A"
 z=    #13    ; CR 文字
 
+assert 1 x
+assert 1 y
+assert 1 z
+
+
 e1=    'cat readme.txt'#13#10
+assert 1 e1
 e2=    'abc'#$0d#$0a'def'#$0d#$0a'ghi'
+assert 1 e2
 
 d = 1
 d = 1 + 1
@@ -32,34 +43,24 @@ c = (2 + 1)
 
 
 result=0 
-if result==0 dummy "xyz..."
-if result==1 dummy "XYZ..."
+assert result==0 "xyz..."
 
 result = 1
-if result==0 then
-    dummy
-elseif result==0 then
-    dummy
-else
-    dummy
-endif
+assert result!=0 'error' result
 
-if result==1 then
-    dummy
-else
-    dummy
-endif
+assert result==1 'error' result
 
 ; 10回繰り返す。
 i = 10
 while i>0
   i = i - 1
-  dummy i
+  assert 1 i
 endwhile
-dummy "end"
-dummy "end"
-dummy "end"
-dummy "end"
+
+assert 1 "end"
+assert 1 "end"
+assert 1 "end"
+assert 1 "end"
 
 
 

@@ -1,0 +1,20 @@
+
+
+ifdefined data
+assert 0==result result "ifdefined test"
+
+data = 3
+ifdefined data
+assert 1==result data result "ifdefined test"
+
+data = "aaa"
+ifdefined data
+assert 3==result data result "ifdefined test"
+
+xx[0] = 22
+ifdefined xx
+assert 5==result xx[0] result "ifdefined test"
+
+xx[0] = "xxx"
+ifdefined xx
+assert 6==result xx[0] result "ifdefined test"

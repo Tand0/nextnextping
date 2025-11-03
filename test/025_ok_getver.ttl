@@ -1,0 +1,12 @@
+
+
+getver ver
+strlen ver
+assert 3 <=result ver result "getver test"
+
+getver ver "0.0"
+assert 1==result ver result "getver test"
+
+getver ver "100.0"
+assert -1==result ver result "getver test"
+

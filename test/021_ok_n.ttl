@@ -1,0 +1,6 @@
+a = '/\n/'
+
+b = '/'#10'/'
+
+strcompare a b
+assert result != 0 "a != b test"

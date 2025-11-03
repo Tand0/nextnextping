@@ -1,0 +1,5 @@
+
+execcmnd "a = 1 + 1"
+
+assert a == 2 "1 + 1" a result
+

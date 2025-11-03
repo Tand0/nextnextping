@@ -1,0 +1,13 @@
+
+
+for i 0 100
+    ; 0から10までの乱数を変数valへ格納する
+    random val 10
+    assert 0 <= val "random test" i val
+    assert val <= 10 "random test" i val
+next
+
+
+uptime intvar
+assert 0<intvar "uptime test" intvar
+

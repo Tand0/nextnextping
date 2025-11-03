@@ -1,0 +1,35 @@
+;現在の日付をdatestrに格納。形式はYYYY-MM-DD。
+getdate datestr
+assert 1  datestr
+
+;現在の日時を元にしてログファイル名を生成し、変数logfileに格納。
+;形式はlog-YYYYMMDD-HHMMSS.txt
+getdate logfile "log-%Y%m%d-%H%M%S.txt"
+assert 1  logfile
+
+;GMTで時刻を取得する。
+tz="GMT"
+getdate s "%Y/%m/%d %H:%M:%S" tz
+assert 1  s tz
+
+;本日の日にちを取得する。
+getdate s "|%d|%#d|"    ; |07|7| (Today is 7th).
+assert 1  s
+getdate s "|%d|%#d|"    ; |25|25| (Today is 25th).
+assert 1  s
+
+;現在の時刻をtimestrに格納。形式はHH:MM:SS。
+gettime timestr
+
+;現在の日時を元にしてログファイル名を生成し、変数logfileに格納。
+;形式はlog-YYYYMMDD-HHMMSS.txt
+gettime logfile "log-%Y%m%d-%H%M%S.txt"
+assert 1 logfile
+
+;GMTで時刻を取得する。
+tz="GMT"
+gettime s "%Y/%m/%d %H:%M:%S" tz
+messagebox s tz
+
+gettime s
+assert 1 s

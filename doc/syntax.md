@@ -4,19 +4,51 @@
 - [Antlr 文法で頑張って書きました](../src/grammer/TtlParser.g4) 
 - 間違っていたら指摘ください。
 
+- [マクロ言語 "Terawaros Tkekitou Language (TTL)"](#マクロ言語-terawaros-tkekitou-language-ttl)
+  - [Terawaros Tkekitou Language ファイル](#terawaros-tkekitou-language-ファイル)
+  - [データ型](#データ型)
+  - [定数の形式](#定数の形式)
+    - [int型](#int型)
+    - [str型](#str型)
+    - [int配列型](#int配列型)
+    - [str配列型](#str配列型)
+  - [変数](#変数)
+  - [名前の形式](#名前の形式)
+    - [変数の名前](#変数の名前)
+    - [ラベルの名前](#ラベルの名前)
+    - [式と演算子](#式と演算子)
+  - [行の形式](#行の形式)
+    - [改行](#改行)
+    - [ホワイトスペース](#ホワイトスペース)
+    - [コマンド行](#コマンド行)
+    - [代入行](#代入行)
+    - [ラベル行](#ラベル行)
+    - [if](#if)
+      - [if文その2](#if文その2)
+      - [if文その2](#if文その2-1)
+    - [while](#while)
+    - [until](#until)
+    - [do](#do)
+    - [break](#break)
+    - [continue](#continue)
+    - [call](#call)
+    - [end/exit](#endexit)
 
-## Tera Tkekitou Language ファイル
+
+## Terawaros Tkekitou Language ファイル
 
 - UTF-8しか保証しません。
 
 ## データ型
 
-- str型: 仕様はPythonに基づきます。
-- int型: 仕様はPythonに基づきます。
+- int型: 仕様はPythonのintに基づきます。
+- str型: 仕様はPythonのstrに基づきます。
+- int配列型: 内部的には `a[0]` といった`[` や `]`まで含んだ文字の変数として１つのデータ型になっています。
+- str配列型: 内部的には `a[0]` といった`[` や `]`まで含んだ文字の変数として１つのデータ型になっています。
 
 ## 定数の形式
 
-1. 整数型定数
+### int型
 
 10進数または "$" で始まる16進数で表現する。 浮動小数点は未サポート。
 
@@ -28,7 +60,7 @@
     $10F
 ```
 
-2. 文字列型定数
+### str型
 
    文字列型定数を表現する方法は2つ。
 
@@ -58,6 +90,37 @@
     'abc'#$0d#$0a'def'#$0d#$0a'ghi'
 ```
 
+  - Antlr 文法では以下の通り。
+```
+STRING1: ('\'' ~[']* '\'' | '"' ~["]* '"' | '#' '$'? [a-fA-F0-9]+)+;
+strContext: STRING1;
+```
+
+### int配列型
+
+- `a[0]` までを文字列化して、変数型として扱われます
+
+```
+a[0] = 1
+a[1] = 2
+```
+
+- `a[b]` を `a[0]` に変換して文字列化して、変数型として扱われます
+
+```
+b = 0
+a[b] = 1
+```
+
+### str配列型
+
+```
+b = 0
+a[b] = "aaa"
+```
+
+
+
 ## 変数
 
 - param0, param2 ... param9 は予約語です。
@@ -66,20 +129,23 @@
 
 ## 名前の形式
 
-1) 変数の名前
+### 変数の名前
 
-  Antlr 文法での通り。
+  Antlr 文法では以下の通り。
 ```
 KEYWORD: [_a-zA-Z][_a-zA-Z0-9]*;
+keyword: KEYWORD (LEFT_KAKKO (intExpression| strExpression) RIGHT_KAKKO)?;
+LEFT_KAKKO: '[';
+RIGHT_KAKKO: ']';
 ```
 
-2) ラベルの名前
+### ラベルの名前
 
-  Antlr 文法での通り。
+  Antlr 文法では以下の通り。
 ```
 label: ':' KEYWORD ;
 ```
-3) 式と演算子
+### 式と演算子
 
 - たいていの四則演算は使えます。
 - たいていの四則演算はint型で計算されます。加算も文字加算はできません。
@@ -101,24 +167,24 @@ label: ':' KEYWORD ;
   また、C言語風コメント（/* 〜 */）も使用可能。
 - コメントは MACRO の実行に影響を与えない。
 
-1) 改行
+### 改行
 
-  Antlr 文法での通り。改行と見なされる。
+  Antlr 文法では以下の通り。改行と見なされる。
 ```
 RN: '\r'? '\n'
     | ';' ~[\n]* '\n'
     ;
 ```
-1) ホワイトスペース
+### ホワイトスペース
 
-  Antlr 文法での通り。ホワイトスペースとして文字区切りに使われる。
+  Antlr 文法では以下の通り。ホワイトスペースとして文字区切りに使われる。
 
 ```
 WS1 : [ \t]+ -> skip ;
 WS2 : '/*' ~[/]* '*/' -> skip ;
 ```
 
-2) コマンド行
+### コマンド行
 
   1つのコマンド名と0個以上のパラメータ。
 ```
@@ -134,7 +200,7 @@ WS2 : '/*' ~[/]* '*/' -> skip ;
     end
 ```
 
-3) 代入行
+### 代入行
 
   変数に値を代入する。
 ```
@@ -147,13 +213,13 @@ WS2 : '/*' ~[/]* '*/' -> skip ;
     Username='MYNAME'    文字列の代入
 ```
 
-  Antlr 文法での通り。
+  Antlr 文法では以下の通り。
 ```
 input: KEYWORD '=' p11Expression ;
 ```
 
 
-3) ラベル行
+### ラベル行
 
 ":" とその直後に続くラベル名からなる。
 
@@ -165,14 +231,15 @@ input: KEYWORD '=' p11Expression ;
     :dial
 ```
 
-  Antlr 文法での通り。
+  Antlr 文法では以下の通り。
 ```
 label: ':' KEYWORD ;
 ```
 
-4) if文その1
+### if
 
-  1行で定義せれたif文。
+#### if文その2
+- 1行で定義せれたif文。
 ```
 ; もし A>1 ならば、':label' へ飛ぶ。
 if A>1 goto label
@@ -181,15 +248,15 @@ if A>1 goto label
 if result A=0
 ```
 
-  Antlr 文法での通り。
+- Antlr 文法では以下の通り。
 ```
 if1
     : 'if' p11Expression line;
 ```
 
-4) if文その2
+#### if文その2
 
-  複数行で定義されたif文。
+- 複数行で定義されたif文。
 
 ```
 if <expression 1> then
@@ -211,7 +278,7 @@ if <expression 1> then
 endif
 ```
 
-  Antlr 文法での通り。
+- Antlr 文法では以下の通り。
 ```
 if2
     : 'if' p11Expression 'then' RN line+ (elseif)* (else)? 'endif';
@@ -221,10 +288,43 @@ elseif:'elseif' p11Expression 'then' RN line+;
 else: 'else' RN line+;
 ```
 
+### for
+- 繰り返す。
+```
+for <intvar> <first> <last>
 
-5) while文
+  ...
 
-繰り返す。
+  ...
+
+next
+```
+
+`for` と `next` の間のコマンドを、整数変数 `intvar` の値が `last` と等しくなるまで、繰りかえす。
+`intvar` の初期値は `first` 。もし `last` が `first` より大きい場合、`intvar` は `next` 行に来るたびに 1 足される。もし `last` が `fast` より小さい場合、`intvar` は "next" 行に来るたびに 1 引かれる。
+
+
+```
+; 10回繰り返す。
+for i 1 10
+  sendln 'abc'
+next
+
+; 5回繰り返す。
+for i 5 1
+  sendln 'abc'
+next
+```
+
+- Antlr 文法では以下の通り。
+```
+forNext
+    : 'for' keyword p11Expression p11Expression RN commandline+ 'next';
+```
+
+### while
+
+- 繰り返す。
 
 ```
 ; 10回繰り返す。
@@ -234,10 +334,61 @@ while i>0
 endwhile
 ```
 
-  Antlr 文法での通り。
+- Antlr 文法では以下の通り。
 ```
 whileEndwhile
     : 'while' p11Expression RN line+ 'endwhile';
 ```
+
+### until
+- 繰り返す。
+- Antlr 文法では以下の通り。
+```
+untilEnduntil
+    : 'until' p11Expression RN commandline+ 'enduntil';
+```
+
+
+### do
+- 繰り返す。
+- Antlr 文法では以下の通り。
+```
+doLoop
+    : 'do' p11Expression? RN commandline+ 'loop' p11Expression?;
+```
+
+### break
+- 繰り返しを中断する。
+
+### continue
+- 繰り返しを途中で止め、次の繰り返しに進む。
+
+### call
+
+- サブルーチンをコールする。`return` で戻る。
+```
+messagebox "I'm in main." "test"
+; ":sub" へ飛ぶ。
+call sub
+messagebox "Now I'm in main" "test"
+end
+
+; サブルーチンの始まり。
+:sub
+messagebox "Now I'm in sub" "test"
+; メインルーチンへもどる。
+return
+```
+
+### end/exit
+
+- 終了するのに使います。
+
+
+### include
+
+- インクルードファイルに移る。
+- `exit` でメインファイルに戻ります。
+
 
 

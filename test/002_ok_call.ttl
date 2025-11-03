@@ -2,22 +2,15 @@
 call labelAAA
 
 i = 11
-dummy "work" i
+assert i == 11 "i=11" i
 
 result = 1
 
-if i != 11 then
-    dummy "ierror" i
-    result = 0
-    end
-endif
+assert result == 1 "result == 1" i
 
 i = 5
 
-if i != 5 then
-    result = 0
-    end
-endif
+assert i == 5 "i == 5" i
 
 result = 1
 
