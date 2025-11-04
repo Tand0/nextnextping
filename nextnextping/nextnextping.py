@@ -7,6 +7,9 @@ import sys
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
+from tkinter import simpledialog
+from tkinter import filedialog
+import os
 import threading
 import time
 from datetime import datetime
@@ -17,29 +20,176 @@ from grammer.TtlParserWorker import TtlPaserWolker
 
 class MyTtlPaserWolker(TtlPaserWolker):
     """ パサーをオーバーライドしてgui周りの処理を行わせる """
-    def __init__(self, log_type_param, init):
-        super().__init__()
+    def __init__(self, threading, next_next_ping, log_type_param):
+        self.threading = threading
+        self.next_next_ping = next_next_ping
         self.log_type_param = log_type_param
         self.log_type_param['stdout'] = ""
-        self.init = init
+        super().__init__()
 
     def setLog(self, strvar):
         self.log_type_param['stdout'] = self.log_type_param['stdout'] + strvar
 
     def commandContext(self, name, line, data_list):
+        """ GUI側で処理すべきコマンド群 """
+        # print(f"commandContext {name}")
+        if "passwordbox" == name:
+            p1 = str(self.getData(data_list[0]))
+            p2 = str(self.getData(data_list[1]))
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_password_dialog(done_event, p1, p2))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            inputstr = self.next_next_ping.result
+            if inputstr is None:
+                self.setValue('result', 0)
+                self.setValue('inputstr', '')
+            else:
+                self.setValue('result', 1)
+                self.setValue('inputstr', inputstr)
+            return
+        if "inputbox" == name:
+            p1 = str(self.getData(data_list[0]))
+            p2 = str(self.getData(data_list[1]))
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_inputdialog(done_event, p1, p2))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            inputstr = self.next_next_ping.result
+            if inputstr is None:
+                self.setValue('result', 0)
+                self.setValue('inputstr', '')
+            else:
+                self.setValue('result', 1)
+                self.setValue('inputstr', inputstr)
+            return
+        elif "dirnamebox" == name:
+            p1 = str(self.getData(data_list[0]))
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_dirdialog(done_event, p1))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            inputstr = self.next_next_ping.result
+            if inputstr is None:
+                self.setValue('result', 0)
+            else:
+                self.setValue('result', 1)
+                self.setValue('inputstr', inputstr)
+            return
+        elif "filenamebox" == name:
+            p1 = str(self.getData(data_list[0]))
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_filedialog(done_event, p1))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            inputstr = self.next_next_ping.result
+            if inputstr is None:
+                self.setValue('result', 0)
+            else:
+                self.setValue('result', 1)
+                self.setValue('inputstr', inputstr)
+            return
+        elif "listbox" == name:
+            p1 = str(self.getData(data_list[0]))
+            p2 = str(self.getData(data_list[1]))
+            p3 = str(self.getKeywordName(data_list[2]))
+            i = 0
+            list_data = []
+            while True:
+                target = f"{p3}[{str(i)}]"
+                # print(f"target={target}")
+                if self.isValue(target):
+                    list_data.append(self.getData(target))
+                    i = i + 1
+                else:
+                    break
+            if len(list_data) <= 0:
+                list_data.append("None")
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_listbox_dialog(done_event, p1, p2, list_data))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            inputstr = self.next_next_ping.result
+            if inputstr is None:
+                self.setValue('result', -1)
+            else:
+                self.setValue('result', inputstr)
+            return
+        elif "messagebox" == name:
+            p1 = str(self.getData(data_list[0]))
+            p2 = str(self.getData(data_list[1]))
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_messagebox_dialog(done_event, p1, p2))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            return
+        elif "yesnobox" == name:
+            p1 = str(self.getData(data_list[0]))
+            p2 = str(self.getData(data_list[1]))
+            done_event = threading.Event()
+            self.next_next_ping.root.after(
+                0, lambda: self.next_next_ping.show_yesnobox_dialog(done_event, p1, p2))
+            # 待ち処理
+            while not self.end_flag:
+                signaled = done_event.wait(timeout=1.0)
+                if signaled:
+                    break
+            inputstr = self.next_next_ping.result
+            if inputstr is None:
+                self.setValue('result', 0)
+            else:
+                self.setValue('result', 1)
+            return
+        #
+        #
         # 未実装のコマンド表示
-        if self.init['debug']:
+        if self.next_next_ping.init['debug']:
             self.setLog(f"\t### command value={name} line={line}\r\n")
             for data in data_list:
                 data = self.getData(data)
                 self.setLog(f"\t### debug value={data}\r\n")
-        super.commandContext(name, line, data_list)
+        super().commandContext(name, line, data_list)
         #
 
     def setValue(self, x, y):
-        if self.init['debug']:
+        if self.next_next_ping.init['debug']:
             self.log_type_param['stdout'] = self.log_type_param['stdout'] + f"### x={x} value={y}\r\n"
         super().setValue(x, y)
+
+    def setTitle(self, title: str):
+        """ タイトルの設定 """
+        # print(f"setTitle {title}")
+        self.next_next_ping.root.after(
+            0, lambda: self.next_next_ping.setTitle(title))
+
+    def getTitle(self) -> str:
+        """ タイトルの取得 """
+        title = self.next_next_ping.init['title']
+        return title  # self.next_next_ping.title
 
 
 class MyThread():
@@ -111,9 +261,14 @@ class MyThread():
         for param_list_next_list in param_list:
             param_list_next.append(param_list_next_list.strip())
         try:
-            self.myTtlPaserWolker = MyTtlPaserWolker(self.next_next_ping.log[type][param], self.next_next_ping.init)
+            self.myTtlPaserWolker = MyTtlPaserWolker(self.threading, self.next_next_ping, self.next_next_ping.log[type][param])
+        except Exception as e:
+            self.myTtlPaserWolker.setLog(f"Exception create {str(e)}")
+            return 0  # this is NG!
+        try:
             self.myTtlPaserWolker.execute(filename, param_list_next)
-        except Exception:
+        except Exception as e:
+            self.myTtlPaserWolker.setLog(f"Exception execute {str(e)}")
             return 0  # this is NG!
         finally:
             # なにがあろうとworkerは絶対に殺す
@@ -205,6 +360,7 @@ class NextNextPing():
         self.my_thread = None
         self.root = None
         self.status_var = None
+        self.result = None
 
     def next_next_load(self, file_name: str):
         setting = {}
@@ -420,6 +576,8 @@ class NextNextPing():
         self.init = self.next_next_load('init.json')
         if 'wait_time' not in self.init:
             self.init['wait_time'] = 3
+        if 'title' not in self.init:
+            self.init['title'] = "nextnextping"
         if 'loop' not in self.init:
             self.init['loop'] = True
         if 'debug' not in self.init:
@@ -433,7 +591,7 @@ class NextNextPing():
         #
         self.root = tk.Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.system_exit)
-        self.root.title("next_next_ping")
+        self.root.title(self.init['title'])
         self.root.geometry("800x400")
         menu_bar = tk.Menu(self.root)
         self.root.config(menu=menu_bar)
@@ -496,6 +654,117 @@ class NextNextPing():
 
         self.root.mainloop()
         #
+
+    def setTitle(self, title: str):
+        """ タイトルの設定 """
+        self.init['title'] = title
+        self.root.title(title)
+
+    def show_password_dialog(self, event, p1, p2):
+        # print(f"show_password_dialog {p1} / {p2}")
+        dialog = PasswordDialog(self.root, message=p1, title=p2)
+        self.result = None
+        if dialog.result:
+            # 成功した！
+            self.result = dialog.result
+        #
+        # イベントを進ませる
+        event.set()
+
+    def show_inputdialog(self, event, p1, p2):
+        user_input = simpledialog.askstring(p2, p1)
+        self.result = None
+        if user_input:
+            # 成功した！
+            self.result = user_input
+        #
+        # イベントを進ませる
+        event.set()
+
+    def show_dirdialog(self, event, p1):
+        dialog_path = filedialog.askdirectory(
+            title=p1,
+            initialdir=os.getcwd()  # 現在の作業ディレクトリを初期値とする
+        )
+        self.result = None
+        if dialog_path:
+            # 成功した！
+            self.result = dialog_path
+        #
+        # イベントを進ませる
+        event.set()
+
+    def show_filedialog(self, event, p1):
+        dialog_path = filedialog.askopenfilename(
+            title=p1,
+            initialdir=os.getcwd()  # 現在の作業ディレクトリを初期値とする
+        )
+        if dialog_path:
+            # 成功した！
+            self.result = dialog_path
+        #
+        # イベントを進ませる
+        event.set()
+
+    def show_listbox_dialog(self, event, message, title, options):
+        dialog = ListboxDialog(self.root, title, options, message=message)
+        self.result = None
+        if dialog.selection:
+            # 成功した！
+            self.result = dialog.selection
+        #
+        # イベントを進ませる
+        event.set()
+
+    def show_messagebox_dialog(self, event, message, title):
+        messagebox.showinfo(title, message)
+        event.set()
+
+    def show_yesnobox_dialog(self, event, message, title):
+        answer = messagebox.askyesno(title=title, message=message)
+        self.result = None
+        # 入力結果の処理
+        if answer:
+            self.result = "OK"
+        #
+        # イベントを進ませる
+        event.set()
+
+
+class PasswordDialog(simpledialog.Dialog):
+    def __init__(self, parent, title="PasswordDialog", message="Enter Password"):
+        self.message = message
+        super().__init__(parent, title)
+
+    def body(self, master):
+        tk.Label(master, text=self.message).grid(row=0, column=0, padx=10, pady=10)
+        self.entry = tk.Entry(master, show="*")
+        self.entry.grid(row=1, column=0, padx=10)
+        return self.entry  # 初期フォーカス
+
+    def apply(self):
+        self.result = self.entry.get()
+
+
+class ListboxDialog(simpledialog.Dialog):
+    def __init__(self, parent, title, options, message="Plrease select"):
+        self.options = options
+        self.selection = None
+        self.message = message
+        super().__init__(parent, title)
+
+    def body(self, master):
+        tk.Label(master, text=self.message).pack(padx=10, pady=5)
+        self.listbox = tk.Listbox(master, selectmode=tk.SINGLE)
+        for item in self.options:
+            self.listbox.insert(tk.END, item)
+        self.listbox.pack(padx=10, pady=5)
+        return self.listbox
+
+    def apply(self):
+        selected = self.listbox.curselection()
+        if selected:
+            self.selection = selected[0]
 
 
 if __name__ == "__main__":

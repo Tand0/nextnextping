@@ -1,5 +1,5 @@
 
-(ttl)./sample_connect.ttl, localhost
+(ttl)../test/020_ok_box.ttl
 (ttl)./test.ttl, localhost:2200
 
 ; コメント
@@ -10,6 +10,7 @@ localhost
 
 (traceroute)10.10.10.0
 (traceroute)localhost
+
 
 
 

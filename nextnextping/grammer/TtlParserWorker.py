@@ -188,10 +188,13 @@ class TtlPaserWolker():
     def include(self, filename: str):
         if self.end_flag:
             return
+
+        result_json = {}
+        #
+        # 読み込みここから
         try:
             #
-            result_json = {}
-            # print(f"filename={filename} param={self.result_file_json}")        
+            # print(f"filename={filename} param={self.result_file_json}")
             if filename in self.result_file_json:
                 result_json = self.result_file_json[filename]
             else:
@@ -202,17 +205,23 @@ class TtlPaserWolker():
                 # for call command
                 self.result_file_json[filename] = result_json
                 #
+        except Exception as e:
+            print(f"### except inlucde_data f={str(e)}")
+            self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
+            raise  # そのまま上流へ送る
+        #
+        # 実処理ここから
+        try:
+            #
             self.execute_result(result_json['child'])
             #
         except TtlExitFlagException:
             # exitコマンドが呼び出されときは正常終了です
             pass
-        except (ParseCancellationException,
-                TypeError,
-                KeyError,
-                Exception) as e:
-            self.stop(f"{type(e).__name__} f={filename} e={e} error!")
-            raise e
+        except Exception as e:
+            print(f"### except execute_result f={str(e)}")
+            self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
+            raise  # そのまま上流へ送る
 
     def include_data(self, data: str):
         if self.end_flag:
@@ -237,6 +246,10 @@ class TtlPaserWolker():
         # print(f"setValue={strvar} data={data}")
         self.value_list[strvar] = data
 
+    def isValue(self, strvar: str) -> bool:
+        """ 変数がいるかチェックする """
+        return strvar in self.value_list
+
     def getValue(self, strvar: str, error_stop=True):
         """ 変数を取得する """
         if strvar not in self.value_list:
@@ -250,12 +263,16 @@ class TtlPaserWolker():
 
     def execute_result(self, x_list, ifFlag=1):
         """execute_result"""
+        # print("execute_result")
         if self.end_flag:
             return
         for x in x_list:
             name = x['name']
             line = x['line']
-            # print(f"CommandlineContext name={name}")
+            #
+            # よくわからんがsleep入れないと不明なエラーが出る？
+            time.sleep(0.01)
+            #
             if 'CommandlineContext' == name:
                 if ifFlag != 0:
                     self.commandlineContext(x['child'])
@@ -738,7 +755,7 @@ class TtlPaserWolker():
                     p1 = str(self.getData(x['child'][1]))
                     self.doLogwrite(p1)
                 else:
-                    # コマンドが分からない
+                    # print(f"### l={line} コマンドが分からない{name}")
                     self.commandContext(command_name, line, x['child'][1:])
             elif 'ForNextContext' == name:
                 self.forNextContext(x['child'])
@@ -763,8 +780,10 @@ class TtlPaserWolker():
         """ (GUI系を)オーバーライドさせて使う """
         # GUIでしかできないのでダニーを入れておく
         if name in ['passwordbox', 'inputbox']:
+            # print(f"super.commandContext {name} start")
             self.printCommand(name, line, data_list)
             self.setValue('inputstr', 'aaa')
+            # print(f"super.commandContext {name} end")
         elif name in ['bringupbox', 'closesbox', 'messagebox', 'statusbox', 'setdlgpos']:
             self.printCommand(name, line, data_list)
         elif 'dirnamebox' == name:
@@ -786,12 +805,13 @@ class TtlPaserWolker():
         else:
             raise TypeError(f"### l={line} Unsupport command={name}")
 
-    def printCommand(self, name, line, data_list):
+    def printCommand(self, name: str, line: int, data_list) -> str:
         message = f"### l={line} c={name}"
         for data in data_list:
             result = self.getData(data)
             message = message + f" p({result})"
-        print(message)
+        message = message
+        self.setLog(message + "\n")
         return message
 
     def doDispstr(self, data_list):
@@ -936,6 +956,8 @@ class TtlPaserWolker():
         result = ""
         if isinstance(data, str):
             result = self.getValue(data)
+        elif 'name' not in data:
+            raise TypeError(f"unkown name data={str(data)}")
         elif 'P11ExpressionContext' == data['name']:
             result = self.p11ExpressionContext(data['child'])
         elif 'P10ExpressionContext' == data['name']:
@@ -971,8 +993,7 @@ class TtlPaserWolker():
         elif 'KeywordContext' == data['name']:
             result = self.keywordContext(data)
         else:
-            self.stop(error=f"unkown keyword n={data['name']}")
-            result = data
+            raise TypeError(f"unkown keyword n={data['name']}")
         return result
 
     def p11ExpressionContext(self, data):

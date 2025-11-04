@@ -1,7 +1,7 @@
 {
     "wait_time": 3,
     "loop": false,
-    "debug": true,
+    "debug": false,
     "data": [
         {
             "name": "ttl",

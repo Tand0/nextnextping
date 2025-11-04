@@ -1,6 +1,18 @@
 
 
+settitle "nextnextping test"
+gettitle titletext
+strcompare "nextnextping test" titletext
+assert result = 0 "title test" titletext
+
+inputstr = ""
 passwordbox 'Enter password' 'Login'
+strlen inputstr
+if result <= 0 then
+    assert 0 "passwordbox len test" inputstr result
+else
+    assert 1 "passwordbox len test" inputstr result
+endif
 
 bringupbox
 
@@ -21,7 +33,13 @@ if result<>0 then
 endif
 
 assert 1
-inputbox 'Password:' 'Login'
+inputbox 'Message data' 'Title'
+strlen inputstr
+if result <= 0 then
+    assert 0 "inputbox len test" inputstr result
+else
+    assert 1 "inputbox len test" inputstr result
+endif
 
 strdim msg 4
 msg[0] = 'バナナ'
@@ -31,6 +49,12 @@ msg[2] = 'みかん'
 assert 1 msg[0]
 
 listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
+if result <= -1 then
+    assert 0 "listbox len test" result
+else
+    assert 1 "listbox len test" result
+endif
+
 
 ; 表示位置を指定
 setdlgpos 200 200
@@ -43,8 +67,9 @@ setdlgpos 0 0
 ; ダイアログボックスを閉じる
 closesbox
 
+messagebox "message" "title"
 
 yesnobox 'もう一回やりますか?' 'Tera Term'
-
+assert 1 "yesnobox test" result
 
 result = 1
