@@ -164,29 +164,29 @@
   - [getpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword2.html) // 一部無視
   - [ispassword](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword.html)
   - [ispassword2](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword2.html) // 一部無視
-  - [passwordbox](https://teratermproject.github.io/manual/5/ja/macro/command/passwordbox.html) // GUI表示しない
+  - [passwordbox](https://teratermproject.github.io/manual/5/ja/macro/command/passwordbox.html) // 制限あり
   - [setpassword](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword.html)
   - [setpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword2.html) // 一部無視
 
 - その他のコマンド
   - [assert](#assert) // 独自コマンド
   <!-- - [beep](https://teratermproject.github.io/manual/5/ja/macro/command/beep.html) -->
-  - [bringupbox](https://teratermproject.github.io/manual/5/ja/macro/command/bringupbox.html)  // GUI表示しない
+  - [bringupbox](https://teratermproject.github.io/manual/5/ja/macro/command/bringupbox.html)  // 制限あり
   <!-- - [checksum8](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html) -->
   <!-- - [checksum8file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html) -->
   <!-- - [checksum16](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html) -->
   <!-- - [checksum16file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html) -->
   <!-- - [checksum32](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html) -->
   <!-- - [checksum32file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html) -->
-  - [closesbox](https://teratermproject.github.io/manual/5/ja/macro/command/closesbox.html)  // GUI表示しない
+  - [closesbox](https://teratermproject.github.io/manual/5/ja/macro/command/closesbox.html)  // 制限あり
   <!-- - [clipb2var](https://teratermproject.github.io/manual/5/ja/macro/command/clipb2var.html) -->
   <!-- - [crc16](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html) -->
   <!-- - [crc16file](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html) -->
   <!-- - [crc32](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html) -->
   <!-- - [crc32file](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html) -->
   - [exec](https://teratermproject.github.io/manual/5/ja/macro/command/exec.html)
-  - [dirnamebox](https://teratermproject.github.io/manual/5/ja/macro/command/dirnamebox.html)  // GUI表示しない
-  - [filenamebox](https://teratermproject.github.io/manual/5/ja/macro/command/filenamebox.html)  // GUI表示しない
+  - [dirnamebox](https://teratermproject.github.io/manual/5/ja/macro/command/dirnamebox.html)  // 制限あり
+  - [filenamebox](https://teratermproject.github.io/manual/5/ja/macro/command/filenamebox.html)  // 制限あり
   - [getdate](https://teratermproject.github.io/manual/5/ja/macro/command/getdate.html)
   - [getenv](https://teratermproject.github.io/manual/5/ja/macro/command/getenv.html)
   - [getipv4addr](https://teratermproject.github.io/manual/5/ja/macro/command/getipv4addr.html)
@@ -196,10 +196,10 @@
   - [getttdir](https://teratermproject.github.io/manual/5/ja/macro/command/getttdir.html)
   - [getver](https://teratermproject.github.io/manual/5/ja/macro/command/getver.html)
   - [ifdefined](https://teratermproject.github.io/manual/5/ja/macro/command/ifdefined.html) // labelは未実装です
-  - [inputbox](https://teratermproject.github.io/manual/5/ja/macro/command/inputbox.html)  // GUI表示しない
+  - [inputbox](https://teratermproject.github.io/manual/5/ja/macro/command/inputbox.html)  // 制限あり
   - [intdim](https://teratermproject.github.io/manual/5/ja/macro/command/intdim.html)
-  - [listbox](https://teratermproject.github.io/manual/5/ja/macro/command/listbox.html)  // GUI表示しない
-  - [messagebox](https://teratermproject.github.io/manual/5/ja/macro/command/messagebox.html)  // GUI表示しない
+  - [listbox](https://teratermproject.github.io/manual/5/ja/macro/command/listbox.html)  // 制限あり
+  - [messagebox](https://teratermproject.github.io/manual/5/ja/macro/command/messagebox.html)  // 制限あり
   - [random](https://teratermproject.github.io/manual/5/ja/macro/command/random.html)
   <!-- - [rotateleft](https://teratermproject.github.io/manual/5/ja/macro/command/rotateleft.html) -->
   <!-- - [rotateright](https://teratermproject.github.io/manual/5/ja/macro/command/rotateright.html) -->
@@ -209,11 +209,11 @@
   <!-- - [setexitcode](https://teratermproject.github.io/manual/5/ja/macro/command/setexitcode.html) -->
   <!-- - [settime](https://teratermproject.github.io/manual/5/ja/macro/command/settime.html) -->
   <!-- - [show](https://teratermproject.github.io/manual/5/ja/macro/command/show.html) -->
-  - [statusbox](https://teratermproject.github.io/manual/5/ja/macro/command/statusbox.html)  // GUI表示しない
+  - [statusbox](https://teratermproject.github.io/manual/5/ja/macro/command/statusbox.html)  // 制限あり
   - [strdim](https://teratermproject.github.io/manual/5/ja/macro/command/strdim.html)
   - [uptime](https://teratermproject.github.io/manual/5/ja/macro/command/uptime.html)
   <!-- - [var2clipb](https://teratermproject.github.io/manual/5/ja/macro/command/var2clipb.html) -->
-  - [yesnobox](https://teratermproject.github.io/manual/5/ja/macro/command/yesnobox.html)  // GUI表示しない
+  - [yesnobox](https://teratermproject.github.io/manual/5/ja/macro/command/yesnobox.html)  // 制限あり
 
 
 ## assert
@@ -280,3 +280,22 @@ logopen <filename> <binary flag> <append flag> [<plain text flag> [<timestamp fl
 2	経過時間 (Logging)
 3	経過時間 (Connection)
 ```
+
+## xxxxbox系の制限について
+
+- `ttlmacoro.py` から直接ttlを呼ぶと、xxxbox系は無視されます。
+- nextnextpingをGUIで起動すると、画面はでますがかなりいい加減に作っています。
+  - そもそも論として pingがしたいだけなのになぜ実装した……
+
+## execの実行について
+
+- バッチファイルを実行したとき、コマンドプロンプトが `CP932` を期待しているので、ファイルが `utf-8` ですとフォルダ名が文字化けます。
+  - 何が言いたいかというと `filewrite` で書き込んだデータは  `utf-8` です。
+  　- これでバッチファイルを作って、かつフォルダだったりした場合文字化けます。
+  　- なので、 `filewrite` は一律  `CP932` で書き込もうかと思ったのですが、通常テキストなどで `utf-8` を期待している場合もありそうなので対処保留としました。
+    - 対処方法は検討中。＞ 本家もそうなら放置かな……
+- あと、もはやttlとはまったく関係ないですが、
+  - バッチファイルを `\\192.168.1.1\aaa` といった UNCパス形式の上で実行するとすべからく変な動きをします。
+  - そういうときは `pushd` と `popd` を使いましょう。。。
+
+

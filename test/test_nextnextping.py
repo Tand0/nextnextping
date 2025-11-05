@@ -275,8 +275,6 @@ def test_mkdir():
 
 def test_load_ttl():
     """ ttlファイルが動作するか確認する """
-    # カレントフォルダを取得する
-    current_dir = pathlib.Path.cwd()
     #
     serverStarter = ServerStarter(2200, prompt="#")
     # スレッドオブジェクトを作成
@@ -290,8 +288,6 @@ def test_load_ttl():
             if '.ttl' not in file:
                 continue
             #
-            # カレントフォルダを戻す
-            os.chdir(current_dir)
             #
             ok_flag = False
             if 'ok' in file:

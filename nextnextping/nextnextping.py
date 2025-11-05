@@ -131,9 +131,11 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                self.setValue('result', -1)
+                # print("result is none")
+                self.setValue('inputstr', -1)
             else:
-                self.setValue('result', inputstr)
+                # print(f"inputstr is {inputstr}")
+                self.setValue('inputstr', inputstr)
             return
         elif "messagebox" == name:
             p1 = str(self.getData(data_list[0]))
@@ -712,6 +714,7 @@ class NextNextPing():
         if dialog.selection:
             # 成功した！
             self.result = dialog.selection
+            # print(f"ListboxDialog {str(self.result)}")
         #
         # イベントを進ませる
         event.set()
@@ -763,8 +766,10 @@ class ListboxDialog(simpledialog.Dialog):
 
     def apply(self):
         selected = self.listbox.curselection()
+        # print("apply")
         if selected:
-            self.selection = selected[0]
+            self.selection = self.listbox.get(selected[0])
+            # print(f"選択されている {self.selection}")
 
 
 if __name__ == "__main__":

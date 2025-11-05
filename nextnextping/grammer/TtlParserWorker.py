@@ -5,7 +5,6 @@ from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.tree.Tree import ParseTreeVisitor
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.ErrorStrategy import BailErrorStrategy
-from antlr4.error.Errors import ParseCancellationException
 import time
 import paramiko
 import socket
@@ -114,6 +113,8 @@ class TtlPaserWolker():
         self.log_timestamp_type = -1
         self.log_login_time = time.time()
         self.log_connect_time = None
+        # カレントフォルダを取得する
+        self.current_dir = pathlib.Path.cwd()
 
     def stop(self, error=None):
         """ 強制停止処理 """
@@ -131,6 +132,9 @@ class TtlPaserWolker():
         #
         # ログファイルハンドルがいたら止める
         self.doLogclose()
+        #
+        # カレントフォルダを戻す
+        os.chdir(self.current_dir)
 
     def closeClient(self):
         """ SSH接続していたら止める """
@@ -206,7 +210,7 @@ class TtlPaserWolker():
                 self.result_file_json[filename] = result_json
                 #
         except Exception as e:
-            print(f"### except inlucde_data f={str(e)}")
+            print(f"### except read file exception! f={str(e)}")
             self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
             raise  # そのまま上流へ送る
         #
@@ -779,7 +783,7 @@ class TtlPaserWolker():
     def commandContext(self, name, line, data_list):
         """ (GUI系を)オーバーライドさせて使う """
         # GUIでしかできないのでダニーを入れておく
-        if name in ['passwordbox', 'inputbox']:
+        if name in ['passwordbox', 'inputbox', 'listbox']:
             # print(f"super.commandContext {name} start")
             self.printCommand(name, line, data_list)
             self.setValue('inputstr', 'aaa')
@@ -794,9 +798,9 @@ class TtlPaserWolker():
             self.printCommand(name, line, data_list)
             self.setValue('result', 0)
             self.setValue('inputstr', "tmp.txt")
-        elif name in ['yesnobox', 'listbox']:
+        elif name in ['yesnobox']:
             self.printCommand(name, line, data_list)
-            self.setValue('result', 0)
+            self.setValue('result', 1)
         elif name in ['showtt']:
             self.printCommand(name, line, data_list)
             self.setValue(self.getKeywordName(data_list[0]), 0)

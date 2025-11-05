@@ -1,5 +1,17 @@
 
 
+strdim msg 3
+msg[0] = 'バナナ'
+msg[1] = 'りんご'
+msg[2] = 'みかん'
+
+listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
+strlen inputstr
+assert 0 <= result "listbox len test" inputstr
+
+yesnobox 'もう一回やりますか?' 'Tera Term'
+assert result == 1 "yesnobox test" result
+
 settitle "nextnextping test"
 gettitle titletext
 strcompare "nextnextping test" titletext
@@ -41,19 +53,6 @@ else
     assert 1 "inputbox len test" inputstr result
 endif
 
-strdim msg 4
-msg[0] = 'バナナ'
-msg[1] = 'りんご'
-msg[2] = 'みかん'
-
-assert 1 msg[0]
-
-listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
-if result <= -1 then
-    assert 0 "listbox len test" result
-else
-    assert 1 "listbox len test" result
-endif
 
 
 ; 表示位置を指定
@@ -66,10 +65,5 @@ setdlgpos 0 0
 ; pause 3
 ; ダイアログボックスを閉じる
 closesbox
-
-messagebox "message" "title"
-
-yesnobox 'もう一回やりますか?' 'Tera Term'
-assert 1 "yesnobox test" result
 
 result = 1
