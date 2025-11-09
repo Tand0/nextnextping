@@ -22,51 +22,51 @@ fileopen fhandle 'data.dat' 1
 fileclose fhandle
 
 
-fileopen fhandle 'test/build/test.bat' 0
+fileopen fhandle 'build/test.bat' 0
 filewrite fhandle 'md .\v20080619_Test'
 filewrite fhandle 'md .\v20080619_Test'
 fileclose fhandle
 
-fileopen fhandle2 'test/build/test2.bat' 0
+fileopen fhandle2 'build/test2.bat' 0
 filewriteln fhandle2 'ABC'
 fileclose fhandle2
 
-fileopen fhandle 'test/build/test.bat' 0
+fileopen fhandle 'build/test.bat' 0
 fileread fhandle 100 readdata
 fileclose fhandle
 strscan readdata 'v20080619_Test'
 assert result != 0 "fileread" readdata
 
-fileopen fhandle 'test/build/test.bat' 0
+fileopen fhandle 'build/test.bat' 0
 filereadln fhandle readdata
 fileclose fhandle
 strscan readdata 'v20080619_Test'
 assert result != 0 "filereadln" readdata
 
-fileconcat 'test/build/test2.bat' 'test/build/test.bat'
+fileconcat 'build/test2.bat' 'build/test.bat'
 
-filecopy 'test/build/test2.bat' 'test/build/test3.bat'
+filecopy 'build/test2.bat' 'build/test3.bat'
 
-filedelete 'test/build/test2.bat'
-filerename 'test\build\test3.bat' 'test\build\test4.bat'
+filedelete 'build/test2.bat'
+filerename 'build\test3.bat' 'build\test4.bat'
 assert result == 0 result 'filerename test'
 
-filesearch 'test/build/test3.bat'
+filesearch 'build/test3.bat'
 assert result == 0 result 'filesearch test' ;; 存在しない
 
-filesearch 'test/build/test4.bat'
+filesearch 'build/test4.bat'
 assert result != 0 result 'filesearch test' ;; 存在する
 
-filecreate fhandle 'test/build/test.bat'
+filecreate fhandle 'build/test.bat'
 filewriteln fhandle 'ABC'
 fileclose fhandle
 
 
-;; filestatの評価
+; filestatの評価
 filestat 'test.exe' size time drive
 assert result = -1 'file open error test' ; 開けない
 
-;test/build/test4.bat
+; build/test4.bat
 filestat 'c:/' size time drive
 assert result != -1 'file open error test' ; 開ける
 sprintf2 str 'Directory size=%d Time modified=%s Drive=%s' size time drive
@@ -74,10 +74,10 @@ messagebox str 'filestat'
 ; ex. Directory size=0 Time modified=2014-03-04 22:44:47 Drive=C
 assert 0 <= size size time drive
 
-fileopen fhandleA 'test/build/test.bat' 0
-;; filecloseせずに終わったときに、内部処理で終わらせることを確認する
+fileopen fhandleA 'build/test.bat' 0
+; filecloseせずに終わったときに、内部処理で終わらせることを確認する
 
-filename = 'test/build/build'
+filename = 'build/build'
 folderdelete filename ;; 評価用にとりあえず消す
 foldersearch filename
 assert result == 0 filename 'ファイルは存在しない'

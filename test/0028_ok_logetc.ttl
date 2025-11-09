@@ -1,6 +1,6 @@
 
 assert 1 "log test" 
-filename = "test/build/log001.txt"
+filename = "build/log001.txt"
 logopen filename 0 0
 logwrite 'Log start'#13#10
 logwrite '*****************************************************'#13#10

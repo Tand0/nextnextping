@@ -1,21 +1,49 @@
-
-(ttl)../test/020_ok_box.ttl
-(ttl)./test.ttl, localhost:2200
-
-; コメント
-# コメント
+; ローカルホスト接続
 localhost
-10.10.10.0
-127.0.0.1
 
-(traceroute)10.10.10.0
+; ローカルホスト接続
 (traceroute)localhost
 
+; ローカルホスト接続
+(show)localhost
 
+; 繋がらないテスト
+10.0.0.1
 
+; 繋がらないテスト
+(traceroute)10.0.0.1
 
+; 繋がらないテスト
+(show)10.0.0.1
 
+; ローカルホスト接続 IPv4
+127.0.0.1
 
+; ローカルホスト接続 IPv4
+(traceroute)127.0.0.1
 
+(ttl)1008c1_ok_127_0_0_1_localhost_2200_1.ttl
+
+(ttl)1009_ok_127_0_0_1_localhost_2200_2.ttl
+
+(ttl)1010qx_ok_127_0_0_1_localhost_2200_3.ttl
+
+(ttl)1011_ok_127_0_0_1_localhost_2200_cisco1_1.ttl
+
+(ttl)1012_ok_127_0_0_1_localhost_2200_cisco1_2.ttl
+
+(ttl)1013_ok_127_0_0_1_localhost_2200_cisco1_3.ttl
+
+(ttl)1014_ok_127_0_0_1_localhost_2200_cisco2_1.ttl
+
+(ttl)1015_ok_127_0_0_1_localhost_2200_cisco2_2.ttl
+
+(ttl)1016_ok_127_0_0_1_localhost_2200_cisco2_3.ttl
+
+(ttl)1017_ok_127_0_0_1_localhost_2200_qx_1.ttl
+
+(ttl)1018_ok_127_0_0_1_localhost_2200_qx_2.ttl
+
+(ttl)1019_ok_127_0_0_1_localhost_2200_qx_3.ttl
 
 

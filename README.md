@@ -25,7 +25,7 @@
 
 ### トップ画面
 
-![トップ画面](./doc/screen001.png)
+<img src="./doc/screen001.png" width="50%">
 
   - トップの画面です。
   - pingを打つIPを指定します。
@@ -37,7 +37,7 @@
 
 ### 結果表示画面
 
-![結果表示画面](./doc/screen002.png)
+<img src="./doc/screen002.png" width="50%">
 
   - メニューバー上の Go ⇒ Updateを実行すると、トップの画面を解析して実施内容を行で表現します。
   - メニューバー上の Go ⇒ Pingを実行すると、pingを定期的に実行します。
@@ -46,7 +46,7 @@
 
 ### ログ画面
 
-![グ画面](./doc/screen003.png)
+<img src=".doc/screen003.png" width="50%">
 
   - 結果表示画面の行をクリックすると、その行に対応したログが表示されます。
 
@@ -59,3 +59,15 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
   - [マクロの実行方法](./doc/howtorun.md)
 - [MACRO言語 "Terawaros Tekitou Language (TTL)"](./doc/syntax.md)　
 - [TTL コマンドリファレンス](./doc/command.md)　
+
+# ping用TTLマクロ作成支援ツール
+
+- ping を打つための TTLマクロを作成するのは面倒なので、指定をするとサンプルが出てきてそのまま使えるようにしました。
+
+- 使い方
+  - [ツールの使い方](./doc/tool.md)
+
+
+
+
+

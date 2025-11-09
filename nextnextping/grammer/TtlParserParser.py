@@ -4972,7 +4972,6 @@ class TtlParserParser ( Parser ):
             else:
                 return self.getTypedRuleContext(TtlParserParser.CommandlineContext,i)
 
-
         def elseif(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(TtlParserParser.ElseifContext)
@@ -5001,11 +5000,7 @@ class TtlParserParser ( Parser ):
             else:
                 return visitor.visitChildren(self)
 
-
-
-
     def if2(self):
-
         localctx = TtlParserParser.If2Context(self, self._ctx, self.state)
         self.enterRule(localctx, 44, self.RULE_if2)
         self._la = 0 # Token type

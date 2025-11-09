@@ -1,7 +1,7 @@
 getdir xxx
 assert 1  xxx
 
-setdir "./test/build"
+setdir "build"
 
 getdir xxx
 assert 1  xxx

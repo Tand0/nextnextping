@@ -85,7 +85,8 @@ class TtlParseTreeVisitor(ParseTreeVisitor):
         x = node.getSymbol().type
         x = TtlParserLexer.ruleNames[x - 1]
         y = node.getText()
-        raise TypeError(f"visitErrorNode type={x} text={y}")
+        line_number = node.getSymbol().line
+        raise TypeError(f"visitErrorNode l={str(line_number)} type={x} text={y}")
 
 
 class ThrowingErrorListener(ErrorListener):
@@ -239,7 +240,7 @@ class TtlPaserWolker():
         parser = TtlParserParser(token_stream)
         #
         # パーサが失敗していたら止める
-        parser._errHandler = BailErrorStrategy()
+        # parser._errHandler = BailErrorStrategy()
         #
         tree = parser.statement()
         visitor = TtlParseTreeVisitor()
@@ -327,9 +328,9 @@ class TtlPaserWolker():
                     filename = self.getData(x['child'][1])
                     self.include(filename)
                 elif 'call' == command_name:
-                    label = x['child'][1]
-                    # print(f"call label={label}")
-                    self.callContext(label)
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    # print(f"call label={p1}")
+                    self.callContext(p1)
                 elif 'str2int' == command_name:
                     left = self.getKeywordName(x['child'][1])
                     right = int(self.getData(x['child'][2]))
@@ -557,15 +558,16 @@ class TtlPaserWolker():
                     left = self.getKeywordName(left)
                     self.doSprintf(left, x['child'][2:])
                 elif command_name in ['setdir', 'changedir']:
-                    left = x['child'][1]
-                    left = self.getData(left)
-                    path = pathlib.Path(left)
-                    if path.is_absolute():
-                        # print(f"pathA={path}")
-                        os.chdir(path)
+                    p1 = x['child'][1]
+                    p1_str = self.getData(p1)
+                    p1_str = pathlib.Path(p1_str)
+                    if p1_str.is_absolute():
+                        # print(f"pathA={p1_str}")
+                        os.chdir(p1_str)
                     else:
-                        path = pathlib.Path.cwd() / path
-                        os.chdir(path)
+                        # print(f"pathB={p1_str}")
+                        p1_str = pathlib.Path.cwd() / p1_str
+                        os.chdir(p1_str)
                 elif 'makepath' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
                     p2 = str(self.getData(x['child'][2]))
@@ -832,37 +834,38 @@ class TtlPaserWolker():
                 token_list = token_list['child']  # StatementContext
                 i = 0
                 label_found_flag = True
-                while i < len(token_list):
+                while i < len(token_list) and not self.end_flag:
                     targetContext = token_list[i]['child']
                     if label_found_flag:
+                        # ヒットするまでラベルを探す
                         j = 0
-                        while j < len(targetContext):
+                        while j < len(targetContext) and not self.end_flag:
                             # print(f"xxx data={json.dumps(targetContext, indent=2)}")
                             context = targetContext[j]
                             name = context['name']
                             if 'LabelContext' == name:
                                 label_name = context['child']
+                                # print(f"label name = {label_name[1]:}")
                                 if label == label_name[1]:
+                                    # print("hit!")
                                     label_found_flag = False
                                     break
                             j = j + 1
                             if self.end_flag:
                                 break
                     else:
+                        # 一端ヒットしたら以降の行を処理し始める
                         self.commandlineContext(targetContext)
                     i = i + 1
-                    if not label_found_flag:
-                        break
-                    if self.end_flag:
-                        break
                 if not label_found_flag:
                     break
                 if self.end_flag:
                     break
             if label_found_flag:
                 # 一つもヒットしていない
-                self.stop(error=f"No hit label error label={label}")
+                raise TypeError(f"No hit label error label={label}")
         except TtlReturnFlagException:
+            # print("TtlReturnFlagException")
             pass
         #
 
@@ -1459,46 +1462,72 @@ class TtlPaserWolker():
         self.doWaitAll(result_list)
 
     def doWaitAll(self, result_list):
+        # print(f"doWaitAll x=/{result_list}/")
         m_timeout = self.getTimer()
         now_time = int(time.time() * 1000)
         result = 0
         hit_flag = False
-        while m_timeout is None and not self.end_flag and not hit_flag:
-            if m_timeout is not None:
-                if (now_time + m_timeout) < int(time.time()):
+        self.setValue('result', 0)
+        while not self.end_flag and not hit_flag:
+            #
+            # 生成したものでヒットするか確認
+            result = 1
+            max = None
+            result_len = ''
+            #
+            # 全件チェックする
+            for i, reslut_text in enumerate(result_list):
+                index = self.stdout.find(reslut_text)
+                if 0 <= index:
+                    hit_flag = True
+                    if (max is None) or (index < max) or (index == max and result_len < len(reslut_text)):
+                        # 最初にヒットしたか、
+                        # より最初にヒットするか、
+                        # 同じ位置でヒットするならより文字列が長いほうを選ぶ
+                        max = index
+                        result_len = len(reslut_text)
+                        result = i + 1
+            #
+            if hit_flag:
+                # 見つかった地点まで切り飛ばす
+                # print(f"remain1=/{self.stdout}/ cutlen={max + result_len}")
+                self.stdout = self.stdout[max + result_len:]
+                # print(f"remain2=/{self.stdout.strip()}/")
+                self.setValue('result', result)
+                # ヒットしていたら終了
+                break
+            #
+            if m_timeout != 0:
+                r_time = (now_time + m_timeout) - int(time.time() * 1000)
+                # print(f"doWaitAll {r_time} / {m_timeout}")
+                if r_time < 0:
                     # タイムアウトを超えた
                     result = 0
                     break
             #
             process = self.process
             if self.process is None:
+                # ここからSSH接続
+                #
                 shell = self.shell
                 if shell is None:
                     break
                 #
-                # m_timeout は Noneの時無限待ちになる
+                # m_timeout は 0 の時無限待ちになる
                 if shell.recv_ready():
                     # 最後の時間更新
                     now_time = int(time.time() * 1000)
+                    # print("recv start!")
                     output = shell.recv(1024).decode("utf-8")
+                    # print("recv! end")
                     if output is None:
+                        # print("break!")
                         break
                     self.setLogInner(output)
-                    #
                     self.stdout = self.stdout + output
-                    result = 1
-                    for reslut_text in result_list:
-                        index = self.stdout.find(reslut_text)
-                        # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
-                        if 0 <= index:
-                            # 見つかった地点まで切り飛ばす
-                            self.stdout = self.stdout[index + len(reslut_text):]
-                            # print(f"remain={self.stdout}")
-                            hit_flag = True
-                            # hitした
-                            break
-                        result = result + 1
+                    #
                 else:
+                    # print("sleep")
                     time.sleep(0.1)
             else:
                 # ここからcmd
@@ -1519,26 +1548,10 @@ class TtlPaserWolker():
                     self.setLogInner(output)
                     #
                     self.stdout = self.stdout + output
-                    result = 1
-                    for reslut_text in result_list:
-                        index = self.stdout.find(reslut_text)
-                        # print(f"reslut_text=/{reslut_text}/ target={self.stdout.strip()} index={index}")
-                        if 0 <= index:
-                            # 見つかった地点まで切り飛ばす
-                            self.stdout = self.stdout[index + len(reslut_text):]
-                            # print(f"remain={self.stdout}")
-                            hit_flag = True
-                            # hitした
-                            break
-                        result = result + 1
+                    #
                 else:
                     # print("x5")
                     time.sleep(0.1)
-        #
-        if hit_flag:
-            self.setValue('result', result)
-        else:
-            self.setValue('result', 0)
 
     def doGethostname(self, p1):
         """ ホスト名の取得"""
@@ -1552,15 +1565,13 @@ class TtlPaserWolker():
             hostname = socket.gethostname()
             self.setValue(p1, hostname)
 
-    def getTimer(self):
-        m_timeout = None
+    def getTimer(self) -> int:
+        m_timeout = 0
         x = self.getValue('timeout', error_stop=False)
         if x is not None:
             m_timeout = int(x) * 1000
         x = self.getValue('mtimeout', error_stop=False)
         if x is not None:
-            if m_timeout is None:
-                m_timeout = 0
             m_timeout = m_timeout + int(x)
         return m_timeout
 
@@ -1797,6 +1808,7 @@ class TtlPaserWolker():
     def doSetpassword(self, filename: str, password_name: str, password: str):
         worker = self.encrypt_decrypt(filename)
         worker[password_name] = password
+        # print(f"doSetpassword str={filename} p={password_name} p={password} w={worker}")
         self.encrypt_encrypt(filename, worker)
         self.setValue('result', 1)
 

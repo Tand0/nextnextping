@@ -1,6 +1,6 @@
 
 
-filename = 'test/build/password.dat'
+filename = 'build/password.dat'
 password = 'bar'
 newpasswd = 'bar'
 setpassword filename 'foo' newpasswd

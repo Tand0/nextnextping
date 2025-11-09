@@ -14,19 +14,19 @@ assert result ==2  "connect start" error
 
 
 result = 0
-wait '#'
+wait '$'
 assert result ==1  "wait test" error
 
 ; text
 sendln 'test'
 result = 0
-wait '#' ':'
+wait '$' ':'
 assert result ==1  "wait test" error
 
 ; text
 sendln 'work'
 result = 0
-wait ':' '#'
+wait ':' '$'
 assert result ==2  "wait test" error
 
 ; タイムアウトを発生させる

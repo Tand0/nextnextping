@@ -22,6 +22,14 @@
             "ok": "Trace complete.",
             "returncode": false,
             "timeout": 10
+        },
+        {
+            "name": "show",
+            "ttl": false, 
+            "command":"ipconfig /all",
+            "returncode": false,
+            "ok": "Windows IP Configuration",
+            "timeout": 10
         }
     ]
 }

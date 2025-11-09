@@ -35,7 +35,14 @@ closett
 ;connect 'localhost:2200 /ssh /1 /auth=pageant /user=username'
 
 ; できるはず
-connect 'localhost:2200 /ssh /2 /auth=publickey /user=username /passwd=password /keyfile=test_rsa.key'
+getdir keyfile
+assert 1 'keyfile_1' keyfile
+strconcat keyfile '\..\test_rsa.key'
+assert 1 'keyfile_2' keyfile
+command = 'localhost:2200 /ssh /2 /auth=publickey /user=username /passwd=password /keyfile='
+strconcat command keyfile
+assert 1 command
+connect command
 assert  result == 2   "connect OK!" result ; SSH1は未サポート
 closett
 pause 1
