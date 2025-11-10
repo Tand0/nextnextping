@@ -1,11 +1,10 @@
 
 cd ..\nextnextping
 
-pyinstaller --noconsole --noconfirm nextnextping.py
+pyinstaller --noconsole --noconfirm nextnextping.py --hidden-import=.
 
 cd ..\bin
 
-copy /y *.ttl  ..\nextnextping\dist\nextnextping
 copy /y *.json ..\nextnextping\dist\nextnextping
 
 python.exe ../nextnextping/nextnextping.py
