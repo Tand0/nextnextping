@@ -247,7 +247,7 @@ if next_ssh == 2 then
 endif
 
 ; サーバ種別を決める
-if next_ssh == 0 then
+if next_ssh == 1 then ; "0=Windows, 1=SSHログイン", "2=SSH踏み台"
     server_type = base_type
 else
     server_type = next_type
@@ -311,6 +311,17 @@ elseif target_type = 2 then
 else
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'show running-config'
+        sendln command
+        wait prompt '-- More --'
+        if result = 0 then
+            messagebox 'command is time up!' command
+            call call_ending
+            end
+        elseif result = 2 then
+            sendln ''
+            continue
+        endif
+        command = 'show ip interface brief'
     elseif server_type == 2 then
         command = 'ifconfig -a'
     else
@@ -647,6 +658,7 @@ class MyThread():
                 #
                 if not self.stop_flag:
                     break
+                # print(f"wait_time={self.next_next_ping.init['wait_time']}")
                 time.sleep(self.next_next_ping.init['wait_time'])
                 if not self.stop_flag:
                     break
@@ -987,7 +999,7 @@ class NextNextPing():
         if 'debug' not in self.init:
             self.init['debug'] = False
         if 'timeout' not in self.init:
-            self.init['timeout'] = 30
+            self.init['timeout'] = 1
         if 'data' not in self.init:
             self.init['data'] = {}
         self.setting = self.next_text_load(self.SETTING_JSON)
@@ -1029,20 +1041,29 @@ class NextNextPing():
         tab2 = tk.Frame(notebook)
         notebook.add(tab2, text="result")
         column = ('OK/NG', 'Type', 'Date', 'IP')
-        self.tree = ttk.Treeview(tab2, columns=column)
+        #
+        # フレームでTreeviewとScrollbarをまとめる
+        frame = ttk.Frame(tab2)
+        frame.pack(fill=tk.BOTH, expand=True)
+        self.tree = ttk.Treeview(frame, columns=column)
         self.tree.column('#0', width=0, stretch='no')
         self.tree.column(column[0], anchor=tk.CENTER, width=20)
         self.tree.column(column[1], anchor=tk.W, width=40)
         self.tree.column(column[2], anchor=tk.W, width=40)
         self.tree.column(column[3], anchor=tk.W)
-        self.tree.heading(column[0], text=column[0])
-        self.tree.heading(column[1], text=column[1])
-        self.tree.heading(column[2], text=column[2])
-        self.tree.heading(column[3], text=column[3])
+        for var in column:
+            self.tree.heading(var, text=var)
+        self.tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
+        # スクロールバーの設定
+        vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=vsb.set)
+        self.tree.grid(row=0, column=0, sticky='nsew')
+        vsb.grid(row=0, column=1, sticky='ns')
+        frame.rowconfigure(0, weight=1)
+        frame.columnconfigure(0, weight=1)
         #
         self.update_setting()
-        self.tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         #
         tab3 = tk.Frame(notebook)
         notebook.add(tab3, text="log")
@@ -1245,21 +1266,28 @@ class NextNextPing():
         row_index = str(1000 + row_index)
         #
         ans = ''
-        ssh_type = int(values[4])
+        target_ip = values[2]
+        target_type = int(values[3])
+        next_ssh = int(values[4])
         base_type = int(values[5])
+        base_ip = values[7]
+        next_ip = values[11]
         if base_type == 1:
             base_type = 'c1'
         elif base_type == 3:
             base_type = 'qx'
         else:
             base_type = ''
-
-        if ssh_type == 0:  # "0=Windows", "1=SSH login", "2=sSSH step"
-            ans = f"{row_index}{base_type}_ok_{values[2]}_{values[3]}"
-        elif ssh_type == 1:
-            ans = f"{row_index}{base_type}_ok_{values[2]}_{values[7]}_{values[3]}"
+        action_name = self.get_target_type_to_action_name(target_type)
+        if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
+            ans = f"{row_index}{base_type}_ok_{action_name}_{target_ip}"
+        elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
+            ans = f"{row_index}{base_type}_ok_{base_ip}_{action_name}_{target_ip}"
+        elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
+            ans = f"{row_index}{base_type}_ok_{next_ip}_{action_name}_{target_ip}"
         else:
-            ans = f"{row_index}{base_type}_ok_{values[2]}_{values[7]}_{values[11]}_{values[3]}"
+            ans = "unkown_next_ssh"
+        #
         ans = ans.replace(":", "_")  # ipv6
         ans = ans.replace(".", "_")  # ipv4
         ans = ans.replace("/", "_")  # folder
@@ -1271,7 +1299,7 @@ class NextNextPing():
     def update_tool(self, item_id, values: list) -> list:
         # モーダルダイアログ
         dialog = tk.Toplevel(self.root)
-        dialog.title("tool_sheet")
+        dialog.title("tool_sheet_line")
         dialog.geometry("400x450")
         #
         # 不正対策
@@ -1285,11 +1313,17 @@ class NextNextPing():
 
         def on_combo_select(event):
             """ コンボ選択処理 """
-            val = int(name_var_list[4].get()[0])
-            if val == 0:  # ("0=Windows", "1=SSH login", "2=sSSH step")
+            target_type = int(name_var_list[3].get()[0])
+            if target_type == 3:  # 1=ping , 2=traceroute , 3=show run
+                widget[2].config(state="disabled")
+            else:
+                widget[2].config(state="normal")
+            #
+            next_ssh = int(name_var_list[4].get()[0])
+            if next_ssh == 0:  # ("0=Windows", "1=SSH login", "2=sSSH step")
                 for entry in widget[5:]:
                     entry.config(state="disabled")
-            elif val == 1:
+            elif next_ssh == 1:
                 for entry in widget[5:]:
                     entry.config(state="normal")
                 for entry in widget[9:]:
@@ -1311,7 +1345,7 @@ class NextNextPing():
                 combo = ttk.Combobox(dialog, textvariable=selected_value)
                 widget.append(combo)
                 combo["values"] = combo_list
-                if i == 4:  # ssh_type
+                if i == 3 or i == 4:  # target_type, ssh_type
                     combo.bind("<<ComboboxSelected>>", on_combo_select)
                 value_item = 0
                 j = 0
@@ -1440,25 +1474,48 @@ class NextNextPing():
             messagebox.showinfo("Info", "save_csv is ok")
             self.tool_tree.focus_set()
 
+    def get_target_type_to_action_name(self, target_type: int) -> str:
+        """ target_type を 1=ping , 2=trace , 3=show に変える """
+        if target_type == 1:
+            return 'ping'
+        elif target_type == 2:
+            return 'trace'
+        elif target_type == 3:
+            return 'show'
+        #
+        return str(target_type)
+
     def create_ttl(self):
-        # リストを抽出する
-        all_items = self.tool_tree.get_children()
+        """ リストを抽出してttlを作る """
         new_text = ''
+        all_items = self.tool_tree.get_children()
         for item_id in all_items:
             values = self.tool_tree.item(item_id)["values"]
             #
             file_name = values[0]
             target_display = values[1]
             target_ip = values[2]
-            target_type = values[3]
-            next_ssh = values[4]
+            target_type = int(values[3])
+            next_ssh = int(values[4])
             base_ip = values[7]
             base_display = values[6]
             next_display = values[10]
             next_ip = values[11]
             #
-            if next_ssh == 0:  # 0=Windows
-                new_text = new_text + "; " + target_display + "\n"
+            file_head_data = ''
+            action_name = self.get_target_type_to_action_name(target_type)
+            if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
+                file_head_data = f"; {action_name}  {target_display}({target_ip})\n"
+            elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
+                file_head_data = f"; {base_display}({base_ip}) {action_name} {target_display}({target_ip})\n"
+            elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
+                file_head_data = f"; {base_display}({base_ip})->{next_display}({next_ip}) {action_name} {target_display}({target_ip})\n"
+            else:
+                file_head_data = "; \n"
+            #
+            new_text = new_text + file_head_data
+            #
+            if next_ssh == 0:
                 if target_type == 1:  # "1=ping", "2=traceroute", "3=show run"
                     new_text = new_text + target_ip + "\n"
                 elif target_type == 2:
@@ -1467,16 +1524,10 @@ class NextNextPing():
                     new_text = new_text + "(show)" + target_ip + "\n"
                 new_text = new_text + "\n"
             else:
-                file_head_data = ''
-                if next_ssh == 0:  # 1 ssh
-                    file_head_data + f"; {base_display}({base_ip}) -> {target_display}({target_ip})\n"
-                else:
-                    file_head_data + f"; {base_display}({base_ip}) -> {next_display}({next_ip}) -> {target_display}({target_ip})\n"
-                new_text = new_text + file_head_data
-                #
-                # print(f"aaa f=/{file_name}/ /{file_head_data}/")
                 new_text = new_text + "(ttl)" + file_name + "\n"
                 new_text = new_text + "\n"
+                # 
+                file_head_data = ';\n' + file_head_data + ";\n\n"
                 #
                 # ファイルを書き込む
                 for i, value in enumerate(values):
@@ -1497,18 +1548,24 @@ class NextNextPing():
                             file_head_data = file_head_data + data
                         #
                     file_head_data = file_head_data + "\n"
+                base_file = 'base.ttl'
                 file_head_data = file_head_data + "\n\n"
+                file_head_data = file_head_data + f"include \"{base_file}\""
+                file_head_data = file_head_data + "\n\n"
+                if not os.path.exists(base_file):  # ベースファイルが存在しなければ作る
+                    with open(base_file, 'w', encoding='utf-8') as f:
+                        f.write(SAMPLE_TTL)
                 #
                 with open(file_name, 'w', encoding='utf-8') as f:
                     f.write(file_head_data)
-                    f.write(SAMPLE_TTL)
                 #
         # 設定シートを書き換える
-        self.setting_text.delete('1.0', 'end')         # 既存のテキストを削除
+        self.setting_text.delete('1.0', 'end')  # 既存のテキストを削除
         self.setting_text.insert('1.0', new_text)  # 新しいテキストを挿入
         #
-        # 保存する
+        # 設定シートを保存する
         self.save_setting()
+        #
         # resultシートを更新する
         self.update_setting()
         #

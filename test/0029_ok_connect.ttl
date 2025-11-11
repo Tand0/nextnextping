@@ -225,7 +225,7 @@ if next_ssh == 2 then
 endif
 
 ; サーバ種別を決める
-if next_ssh == 0 then
+if next_ssh == 1 then ; "0=Windows, 1=SSHログイン", "2=SSH踏み台"
     server_type = base_type
 else
     server_type = next_type
@@ -289,6 +289,18 @@ elseif target_type = 2 then
 else
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'show running-config'
+        sendln command
+        wait prompt '-- More --'
+        if result = 0 then
+            assert 1 prompt
+            messagebox 'command is time up!' command
+            call call_ending
+            end
+        elseif result = 2 then
+            sendln ''
+            continue
+        endif
+        command = 'show ip interface brief'
     elseif server_type == 2 then
         command = 'ifconfig -a'
     else
@@ -389,5 +401,4 @@ endif
 logclose
 result = 0
 return
-
 

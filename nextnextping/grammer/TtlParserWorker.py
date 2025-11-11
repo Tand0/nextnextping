@@ -1480,10 +1480,8 @@ class TtlPaserWolker():
                 index = self.stdout.find(reslut_text)
                 if 0 <= index:
                     hit_flag = True
-                    if (max is None) or (index < max) or (index == max and result_len < len(reslut_text)):
-                        # 最初にヒットしたか、
-                        # より最初にヒットするか、
-                        # 同じ位置でヒットするならより文字列が長いほうを選ぶ
+                    if max is None or index < max:
+                        # 最初にヒットしたか、より最初にヒットする方を選ぶ
                         max = index
                         result_len = len(reslut_text)
                         result = i + 1

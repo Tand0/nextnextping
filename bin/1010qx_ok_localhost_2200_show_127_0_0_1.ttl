@@ -1,0 +1,21 @@
+;
+; SSH接続先IP(localhost:2200) show SSH接続(127.0.0.1)
+;
+
+file_name = "1010qx_ok_localhost_2200_show_127_0_0_1.ttl"
+target_display = "SSH接続"
+target_ip = "127.0.0.1"
+target_type = 3  ; 1=ping , 2=traceroute , 3=show run
+next_ssh = 1  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+base_type = 3  ; 1=cisco , 2=linux , 3=qx-s
+base_display = "SSH接続先IP"
+base_ip = "localhost:2200"
+base_account = "admin"
+next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+next_display = "next_display"
+next_ip = "dummy"
+next_account = "admin"
+
+
+include "base.ttl"
+

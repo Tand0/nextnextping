@@ -1,18 +1,3 @@
-file_name = "1018_ok_127_0_0_1_localhost_2200_qx_2.ttl"
-target_display = "SSH踏み台"
-target_ip = "127.0.0.1"
-target_type = 2  ; 1=ping , 2=traceroute , 3=show run
-next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
-base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
-base_display = "SSH接続先IP"
-base_ip = "localhost:2200"
-base_account = "admin"
-next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
-next_display = "次のdisplay_qx"
-next_ip = "qx"
-next_account = "nextadmin"
-
-
 
 ;INPUT_START
 
@@ -96,12 +81,6 @@ strconcat log_file_name log_file_name_work
 
 ; ログを開く
 logopen log_file_name 0 0
-
-;; パスワード保存ファイルを指定する
-getdir key_file
-strconcat key_file #92 ;
-strconcat key_file "pass" ; パスワード保存用
-
 
 ; すでに接続されていたらエラー
 testlink
@@ -247,7 +226,7 @@ if next_ssh == 2 then
 endif
 
 ; サーバ種別を決める
-if next_ssh == 0 then
+if next_ssh == 1 then ; "0=Windows, 1=SSHログイン", "2=SSH踏み台"
     server_type = base_type
 else
     server_type = next_type
@@ -289,7 +268,6 @@ if target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
     wait command
     wait prompt '0% packet loss' 'Success rate is 100 percent'
     if result <= 1 then
-        assert 1 "OK 222 xx" result prompt
         call call_ending
         end
     endif
@@ -312,6 +290,17 @@ elseif target_type = 2 then
 else
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'show running-config'
+        sendln command
+        wait prompt '-- More --'
+        if result = 0 then
+            messagebox 'command is time up!' command
+            call call_ending
+            end
+        elseif result = 2 then
+            sendln ''
+            continue
+        endif
+        command = 'show ip interface brief'
     elseif server_type == 2 then
         command = 'ifconfig -a'
     else
@@ -319,12 +308,20 @@ else
     endif
     sendln command
     ; プロントのチェックを行う
-    wait prompt
-    if result == 0 then
-        messagebox 'command is time up!' command
-        call call_ending
-        end
-    endif
+    while 1
+        ;
+        wait prompt '-- More --'
+        if result = 0 then
+            messagebox 'command is time up!' command
+            call call_ending
+            end
+        elseif result = 2 then
+            sendln ''
+            continue
+        endif
+        ;
+        break
+    endwhile
 endif
 
 ; 終了処理
@@ -333,7 +330,6 @@ call call_ending
 ; 正常終了を通知
 error=''
 result = 1
-assert 1 result
 end
 
 ; SSHでログインするときに使うパスワード
@@ -374,18 +370,22 @@ return
 ; パスワード関連まとめ
 :call_pass_all
 key_ip_replace = key_ip
-strreplace key_ip_replace 1 ':' '_'
-key_data = key_file
-strconcat key_data '_'
+strreplace key_ip_replace 1 ':' '_' ; ipv6
+strreplace key_ip_replace 1 #92'.' '_' ; ipv4 # 正規表現なので単純に.を渡すと全部消える
+getdir key_data
+strconcat key_data #92 ;
+strconcat key_data "pass_" ; パスワード保存用
 strconcat key_data key_ip_replace
 strconcat key_data '.key'
 ispassword key_data key_target  ; パスワードの有無確認
 if result == 0 then  ; 設定されていない
     message = key_target
-    strconcat message "を入力"
-    strconcat message #13
+    strconcat message "("
     strconcat message key_ip
-    passwordbox "enableパスを入力" base_display
+    strconcat message ")を入力"
+    strconcat message #10#13
+    strconcat message key_ip
+    passwordbox message base_display
     password = inputstr ; パスワードを入力
     setpassword key_data key_target password  ; パスワードを設定
 else
@@ -401,3 +401,4 @@ endif
 logclose
 result = 0
 return
+

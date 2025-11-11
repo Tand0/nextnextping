@@ -196,6 +196,13 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
 
 """.replace('\n', '\r\n')
 
+
+    SHOW_IP_INTERFACE_BRIEF = """Interface        IP-Address      OK? Method Status                Protocol
+GigabitEthernet0/1 192.168.1.1     YES manual up                    up
+GigabitEthernet0/2 192.168.2.1     YES manual up                    down
+GigabitEthernet0/3 unassigned      YES manual administratively down down
+""".replace('\n', '\r\n')
+
     def __init__(self, port: int):
         """ コンストラクタ """
         if os.path.isfile(ServerStarter.KEY_FILE):
@@ -440,6 +447,7 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
                     result8 = re.search("^\\s*tracepath", message)
                     result9 = re.search("^\\s*display\\s+current-configuration", message)
                     result10 = re.search("^\\s*ifconfig", message)
+                    result11 = re.search("^\\s*show\\s+ip\\s+interface\\s+brief", message)
                     if result1:
                         if not self.pop_state():
                             self.cleint_close()
@@ -477,6 +485,8 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
                         self.push_state('more')
                     elif result10:
                         self.chan.send(ServerStarter.IFCONFIG)
+                    elif result11:
+                        self.chan.send(ServerStarter.SHOW_IP_INTERFACE_BRIEF)
                 #
                 # プロンプトを渡す
                 self.chan.send(f'{self.prompt}')
@@ -525,11 +535,17 @@ class TTLLoader():
                 #
                 if '.ttl' not in file:
                     continue
+                if 'base.ttl' in file:
+                    continue
                 #
                 #
                 ok_flag = False
                 if '_ok_' in file:
+                    print("test is OK test")
                     ok_flag = True
+                else:
+                    print("test is NG test")
+                    ok_flag = False
                 #
                 print()
                 print(f"test file={file}")
@@ -555,9 +571,11 @@ class TTLLoader():
                 error_data = ttlPaserWolker.getValue('error')
                 if ok_flag:
                     result_flag = result != 0
+                    print(f"test OK result_flag={str(result_flag)}")
                     assert result_flag, f"test OK f={file} e=/{error_data}/"
                 else:
                     result_flag = result == 0
+                    print(f"test NG result_flag={str(result_flag)}")
                     assert result_flag, f"test NG f={file} e=/{error_data}/"
                 #
         finally:
@@ -592,6 +610,8 @@ if __name__ == "__main__":
                 if cmd == "exit":
                     break
                 print("test command#", end="")
+        except AssertionError as e:
+            print(f"AssertionError happen: {e}")
         finally:
             print("test start finally")
             serverStarter.close()

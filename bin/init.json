@@ -1,5 +1,5 @@
 {
-    "wait_time": 3,
+    "wait_time": 1,
     "loop": false,
     "debug": false,
     "data": [
@@ -11,7 +11,7 @@
             "name": "ping",
             "ttl": false, 
             "command":"ping -n 1 %1",
-            "ok": "(0% loss)",
+            "ok": "(0%",
             "returncode": false,
             "timeout": 10
         },
