@@ -18,6 +18,7 @@ import re
 import locale
 import csv
 from grammer.TtlParserWorker import TtlPaserWolker
+import webbrowser
 
 SAMPLE_TTL = '''
 ;INPUT_START
@@ -30,7 +31,7 @@ SAMPLE_TTL = '''
 ;base_display = "SSH接続する装置"
 ;base_ip = "localhost:2200"
 ;base_account = "foo" ; アカウント情報
-;next_ssh = 2  ; "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+;next_ssh = 2  ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
 ;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 ;next_display = "SSHからさらに接続する装置"
 ;next_ip  = "c1"  ; 踏み台SSHのIPアドレス
@@ -124,71 +125,33 @@ strconcat command base_password
 connect command
 if result <> 2 then
     int2str strvar result
-    message = "connection failer"
+    message = "connection failer "
     strconcat message strvar
-    messagebox message "title"
+    messagebox command message
     call call_ending
     end
 endif
 
+; ttl本家側で入れないと動かないことがあった
+pause 1
 
+;
 prompt = '$'
 timeout = 10
-command = 'pwd'
+command = 'clear'
 sendln command
 wait command
 if result == 0 then
-    messagebox 'input check timeout failer' 'title'
+    messagebox 'input check timeout failer' command
     call call_ending
     end
 endif
-while 1
-    ; プロンプトチェック
-    wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --' 
-    result_type = result
-    if result_type == 0 then
-        messagebox 'prompt check timeout failer' 'title'
-        call call_ending
-        end
-    elseif result_type == 1 then
-        prompt = '>'
-        if base_type == 1 then
-            ; ciscoの場合は特権へ移行
-            sendln 'enable'
-            continue
-        endif
-    elseif result_type == 2 then
-        prompt = '#'
-    elseif result_type == 3 then
-        prompt = '$'
-    elseif result_type == 4 then
-        sendln "yes"
-        continue
-    elseif result_type == 5 then
-        strcompare prompt '>'
-        if result == 0 then
-            call call_base_password_enable  ; 特権モード移行用
-        else
-            call call_base_password
-        endif
-        sendln password
-        continue
-    elseif result_type == 6 then
-        sendln ''
-        continue
-    else
-        int2str strvar result_type
-        message = "prompt not found("
-        strconcat message strvar
-        strconcat message ")"
-        messagebox message 'title'
-        call call_ending
-        end
-    endif
-    ;
-    ; while を終わる
-    break
-endwhile
+; call_get_promptのために状態フラグを設定する
+state_flag = 0
+; call_get_promptのためにサーバ種別を設定する
+server_type = base_type
+; プロンプトを決定する
+call call_get_prompt
 
 
 if next_ssh == 2 then
@@ -198,59 +161,22 @@ if next_ssh == 2 then
     strconcat command "@"
     strconcat command next_ip
     sendln command
-    while 1
-        ; プロンプトチェック
-        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --'
-        result_type = result
-        if result_type == 0 then
-            messagebox 'next prompt check fail!' 'title'
-            call call_ending
-            end
-        elseif result_type == 1 then
-            prompt = '>'
-            if base_type == 1 then
-                sendln 'enable'
-                continue
-            endif
-        elseif result_type == 2 then
-            prompt = '#'
-        elseif result_type == 3 then
-            prompt = '$'
-        elseif result_type == 4 then
-            sendln "yes"
-            continue
-        elseif result_type == 5 then
-            strcompare prompt '>'
-            if result == 0 then
-                call call_next_enable_password ; 特権モード移行用
-            else
-                call call_next_password
-            endif
-            sendln password
-            continue
-        elseif result_type == 6 then
-            sendln ''
-            continue
-        else
-            int2str strvar result_type
-            message = "next promot not found("
-            strconcat message strvar
-            strconcat message ")"
-            messagebox message 'title'
-            call call_ending
-            end
-        endif
-        ;
-        ; while を終わる
-        break
-    endwhile
-endif
-
-; サーバ種別を決める
-if next_ssh == 1 then ; "0=Windows, 1=SSHログイン", "2=SSH踏み台"
-    server_type = base_type
-else
-    server_type = next_type
+    wait command
+    if result == 0 then
+        messagebox 'input check timeout failer' command
+        call call_ending
+        end
+    endif
+    ; call_get_promptのために状態フラグを設定する
+    state_flag = 1
+    ; call_get_promptのためにサーバ種別を設定する
+    if next_ssh == 1 then ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
+        server_type = base_type
+    else
+        server_type = next_type
+    endif
+    ; プロンプトを決定する
+    call call_get_prompt
 endif
 
 
@@ -287,7 +213,7 @@ if target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
     strconcat command target_ip
     sendln command
     wait command
-    wait prompt '0% packet loss' 'Success rate is 100 percent'
+    wait prompt ' 0% packet loss' ' 0.0% packet loss' 'Success rate is 100 percent'
     if result <= 1 then
         call call_ending
         end
@@ -355,72 +281,141 @@ end
 
 ; SSHでログインするときに使うパスワード
 :call_base_password
-key_target = 'normal_'
-strconcat key_target base_account
-key_ip = base_ip
-key_base_display = base_display
-call call_pass_all
+    key_target = 'normal_'
+    strconcat key_target base_account
+    key_ip = base_ip
+    key_base_display = base_display
+    call call_pass_all
 return
 
 ; SSHからSSHにさらにログインするときのパスワード
 :call_base_password_enable
-key_target = 'enable_'
-strconcat key_target base_account
-key_ip = base_ip
-key_base_display = base_display
-call call_pass_all
+    key_target = 'enable_'
+    strconcat key_target base_account
+    key_ip = base_ip
+    key_base_display = base_display
+    call call_pass_all
 return
 
 ; 特権ユーザのパスワード
 :call_next_password
-key_target = 'normal_'
-strconcat key_target next_account
-key_ip = next_ip
-key_base_display = next_display
-call call_pass_all
+    key_target = 'normal_'
+    strconcat key_target next_account
+    key_ip = next_ip
+    key_base_display = next_display
+    call call_pass_all
 return
 
 ; 特権ユーザのパスワード
 :call_next_enable_password
-key_target = 'enable_'
-strconcat key_target next_account
-key_ip = next_ip
-key_base_display = next_display
+    key_target = 'enable_'
+    strconcat key_target next_account
+    key_ip = next_ip
+    key_base_display = next_display
 return
 
 ; パスワード関連まとめ
 :call_pass_all
-key_ip_replace = key_ip
-strreplace key_ip_replace 1 ':' '_' ; ipv6
-strreplace key_ip_replace 1 #92'.' '_' ; ipv4 # 正規表現なので単純に.を渡すと全部消える
-getdir key_data
-strconcat key_data #92 ;
-strconcat key_data "pass_" ; パスワード保存用
-strconcat key_data key_ip_replace
-strconcat key_data '.key'
-ispassword key_data key_target  ; パスワードの有無確認
-if result == 0 then  ; 設定されていない
-    message = key_target
-    strconcat message "("
-    strconcat message key_ip
-    strconcat message ")を入力"
-    strconcat message #10#13
-    strconcat message key_ip
-    passwordbox message base_display
-    password = inputstr ; パスワードを入力
-    setpassword key_data key_target password  ; パスワードを設定
-else
-    getpassword key_data key_target password  ; パスワードを取得
-endif
+    key_ip_replace = key_ip
+    strreplace key_ip_replace 1 ':' '_' ; ipv6
+    strreplace key_ip_replace 1 #92'.' '_' ; ipv4 # 正規表現なので単純に.を渡すと全部消える
+    getdir key_data
+    strconcat key_data #92 ;
+    strconcat key_data "pass_" ; パスワード保存用
+    strconcat key_data key_ip_replace
+    strconcat key_data '.key'
+    ispassword key_data key_target  ; パスワードの有無確認
+    if result == 0 then  ; 設定されていない
+        message = key_target
+        strconcat message "("
+        strconcat message key_ip
+        strconcat message ")"
+        passwordbox message base_display
+        password = inputstr ; パスワードを入力
+        setpassword key_data key_target password  ; パスワードを設定
+    else
+        getpassword key_data key_target password  ; パスワードを取得
+    endif
+    return
+
+    :call_ending
+    testlink
+    if result==2  then
+        closett
+        logclose
+    endif
+    result = 0
 return
 
-:call_ending
-testlink
-if result==2  then
-    closett
-endif
-logclose
-result = 0
+
+ :call_get_prompt
+    password_flag = 0
+    while 1
+        ; プロンプトチェック
+        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --'
+        result_type = result
+        if result_type == 0 then
+            messagebox 'next prompt check fail!' 'title'
+            call call_ending
+            end
+        elseif result_type == 1 then
+            prompt = '>'
+            if server_type == 1 then
+                password_flag = 0
+                command = 'enable'
+                sendln command
+                wait command
+                continue
+            endif
+        elseif result_type == 2 then
+            prompt = '#'
+        elseif result_type == 3 then
+            prompt = '$'
+        elseif result_type == 4 then
+            command = 'yes'
+            sendln command
+            wait command
+            continue
+        elseif result_type == 5 then
+            if password_flag <> 0 then
+                message = 'passdword ng!'
+                messagebox message 'title'
+                call call_ending
+                end
+            endif
+            password_flag = 1
+            strcompare prompt '>'
+            if state_flag == 0 then
+                if result == 0 then
+                    call call_base_password_enable ; 特権モード移行用
+                else
+                    call call_base_password
+                endif
+            else
+                if result == 0 then
+                    call call_next_enable_password ; 特権モード移行用
+                else
+                    call call_next_password
+                endif
+            endif
+            sendln password
+            continue
+        elseif result_type == 6 then
+            sendln ''
+            continue
+        else
+            int2str strvar result_type
+            message = "next promot not found("
+            strconcat message strvar
+            strconcat message ")"
+            messagebox message 'title'
+            call call_ending
+            end
+        endif
+        ;
+        ; while を終わる
+        break
+    endwhile
 return
 
 '''
@@ -437,6 +432,18 @@ class MyTtlPaserWolker(TtlPaserWolker):
 
     def setLog(self, strvar):
         self.log_type_param['stdout'] = self.log_type_param['stdout'] + strvar
+
+    def doLogopen(self, filename, binary_flag, append_flag,
+                  plain_text_flag, timestamp_flag, hide_dialog_flag,
+                  include_screen_buffer_flag, timestamp_type):
+        """ open the log """
+        if self.next_next_ping.init['ignore_log']:
+            return  # ログを開かないようにする
+        # 親を呼ぶ
+        super().doLogopen(
+            filename, binary_flag, append_flag,
+            plain_text_flag, timestamp_flag, hide_dialog_flag,
+            include_screen_buffer_flag, timestamp_type)
 
     def commandContext(self, name, line, data_list):
         """ GUI側で処理すべきコマンド群 """
@@ -545,7 +552,7 @@ class MyTtlPaserWolker(TtlPaserWolker):
                 # print(f"inputstr is {inputstr}")
                 self.setValue('inputstr', inputstr)
             return
-        elif "messagebox" == name:
+        elif "messagebox" == name and not self.next_next_ping.init['ignore_messagebox']:
             p1 = str(self.getData(data_list[0]))
             p2 = str(self.getData(data_list[1]))
             done_event = threading.Event()
@@ -577,11 +584,6 @@ class MyTtlPaserWolker(TtlPaserWolker):
         #
         #
         # 未実装のコマンド表示
-        if self.next_next_ping.init['debug']:
-            self.setLog(f"\t### command value={name} line={line}\r\n")
-            for data in data_list:
-                data = self.getData(data)
-                self.setLog(f"\t### debug value={data}\r\n")
         super().commandContext(name, line, data_list)
         #
 
@@ -618,7 +620,7 @@ class MyThread():
     def start(self):
         while (self.stop_flag):
             for values in self.values_values:
-                (result, type, date, command) = values
+                (result, date, display_name, type, command) = values
                 #
                 flag = False
                 if type not in self.next_next_ping.log:
@@ -653,8 +655,8 @@ class MyThread():
                 self.next_next_ping.log[type][command]['date'] = date
                 #
                 self.next_next_ping.root.after(
-                    0, lambda: self.next_next_ping.command_ping_threading(result, type, date, command))
-                self.command_status_threading(f"{result} ({type}) {command}")
+                    0, lambda: self.next_next_ping.command_ping_threading(result, date, type, command))
+                self.command_status_threading(f"{result} {display_name} ({type}) {command}")
                 #
                 if not self.stop_flag:
                     break
@@ -700,8 +702,12 @@ class MyThread():
             self.next_next_ping.log[type] = {}
         if command not in self.next_next_ping.log[type]:
             self.next_next_ping.log[type][command] = {}
+        #
+        # 出力先を保持
+        log_type_coomand = self.next_next_ping.log[type][command]
+        #
         # print(f"T1={type} C=/{command}/")
-        self.next_next_ping.log[type][command]['stdout'] = ''
+        log_type_coomand['stdout'] = ''
         for i, command_data in enumerate(command_list):
             key = '%' + str(i + 1)
             value = command_data.strip()
@@ -720,14 +726,14 @@ class MyThread():
                     if buffer == '':
                         continue
                     print(f"{buffer}", end='')
-                    x = self.next_next_ping.log[type][command]['stdout']
-                    self.next_next_ping.log[type][command]['stdout'] = x + buffer
+                    x = log_type_coomand['stdout']
+                    log_type_coomand['stdout'] = x + buffer
                 else:
                     time.sleep(0.1)
             # print(f"T3={type} C=/{command}/")
             #
             if 'ok' in command_dict:
-                if command_dict['ok'] in self.next_next_ping.log[type][command]['stdout']:
+                if command_dict['ok'] in log_type_coomand['stdout']:
                     flag = True
             if 'returncode' in command_dict:
                 if command_dict['returncode']:
@@ -775,6 +781,7 @@ class NextNextPing():
         self.root = None
         self.status_var = None
         self.result = None
+        self.notebook = None
 
     def next_next_load(self, file_name: str):
         setting = {}
@@ -828,31 +835,52 @@ class NextNextPing():
         setting = self.setting_text.get("1.0", tk.END)
         lines = setting.splitlines()
         for line in lines:
-            if line.startswith('\''):
-                continue
-            if line.startswith('#'):
-                continue
-            if line.startswith(';'):
-                continue
+            line = line.strip()
+            for target in ['#', '\'', '\"', ';']:
+                index = line.find(target)
+                if 0 <= index:
+                    line = line[:index]
             line = line.strip()
             if line == '':
                 continue
             type = 'ping'
-            result = re.match("^\\s*\\(([^\\)]+)\\)\\s*(.*)\\s*", line)
+            display_name = type
+            result = re.match(r"^\s*(\[[^\]]*\])?\s*(\([^\)]*\))?\s*(\S+)\s*", line)
             if result:
-                type = result.group(1).strip().lower()
-                if "trace" in type:
-                    type = "trace"
-                if "show" in type:
-                    type = "show"
+                display_name = result.group(1)
+                type = result.group(2)
+                line = result.group(3)
+                if type is None:
+                    type = 'ping'
                 else:
-                    a_flag = False
-                    for data_list in self.init['data']:
-                        if data_list['name'] == type:
-                            a_flag = True
-                    if not a_flag:
-                        type = "ping"
-                line = result.group(2).strip()
+                    # print(f"line1 p1={type} p2={display_name} p3={line}")
+                    type = type.strip().lower()
+                    if 2 <= len(type):
+                        type = type[1:-1]  # 前後の()を消す
+                    if "trace" in type:
+                        type = "trace"
+                    if "show" in type:
+                        type = "show"
+                    else:
+                        a_flag = False
+                        for data_list in self.init['data']:
+                            # print(f"{data_list['name']}")
+                            if data_list['name'] == type:
+                                a_flag = True
+                        if not a_flag:
+                            type = "ping"
+                    # print(f"line2 p1={type} p2={display_name} p3={line}")
+                #
+                if display_name is None or '' == display_name:
+                    display_name = type + ':' + line
+                elif 2 <= len(display_name):
+                    display_name = display_name[1:-1]  # 前後の[]を消す
+                    display_name = display_name.strip()
+                #
+                if line is None:
+                    continue
+                line = line.strip()
+            #
             date = '--'
             result = '--'
             if type in self.log:
@@ -861,8 +889,11 @@ class NextNextPing():
                         result = self.log[type][line]['result']
                     if 'date' in self.log[type][line]:
                         date = self.log[type][line]['date']
-            values = (result, type, date, line)
+            values = (result, date, display_name, type, line)
             self.tree.insert("", "end", values=values)
+        #
+        # 画面を切り替える
+        self.notebook.select(1)
 
     def command_ping(self):
         #
@@ -870,7 +901,7 @@ class NextNextPing():
         self.log = {}
         #
         if self.my_thread is None:
-            message = "Info", "Ping start!"
+            message = "Ping start!"
             self.command_status_threading(message)
             messagebox.showinfo("Info", message)
             #
@@ -904,51 +935,28 @@ class NextNextPing():
         if my_thread is not None:
             my_thread.stop()
 
-    def command_debug(self):
-        if self.init['debug']:
-            self.init['debug'] = False
-            message = "Change to debug=False"
-            self.command_status_threading(message)
-            messagebox.showinfo("Info", message)
-        else:
-            self.init['debug'] = True
-            message = "Change to debug=True"
-            self.command_status_threading(message)
-            messagebox.showinfo("Info", message)
-
-    def command_loop(self):
-        if self.init['loop']:
-            self.init['loop'] = False
-            message = "Change to loop=False"
-            self.command_status_threading(message)
-            messagebox.showinfo("Info", message)
-        else:
-            self.init['loop'] = True
-            message = "Change to loop=True"
-            self.command_status_threading(message)
-            messagebox.showinfo("Info", message)
-
-    def command_ping_threading(self, result, type, date, command):
+    def command_ping_threading(self, result, date, type, command):
         """ 戻り処理 """
         children = self.tree.get_children()
         for child in children:
             values = list(self.tree.item(child, 'values'))
-            if (values[1] == type) and (values[3] == command):
+            # print(f"xx {values} // {type} // {command}")
+            if (values[3] == type) and (values[4] == command):
                 values[0] = result
-                values[2] = date
+                values[1] = date
             self.tree.item(child, values=values)
 
     def command_status_threading(self, data: str):
         """ 戻り処理 """
         message = ''
-        if self.init['loop']:
-            message = 'L(True) '
-        else:
-            message = 'L(False) '
         if self.init['debug']:
-            message = message + "D(True) "
+            message = "D(True) "
         else:
-            message = message + "D(False) "
+            message = "D(False) "
+        if self.init['loop']:
+            message = message + 'L(True) '
+        else:
+            message = message + 'L(False) '
         if isinstance(data, str):
             message = message + data
         elif isinstance(data, list) or isinstance(data, tuple):
@@ -962,10 +970,11 @@ class NextNextPing():
             return
         item_id = selected[0]
         values = self.tree.item(item_id, "values")
-        type = values[1]
-        command = values[3]
+        display_name = values[2]
+        type = values[3]
+        command = values[4]
         string = "empty"
-        self.command_status_threading(f"touch t={type} c=/{command}/")
+        self.command_status_threading(f"touch n={display_name} t={type} c=/{command}/")
         if type not in self.log:
             self.log[type] = {}
         if command not in self.log[type]:
@@ -979,7 +988,7 @@ class NextNextPing():
         stdout = "--"
         if 'stdout' in self.log[type][command]:
             stdout = self.log[type][command]['stdout']
-        string = f"t={type} c={command}\r\n"
+        string = f"n={display_name} t={type} c={command}\r\n"
         string = string + f"result={result}\r\n"
         string = string + f"date={date}\r\n"
         string = string + "stdout=\r\n"
@@ -987,21 +996,62 @@ class NextNextPing():
         self.log_text.delete("1.0", tk.END)
         self.log_text.insert(1.0, string)
 
+    def on_select_double(self, _):
+        self.notebook.select(2)
+
+    INIT_DATA = {
+        "title": "nextnextping",
+        "wait_time": 1,
+        "loop": False,
+        "debug": False,
+        "data": [
+            {
+                "name": "ttl",
+                "ttl": True
+            },
+            {
+                "name": "ping",
+                "ttl": False,
+                "command": "ping -n 1 %1",
+                "ok": "(0%",
+                "returncode": False,
+                "timeout": 10
+            },
+            {
+                "name": "trace",
+                "ttl": False,
+                "command": "tracert %1",
+                "ok": "Trace complete.",
+                "returncode": False,
+                "timeout": 10
+            },
+            {
+                "name": "show",
+                "ttl": False, 
+                "command": "ipconfig /all",
+                "returncode": False,
+                "ok": "Windows IP Configuration",
+                "timeout": 10
+            }
+        ]
+    }
+
     def next_next_ping(self):
+        # ログをロードする
         self.log = self.next_next_load(self.LOG_JSON)
+        # 初期値をロードする
         self.init = self.next_next_load('init.json')
-        if 'wait_time' not in self.init:
-            self.init['wait_time'] = 3
-        if 'title' not in self.init:
-            self.init['title'] = "nextnextping"
-        if 'loop' not in self.init:
-            self.init['loop'] = True
-        if 'debug' not in self.init:
-            self.init['debug'] = False
-        if 'timeout' not in self.init:
-            self.init['timeout'] = 1
-        if 'data' not in self.init:
-            self.init['data'] = {}
+        # 初期値が入ってなかったら入れる
+        for target in NextNextPing.INIT_DATA:
+            if target not in self.init:
+                self.init[target] = NextNextPing.INIT_DATA[target]
+        # 初期値が入ってなかったら入れる
+        for target in NextNextPing.SETTING_PARAM:
+            if '' == target[2]:
+                continue
+            if target[2] not in self.init:
+                self.init[target[2]] = target[3]
+        #
         self.setting = self.next_text_load(self.SETTING_JSON)
         #
         #
@@ -1016,45 +1066,56 @@ class NextNextPing():
         menu_bar.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Save setting", command=self.save_setting)
         file_menu.add_command(label="Save log", command=self.save_log)
+        file_menu.add_command(label="Setting", command=self.command_settings)
         file_menu.add_command(label="Exit", command=self.system_exit)
-        # goメニュー
-        go_menu = tk.Menu(menu_bar, tearoff=False)
-        menu_bar.add_cascade(label="Go", menu=go_menu)
-        go_menu.add_command(label="Update", command=self.update_setting)
-        go_menu.add_command(label="Ping", command=self.command_ping)
-        go_menu.add_command(label="Stop", command=self.command_stop)
-        go_menu.add_command(label="Toggle debug", command=self.command_debug)
-        go_menu.add_command(label="Toggle loop", command=self.command_loop)
+        #
         # ツールメニュー
         tool_menu = tk.Menu(menu_bar, tearoff=False)
         menu_bar.add_cascade(label="Tool", menu=tool_menu)
         tool_menu.add_command(label="Sheet", command=self.tool_sheet)
         #
-        notebook = ttk.Notebook(self.root)
-        tab1 = tk.Frame(notebook)
-        notebook.add(tab1, text="setting")
+        # Help メニュー
+        help_menu = tk.Menu(menu_bar, tearoff=False)
+        help_menu.add_command(label="Help", command=self.brows_help)
+        menu_bar.add_cascade(label="Help", menu=help_menu)
+        #
+        self.notebook = ttk.Notebook(self.root)
+        tab1 = tk.Frame(self.notebook)
+        self.notebook.add(tab1, text="setting")
+        #
+        top_frame = tk.Frame(tab1)
+        top_frame.pack(side=tk.TOP)
+        top_button = tk.Button(top_frame, text="Update", command=self.update_setting)
+        top_button.pack(side=tk.LEFT)
         #
         self.setting_text = tk.Text(tab1)
         self.setting_text.insert(1.0, self.setting)
         self.setting_text.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         #
-        tab2 = tk.Frame(notebook)
-        notebook.add(tab2, text="result")
-        column = ('OK/NG', 'Type', 'Date', 'IP')
+        tab2 = tk.Frame(self.notebook)
+        self.notebook.add(tab2, text="result")
+        column = ('OK/NG', 'Date', 'Display', 'Type', 'IP')
         #
         # フレームでTreeviewとScrollbarをまとめる
+        #
+        top_frame = tk.Frame(tab2)
+        top_frame.pack(side=tk.TOP)
+        top_button = tk.Button(top_frame, text="Ping", command=self.command_ping)
+        top_button.pack(side=tk.LEFT)
+        top_button = tk.Button(top_frame, text="Stop", command=self.command_stop)
+        top_button.pack(side=tk.LEFT)
         frame = ttk.Frame(tab2)
-        frame.pack(fill=tk.BOTH, expand=True)
         self.tree = ttk.Treeview(frame, columns=column)
         self.tree.column('#0', width=0, stretch='no')
-        self.tree.column(column[0], anchor=tk.CENTER, width=20)
-        self.tree.column(column[1], anchor=tk.W, width=40)
-        self.tree.column(column[2], anchor=tk.W, width=40)
-        self.tree.column(column[3], anchor=tk.W)
-        for var in column:
+        for i, var in enumerate(column):
+            if i == 0 or i == 3:
+                self.tree.column(var, anchor=tk.CENTER, width=20)
+            else:
+                self.tree.column(var, anchor=tk.W, width=20)
             self.tree.heading(var, text=var)
         self.tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
+        self.tree.bind("<Double-Button-1>", self.on_select_double)
         # スクロールバーの設定
         vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=vsb.set)
@@ -1062,11 +1123,12 @@ class NextNextPing():
         vsb.grid(row=0, column=1, sticky='ns')
         frame.rowconfigure(0, weight=1)
         frame.columnconfigure(0, weight=1)
+        frame.pack(fill=tk.BOTH, expand=True)
         #
         self.update_setting()
         #
-        tab3 = tk.Frame(notebook)
-        notebook.add(tab3, text="log")
+        tab3 = tk.Frame(self.notebook)
+        self.notebook.add(tab3, text="log")
         #
         self.log_text = tk.Text(tab3)
         self.log_text.insert(1.0, "Please attache table for result tag.")
@@ -1078,7 +1140,7 @@ class NextNextPing():
         status_bar = tk.Label(self.root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         #
-        notebook.pack(expand=True, fill='both', padx=10, pady=10)
+        self.notebook.pack(expand=True, fill='both', padx=10, pady=10)
 
         self.root.mainloop()
         #
@@ -1169,24 +1231,21 @@ class NextNextPing():
         dialog.config(menu=menu_bar)
         # ファイルメニュー
         file_menu = tk.Menu(menu_bar, tearoff=False)
-        menu_bar.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Save csv", command=self.save_csv)
         file_menu.add_command(label="Load csv", command=self.load_csv)
         file_menu.add_command(label="Close", command=dialog.destroy)
+        menu_bar.add_cascade(label="File", menu=file_menu)
         # goメニュー
         go_menu = tk.Menu(menu_bar, tearoff=False)
-        menu_bar.add_cascade(label="Go", menu=go_menu)
         go_menu.add_command(label="Create ttl", command=self.create_ttl)
+        menu_bar.add_cascade(label="Go", menu=go_menu)
         #
         top_frame = tk.Frame(dialog)
         top_frame.pack(side=tk.TOP)
-        #
-        close_button = tk.Button(top_frame, text="Create", command=self.create_tool)
-        close_button.pack(side=tk.LEFT)
-        close_button = tk.Button(top_frame, text="Modify", command=self.modify_tool)
-        close_button.pack(side=tk.LEFT)
-        close_button = tk.Button(top_frame, text="Delete", command=self.delete_tooly)
-        close_button.pack(side=tk.LEFT)
+        top_button = tk.Button(top_frame, text="Create", command=self.create_tool)
+        top_button.pack(side=tk.LEFT)
+        top_button = tk.Button(top_frame, text="Delete", command=self.delete_tooly)
+        top_button.pack(side=tk.LEFT)
         #
         column = []
         for target in NextNextPing.TARGET_PARAM:
@@ -1199,8 +1258,9 @@ class NextNextPing():
         self.tool_tree = ttk.Treeview(frame, columns=column)
         self.tool_tree.column('#0', width=0, stretch='no')
         for var in column:
-            self.tool_tree.column(var, anchor=tk.CENTER, width=20)
+            self.tool_tree.column(var, anchor=tk.W, width=20)
             self.tool_tree.heading(var, text=var)
+        self.tool_tree.bind("<Double-Button-1>", self.modify_tool)
         self.tool_tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         # スクロールバーの設定
         vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tool_tree.yview)
@@ -1226,7 +1286,7 @@ class NextNextPing():
         item_id = self.tool_tree.insert("", "end", values=values)
         self.update_tool(item_id, values)
 
-    def modify_tool(self):
+    def modify_tool(self, _):
         selected = self.tool_tree.selection()
         if not selected:
             return
@@ -1288,12 +1348,15 @@ class NextNextPing():
         else:
             ans = "unkown_next_ssh"
         #
-        ans = ans.replace(":", "_")  # ipv6
-        ans = ans.replace(".", "_")  # ipv4
-        ans = ans.replace("/", "_")  # folder
-        ans = ans.replace("@", "_")  # account
-        ans = ans.replace("\"", "")  # vs SQL injection
-        ans = ans.replace("\'", "")  # vs SQL injection
+        for replace_target in [
+                ".",  # ipv4
+                ":",  # ipv6
+                "/",  # folder
+                "@"]:  # account
+            ans = ans.replace(replace_target, "-")
+        for replace_target in [
+                ",", "\'", "\"", "<", ">", "(", ")", "[", "]", ";", ""]:
+            ans = ans.replace(replace_target, "")
         return ans + ".ttl"
 
     def update_tool(self, item_id, values: list) -> list:
@@ -1368,7 +1431,7 @@ class NextNextPing():
                     entry.config(state="disabled")
             #
         #
-        # コンボ選択の繁栄
+        # コンボ選択の反映
         on_combo_select(None)
 
         def submit():
@@ -1389,6 +1452,9 @@ class NextNextPing():
             values[0] = self.get_target_filename(row_index, values)
             #
             self.tool_tree.item(item_id, values=values)
+            #
+            self.command_status_threading(f"Update index{row_index}")
+            #
             dialog.destroy()
 
         bottom_frame = tk.Frame(dialog)
@@ -1513,7 +1579,11 @@ class NextNextPing():
             else:
                 file_head_data = "; \n"
             #
+            display_name = target_display
+            for replace_target in ["@", ":",",", "\'", "\"", "<", ">", "(", ")", "[", "]", ";", "#"]:
+                display_name = display_name.replace(replace_target, "")
             new_text = new_text + file_head_data
+            new_text = new_text + '[' + display_name + ']'
             #
             if next_ssh == 0:
                 if target_type == 1:  # "1=ping", "2=traceroute", "3=show run"
@@ -1571,6 +1641,95 @@ class NextNextPing():
         #
         messagebox.showinfo("Info", "ttl is ok")
         self.tool_tree.focus_set()
+
+    SETTING_PARAM = [
+        ['Debug flag', 'debugするか？', 'debug', True],
+        ['Loop flag', 'ループするか？', 'loop', True],
+        ['wait_time', 'コマンド終了時待ち時間', 'wait_time', 0],
+        ['', '', '', ''],
+        ['TTL macro', 'TTL macro', '', ''],
+        ['TTL ignore messagebox', 'messageboxを表示しない', 'ignore_messagebox', True],
+        ['TTL ignore log', 'logを出力しない', 'ignore_log', True]]
+
+    def command_settings(self):
+        """ 設定用ダイアログを開く """
+        # モーダルダイアログ
+        dialog = tk.Toplevel(self.root)
+        dialog.title("tool_sheet_line")
+        dialog.geometry("400x300")
+        japanese_flag = self.get_japanese_flag()
+        #
+        name_var_list = []
+        for i, target_param in enumerate(NextNextPing.SETTING_PARAM):
+            label_text = target_param[0]
+            if japanese_flag:
+                label_text = target_param[1]
+            #
+            ans = ''
+            if target_param[2] in self.init:
+                ans = self.init[target_param[2]]
+            #
+            type = target_param[3]
+            tk.Label(dialog, text=label_text).grid(row=i, column=0, padx=10, pady=5, sticky="e")
+            name_var = tk.StringVar()
+            name_var_list.append(name_var)
+            if '' == target_param[2]:  # コメント行のとき
+                pass
+            elif isinstance(type, bool):
+                # print(f"i={i} bool name={target_param[2]} ans={str(ans)}")
+                combo_list = ('False', 'True')
+                name_var.set(str(ans))
+                combo = ttk.Combobox(dialog, textvariable=name_var)
+                combo["values"] = combo_list
+                if ans:
+                    combo.current(1)
+                else:
+                    combo.current(0)
+                combo.grid(row=i, column=1, padx=10, pady=5, sticky='ew')
+            elif isinstance(type, int):
+                # print(f"i={i} int  name={target_param[2]} ans={str(ans)}")
+                name_var.set(str(ans))
+                entry = tk.Entry(dialog, textvariable=name_var)
+                entry.grid(row=i, column=1, padx=10, pady=5, sticky='ew')
+
+        def submit():
+            """ 入力値を取得する関数 """
+            for j, target_param2 in enumerate(NextNextPing.SETTING_PARAM):
+                if target_param2[2] not in self.init:
+                    continue
+                #
+                val = name_var_list[j].get()
+                name = target_param2[2]
+                type = target_param2[3]
+                if isinstance(type, bool):
+                    # print(f"i={j} bool type={type} name={name} str={str(val)}")
+                    val = str(val)
+                    if 't' == val[0].lower():
+                        self.init[name] = True
+                    else:
+                        self.init[name] = False
+                elif isinstance(type, int):
+                    # print(f"i={j} int  type={type} name={name} str={str(val)}")
+                    val = int(val)
+                    self.init[name] = val
+            #
+            self.command_status_threading('Setting update!')
+            #
+            self.update_setting()
+            dialog.destroy()
+
+        bottom_frame = tk.Frame(dialog)
+        bottom_frame.grid(row=len(NextNextPing.SETTING_PARAM), column=0, columnspan=2, pady=10)
+        # 送信ボタン
+        tk.Button(bottom_frame, text="Update", command=submit).pack(side=tk.LEFT)
+
+        # ダイアログが閉じられるまで待つ
+        dialog.grab_set()
+        self.root.wait_window(dialog)
+
+    def brows_help(self):
+        path = os.path.abspath("_internal/README.html")
+        webbrowser.open(path)
 
 
 class PasswordDialog(simpledialog.Dialog):

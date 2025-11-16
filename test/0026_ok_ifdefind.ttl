@@ -7,14 +7,31 @@ data = 3
 ifdefined data
 assert 1==result data result "ifdefined test"
 
+ifdefined call_aa
+assert 4==result call_aa result "ifdefined test"
+
+
 data = "aaa"
 ifdefined data
 assert 3==result data result "ifdefined test"
 
-xx[0] = 22
+assert 1 "array start!"
+a = 0
+xx[a] = 22
 ifdefined xx
-assert 5==result xx[0] result "ifdefined test"
+assert 5==result a xx[0] result "ifdefined array int test"
 
-xx[0] = "xxx"
-ifdefined xx
-assert 6==result xx[0] result "ifdefined test"
+b = xx[0]
+assert 22==b xx[0] b "ifdefined array int test"
+
+c = 1
+yy[c] = "xxx"
+ifdefined yy
+assert 6==result b yy[c] result "ifdefined array str test"
+
+result = 1
+end
+
+:call_aa
+
+

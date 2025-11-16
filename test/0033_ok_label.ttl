@@ -1,0 +1,30 @@
+
+
+a = 1
+
+
+result = 1
+
+
+call call_test
+
+ifdefined  call_test
+
+assert result == 4 "ifdefined" result
+
+assert a == 10 "ifdefined" a result
+
+result = 1
+end
+
+:call_test
+
+assert 1 "hit1" "hit2"
+a = 10
+result = 0
+
+return
+
+a = 5
+
+

@@ -1,0 +1,10 @@
+
+
+; ラベルに値を代入しようとした
+call_test = 1
+
+result = 1
+end
+
+:call_test
+

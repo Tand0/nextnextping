@@ -3,13 +3,13 @@
 
 ## ツールの開き方
 
-<img src="./screen004.png" width="50%">
+<img src="./screen004a.png" width="25%">
 
 - メニューバーより、Tool ⇒ Sheet を選択します。
 
 ## メイン画面
 
-<img src="./screen005.png" width="50%">
+<img src="./screen005.png" width="100%">
 
 - メイン画面です。
 - メニュー画面のFileでツールの終了、csvの保存、csvの読み込みができます。
@@ -20,7 +20,7 @@
 
 ## Fileメニュー
 
-<img src="./screen006.png" width="50%">
+<img src="./screen006.png" width="25%">
 
 - メニュー画面のFileからSave csvでcsvの保存ができます。
 - メニュー画面のFileからLoad csvでcsvの読み込みができます。
@@ -28,7 +28,7 @@
 
 ## Goメニュー
 
-<img src="./screen007.png" width="50%">
+<img src="./screen007.png" width="25%">
 
 - メニュー画面のGoからCreate ttlで表に対応したttlを生成します。
 

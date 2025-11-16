@@ -196,7 +196,6 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
 
 """.replace('\n', '\r\n')
 
-
     SHOW_IP_INTERFACE_BRIEF = """Interface        IP-Address      OK? Method Status                Protocol
 GigabitEthernet0/1 192.168.1.1     YES manual up                    up
 GigabitEthernet0/2 192.168.2.1     YES manual up                    down
@@ -219,17 +218,23 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         self.t = None
         self.sock = None
         self.state = []
+        self.password_ng_flag = False
         self.prompt = None
         self.set_state('$')
 
     def set_state(self, state: str):
         """ 外部から状態を更新する """
+        # パスワードNGフラグの解放
+        self.password_ng_flag = False
+        # 状態の初期化
         self.state = []
+        # 状態更新
         self.push_state(state)
 
     def push_state(self, state_base: str):
         state_base = state_base.lower()
-        # print(f"push_state {state_base}")
+        # print(f"test push_state {state_base}")
+        #
         if 'cisco1' in state_base or 'c1' in state_base:
             state_base = 'c1'
         elif 'cisco2' in state_base or 'c2' in state_base:
@@ -430,16 +435,19 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                     message = message + output
                     continue
                 #
-                if self.peek_state() in ['y/n', 'pass', 'user']:
+                if self.peek_state() in ['y/n', 'user']:
                     # print(f"test peek={self.peek_state()}")
                     self.pop_state()
+                elif 'pass' in self.peek_state():
+                    if not self.password_ng_flag:
+                        self.pop_state()
                 elif 'more' == self.peek_state():
                     self.chan.send(ServerStarter.DISPLAY_CURRENT_CONFIGURATION_MORE)
                     self.pop_state()
                 else:
                     result1 = re.search("^\\s*exit", message)
                     result2 = re.search("^\\s*ping", message)
-                    result3 = re.search("^\\s*ssh\\s+([-a-zA-Z0-9@]+)", message)
+                    result3 = re.search("^\\s*ssh\\s+([-_a-zA-Z0-9@]+)", message)
                     result4 = re.search("^\\s*enable", message)
                     result5 = re.search("^\\s*show\\s+running-config", message)
                     result6 = re.search("^\\s*tracert", message)
@@ -459,7 +467,12 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                             self.chan.send(ServerStarter.PING)
                     elif result3:
                         # 新しい状態を積む
-                        self.push_state(result3.group(1))
+                        ssh_state_flag = result3.group(1)
+                        if 'password_ng' in ssh_state_flag:
+                            self.password_ng_flag = True
+                        else:
+                            self.password_ng_flag = False
+                        self.push_state(ssh_state_flag)
                         self.push_state('pass')
                         #
                         if random.randint(0, 1):
@@ -471,7 +484,7 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                         self.push_state('c2')
                         # パスワードを聞く
                         self.push_state('pass')
-                    elif result5:
+                    elif result5 and self.peek_state() in ['c2']:  # ciscoのenableモードのみ
                         self.chan.send(ServerStarter.SHOW_RUNNING_CONFIG)
                     elif result6:
                         self.chan.send(ServerStarter.TRACERT)
@@ -479,7 +492,7 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                         self.chan.send(ServerStarter.TRACEROUTE)
                     elif result8:
                         self.chan.send(ServerStarter.TRACEPATH)
-                    elif result9:
+                    elif result9 and self.peek_state() in ['qx']:  # qxモードのみ
                         self.chan.send(ServerStarter.DISPLAY_CURRENT_CONFIGURATION)
                         # 新しい状態を積む
                         self.push_state('more')

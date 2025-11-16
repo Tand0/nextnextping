@@ -24,15 +24,33 @@ wait '>' '#'
 assert result == 1  "wait OK" error ; 接続失敗
 
 ; text
-sendln 'dir'
+command = 'dir'
+sendln command
+wait command
 result = 0
 wait '#' '>'
-assert result == 2  "wait OK" error ; 接続失敗
+assert result == 2 "wait OK" error ; 接続失敗
 
 recvln
 recvln
 recvln
 pause 1
+
+; text
+command = 'dir'
+sendln command
+wait command
+while 1
+    result = 0
+    wait '<DIR>' '>'
+    if result == 0 then
+        assert 0 "timeout wait OK" 'title' ; 接続失敗
+        end
+    elseif result == 1 then
+        continue
+    endif
+    break
+endwhile
 
 ; exit
 send 'exit'
@@ -47,3 +65,4 @@ pause 1
 
 error=''
 result = 1
+

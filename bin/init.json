@@ -10,7 +10,7 @@
         {
             "name": "ping",
             "ttl": false, 
-            "command":"ping -n 1 %1",
+            "command": "ping -n 1 %1",
             "ok": "(0%",
             "returncode": false,
             "timeout": 10
@@ -18,7 +18,7 @@
         {
             "name": "trace",
             "ttl": false, 
-            "command":"tracert %1",
+            "command": "tracert %1",
             "ok": "Trace complete.",
             "returncode": false,
             "timeout": 10
@@ -26,7 +26,7 @@
         {
             "name": "show",
             "ttl": false, 
-            "command":"ipconfig /all",
+            "command": "ipconfig /all",
             "returncode": false,
             "ok": "Windows IP Configuration",
             "timeout": 10

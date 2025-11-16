@@ -1,0 +1,6 @@
+; そんなラベルはないエラーが出ればOK
+call call_abc
+
+result = 1
+
+end

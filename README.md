@@ -23,32 +23,7 @@
 
 ## 画面イメージ
 
-### トップ画面
-
-<img src="./doc/screen001.png" width="50%">
-
-  - トップの画面です。
-  - pingを打つIPを指定します。
-  - コメントアウトができます。
-  - カッコつきの文字で(traceroute)と先頭に書くと、tracerouteをしてくれます。
-  - カッコつきの文字で(ttl)と先頭に書くと、terawaros tekitou languageを読み込み、SSH接続できるのでpingを打てます。
-  - メニューバー上の File ⇒ Save setting を実行すると、テキストは保存されます。
-  - メニューバー上の File ⇒ Save log を実行すると、実行したときのログが保存されます。
-
-### 結果表示画面
-
-<img src="./doc/screen002.png" width="50%">
-
-  - メニューバー上の Go ⇒ Updateを実行すると、トップの画面を解析して実施内容を行で表現します。
-  - メニューバー上の Go ⇒ Pingを実行すると、pingを定期的に実行します。
-  - メニューバー上の Go ⇒ Pingを実行すると、pingを定期的に実行していたものを止めます。
-  - 結果は OK またはNGで表示されます。ttlの場合は、エラーとなるか、最後まで行って`result`が0のときにNGで表示されます。
-
-### ログ画面
-
-<img src=".doc/screen003.png" width="50%">
-
-  - 結果表示画面の行をクリックすると、その行に対応したログが表示されます。
+- [画面イメージ](./doc/screen.md)
 
 # MACRO for Terawaros Tekitou Lanugage
 
@@ -56,7 +31,7 @@
 Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムです。マクロ言語 "Terawaros Tekitou Language (TTL)" によって、NextNextPing を制御し、オートダイアル、オートログインなどの機能を実現することができます。
 
 - 使い方
-  - [マクロの実行方法](./doc/howtorun.md)
+    - [マクロの実行方法](./doc/howtorun.md)
 - [MACRO言語 "Terawaros Tekitou Language (TTL)"](./doc/syntax.md)　
 - [TTL コマンドリファレンス](./doc/command.md)　
 
@@ -65,7 +40,47 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
 - ping を打つための TTLマクロを作成するのは面倒なので、指定をするとサンプルが出てきてそのまま使えるようにしました。
 
 - 使い方
-  - [ツールの使い方](./doc/tool.md)
+    - [ツールの使い方](./doc/tool.md)
+
+
+# 基本的な使い方
+
+  - Basic
+      - nextnextpingを起動します。
+      - [トップ画面](./doc/screen.md#トップ画面)で適当にipを並べます。
+      - メニューバーから、File ⇒ Setting で [設定画面](./doc/screen.md#設定画面) を開いて設定を変更します。
+      - Updateボタンをクリックします。
+      - Pingボタンをクリックします。
+      - しばらくするとpingに成功したものがOK、失敗したものがNGで表示されます。
+      - メニューバーから、File ⇒ Save setting で設定の保存ができます。
+      - メニューバーから、File ⇒ Save log でログの保存ができます。
+      - メニューバーから、File ⇒ Exit で終了できます。
+  - Advanced
+      - nextnextpingを起動します。
+      - メニューバーから、Tool ⇒ Sheet をクリックします。
+      - 設定用CSVファイルを作成します。やり方は２種類あります。
+          -  メニューバーから、File ⇒ Load csv で保存した csvをロードします。
+          -  Createボタンを押して [設定画新規作成または編集画面面](./doc/tool.md#新規作成または編集画面) を開いて編集します。
+          - 行をダブルクリックすると編集ができます。
+      - 今後のために File ⇒ Save csv で保存した csvをセーブします。
+      - メニューバーから、Go ⇒ Create ttl で ttlを自動生成します。
+      - メニューバーから、File ⇒ Closeでツールを終了します。
+      - [結果表示画面](./doc/screen.md#結果表示画面) からPingボタンをクリックします。
+      - しばらくするとpingに成功したものがOK、失敗したものがNGで表示されます。
+      - メニューバーから、File ⇒ Save log でログの保存ができます。
+      - メニューバーから、File ⇒ Exit で終了できます。
+  - Legend
+      - nextnextpingを起動します。
+      - メニューバーから、File ⇒ Setting で [設定画面](./doc/screen.md#設定画面) を開いて設定を変更します。
+      - ttlを自作します。
+      - [トップ画面](./doc/screen.md#トップ画面)で`[`説明文`]` `(`ttl`)`  `ttlマクロのファイル名` と記述します。
+      - Updateボタンをクリックします。
+      - Pingボタンをクリックします。
+      - しばらくするとpingに成功したものがOK、失敗したものがNGで表示されます。
+           - 失敗の条件はエラーが発生したか、または、 `result` が 0 である場合のいずれかです。
+      - メニューバーから、File ⇒ Save setting で設定の保存ができます。
+      - メニューバーから、File ⇒ Save log でログの保存ができます。
+      - メニューバーから、File ⇒ Exit で終了できます。
 
 
 

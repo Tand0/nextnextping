@@ -4,7 +4,6 @@ from antlr4.InputStream import InputStream
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.tree.Tree import ParseTreeVisitor
 from antlr4.error.ErrorListener import ErrorListener
-from antlr4.error.ErrorStrategy import BailErrorStrategy
 import time
 import paramiko
 import socket
@@ -18,6 +17,17 @@ import json
 import base64
 import random
 import uptime
+
+
+class Label():
+    """ ラベル情報の保存地域 """
+    def __init__(self, token_list):
+        """ コンストラクタ """
+        self.token_list = token_list
+
+    def getTokenList(self):
+        """ トークンの取得 """
+        return self.token_list
 
 
 class TtlContinueFlagException(Exception):
@@ -116,6 +126,8 @@ class TtlPaserWolker():
         self.log_connect_time = None
         # カレントフォルダを取得する
         self.current_dir = pathlib.Path.cwd()
+        #
+        self.encrypt_file = {}
 
     def stop(self, error=None):
         """ 強制停止処理 """
@@ -210,6 +222,9 @@ class TtlPaserWolker():
                 # for call command
                 self.result_file_json[filename] = result_json
                 #
+                # ラベル設定
+                self.correctLabel()
+                #
         except Exception as e:
             print(f"### except read file exception! f={str(e)}")
             self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
@@ -249,6 +264,14 @@ class TtlPaserWolker():
     def setValue(self, strvar: str, data):
         """ 変数を設定する """
         # print(f"setValue={strvar} data={data}")
+        if self.isValue(strvar):  # this is label
+            if isinstance(self.getValue(strvar), Label):
+                raise TypeError(f"Label already set exception. v={strvar}")
+        self.value_list[strvar] = data
+
+    def setValueLabel(self, strvar: str, data: Label):
+        """ 変数を設定する """
+        # print(f"01ラベルを設定した {strvar} /{data.getTokenList()}/")
         self.value_list[strvar] = data
 
     def isValue(self, strvar: str) -> bool:
@@ -259,11 +282,13 @@ class TtlPaserWolker():
         """ 変数を取得する """
         if strvar not in self.value_list:
             for k in self.value_list:
+                # print(k)
                 if strvar + "[" in k:
                     return 'ARRAY'  # 配列指定がある
             if error_stop:
-                raise TypeError(f"Value not found err value={strvar}")
+                raise TypeError(f"Value not found err v={strvar}")
             return None
+        # print(f"02ラベルを取得した {strvar} // {self.value_list[strvar]}")
         return self.value_list[strvar]
 
     def execute_result(self, x_list, ifFlag=1):
@@ -308,10 +333,7 @@ class TtlPaserWolker():
             elif 'CommandContext' == name:
                 command_name = x['child'][0]
                 if 'assert' == command_name:
-                    message = self.printCommand(command_name, line, x['child'][1:])
-                    p1 = self.getData(x['child'][1])
-                    if p1 == 0:
-                        raise TypeError(message)
+                    self.doAssert(command_name, line, x['child'][1:])
                 elif 'dispstr' == command_name:
                     self.doDispstr(x['child'][1:])
                 elif 'break' == command_name:
@@ -809,12 +831,17 @@ class TtlPaserWolker():
         elif name in ['setdlgpos', 'show', 'callmenu', 'enablekeyb']:
             pass
         else:
+            self.printCommand(name, line, data_list)
             raise TypeError(f"### l={line} Unsupport command={name}")
 
     def printCommand(self, name: str, line: int, data_list) -> str:
         message = f"### l={line} c={name}"
         for data in data_list:
             result = self.getData(data)
+            if isinstance(result, int):
+                result = str(result)
+            elif isinstance(result, Label):
+                result = "LABEL"
             message = message + f" p({result})"
         message = message
         self.setLog(message + "\n")
@@ -827,43 +854,51 @@ class TtlPaserWolker():
                 result = chr(data & 0xFF)
             self.setLogInner(result)
 
+    def correctLabel(self):
+        """ ラベルを収集する """
+        self.correctLabelAll(self.result_file_json.values())
+
+    def correctLabelAll(self, token_list_list: list):
+        """ ラベルを収集する """
+        i = -1
+        for token_dict in token_list_list:
+            i = i + 1
+            name = token_dict['name']  # StatementContext
+            # print(f"correctLabelAll i={i} {name}")
+            if 'StatementContext' == name:
+                # print("hit")
+                self.correctLabelAll(token_dict['child'])  # StatementContext
+            elif 'CommandlineContext' == name:
+                # print("hit2")
+                j = -1
+                next_list = token_dict['child']
+                for next in next_list:
+                    j = j + 1
+                    if 'LabelContext' == next['name']:
+                        # print(f"hot3 {next['child']}")
+                        label_name = next['child'][1]
+                        # print("hit4")
+                        label = Label(token_list_list[i + 1:])
+                        # print(f"xxx data={label_name} // {label.getTokenList()}")
+                        self.setValueLabel(label_name, label)
+            #
+            if self.end_flag:
+                break
+
     def callContext(self, label):
         #
         try:
-            for token_list in self.result_file_json.values():
-                token_list = token_list['child']  # StatementContext
-                i = 0
-                label_found_flag = True
-                while i < len(token_list) and not self.end_flag:
-                    targetContext = token_list[i]['child']
-                    if label_found_flag:
-                        # ヒットするまでラベルを探す
-                        j = 0
-                        while j < len(targetContext) and not self.end_flag:
-                            # print(f"xxx data={json.dumps(targetContext, indent=2)}")
-                            context = targetContext[j]
-                            name = context['name']
-                            if 'LabelContext' == name:
-                                label_name = context['child']
-                                # print(f"label name = {label_name[1]:}")
-                                if label == label_name[1]:
-                                    # print("hit!")
-                                    label_found_flag = False
-                                    break
-                            j = j + 1
-                            if self.end_flag:
-                                break
-                    else:
-                        # 一端ヒットしたら以降の行を処理し始める
-                        self.commandlineContext(targetContext)
-                    i = i + 1
-                if not label_found_flag:
-                    break
+            # print("callContest")
+            label = self.getValue(label, error_stop=False)
+            if label is None:
+                raise TypeError(f"No hit label error none label={label}")
+            if not isinstance(label, Label):
+                raise TypeError(f"No hit label error label={label}")
+            for token in label.getTokenList():
+                # print(f"hit x {token}")
+                self.execute_result([token])
                 if self.end_flag:
                     break
-            if label_found_flag:
-                # 一つもヒットしていない
-                raise TypeError(f"No hit label error label={label}")
         except TtlReturnFlagException:
             # print("TtlReturnFlagException")
             pass
@@ -1284,6 +1319,13 @@ class TtlPaserWolker():
         """ 構文内のキーワードから値を抽出する """
         # print(f"keywordContext data={data}")
         return self.getValue(self.getKeywordName(data))
+
+    def doAssert(self, command_name: str, line: int, data_list) -> str:
+        """ assert 処理用 """
+        message = self.printCommand(command_name, line, data_list)
+        p1 = self.getData(data_list[0])
+        if p1 == 0:
+            raise TypeError(message)
 
     def doConnect(self, data: str, line):
         ''' 接続する '''
@@ -1837,6 +1879,26 @@ class TtlPaserWolker():
             del worker[password_name]
         self.encrypt_encrypt(filename, worker)
 
+    def set_encrypt_file(self, filename, encoded):
+        """ 暗号化のファイル書き込み後、学習しておく """
+        filename = str(pathlib.Path(filename).resolve())
+        self.encrypt_file[filename] = encoded
+        #
+        # ファイルへの書き込み
+        with open(filename, "wb") as f:
+            f.write(encoded)
+
+    def get_encrypt_file(self, filename):
+        """ 暗号化のファイル読み込みを１回で終わらせる """
+        filename = str(pathlib.Path(filename).resolve())
+        if filename in self.encrypt_file:
+            return self.encrypt_file[filename]
+        #
+        # データがないのでファイルからロードする
+        with open(filename, "rb") as f:
+            binary_data = f.read()
+            return binary_data
+
     def encrypt_encrypt(self, filename, worker) -> str:
         """ データを暗号化する """
         # エンコードしたい元の文字列
@@ -1849,15 +1911,13 @@ class TtlPaserWolker():
         encoded = base64.b64encode(byte_data)
         #
         # ファイルへの書き込み
-        with open(filename, "wb") as f:
-            f.write(encoded)
+        self.set_encrypt_file(filename, encoded)
 
     def encrypt_decrypt(self, filename):
         """ 暗号ファイルを復号化する """
         binary_data = None
         try:
-            with open(filename, "rb") as f:
-                binary_data = f.read()
+            binary_data = self.get_encrypt_file(filename)
         except FileNotFoundError:
             return {}
         #
@@ -1977,13 +2037,13 @@ class TtlPaserWolker():
             self.setValue('result', 0)
 
     def doFilerename(self, p1, p2):
-        print(f"doFilerename0 {p1} {p2}")
+        # print(f"doFilerename0 {p1} {p2}")
         if p1 == p2:
-            print(f"doFilerename1 {p1} {p2}")
+            # print(f"doFilerename1 {p1} {p2}")
             self.setValue('result', 1)
             return
         if not os.path.exists(p1):
-            print(f"doFilerename2 {p1} {p2}")
+            # print(f"doFilerename2 {p1} {p2}")
             self.setValue('result', 1)
             return
         self.doFiledelete(p2)
@@ -2121,20 +2181,26 @@ class TtlPaserWolker():
         return self.title
 
     def doIfdefined(self, strvar: str):
-        # print(f"doIfdefined v={strvar}")
+        result = 0
         if strvar in self.value_list:
             result = self.getValue(strvar)
-            if isinstance(result, int):
-                self.setValue('result', 1)
+            if isinstance(result, Label):
+                result = 4
+            elif isinstance(result, int):
+                result = 1
             else:
-                self.setValue('result', 3)
+                result = 3
         else:
             for value in self.value_list:
+                # print(f"hit2 {value}/{strvar}")
                 if strvar + "[" in value:
                     if isinstance(self.getValue(value), int):
-                        self.setValue('result', 5)
+                        result = 5
                     else:
-                        self.setValue('result', 6)
-                    return
+                        result = 6
+                    break
             self.setValue('result', 0)
+        # print(f"doIfdefined v={strvar} d={result}")
+        self.setValue('result', result)
+
 #
