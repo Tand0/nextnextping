@@ -1,0 +1,23 @@
+;INPUT_START
+
+;file_name = "029c1_ok_connect.ttl"
+target_display = "pingを打つ装置"
+target_ip = "127.0.0.1"
+target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
+base_display = "SSH接続する装置"
+base_ip = "localhost:2200"
+base_account = "boo"
+next_ssh = 1  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+;next_display = "SSHからさらに接続する装置"
+;next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+;next_account = "bar"  ; 踏み台先のIPアドレス
+
+;INPUT_END
+
+getdir include_dir
+strconcat include_dir "/0029_ok_connect.ttl"
+include include_dir
+
+;

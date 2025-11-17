@@ -1,20 +1,21 @@
-1000qx_ok_localhost_1.ttl,ローカルホスト接続,localhost,1,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1001qx_ok_localhost_2.ttl,ローカルホスト接続,localhost,2,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1002qx_ok_localhost_3.ttl,ローカルホスト接続,localhost,3,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1003qx_ok_10_0_0_1_1.ttl,繋がらないテスト,10.0.0.1,1,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1004qx_ok_10_0_0_1_2.ttl,繋がらないテスト,10.0.0.1,2,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1005qx_ok_10_0_0_1_3.ttl,繋がらないテスト,10.0.0.1,3,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1006qx_ok_127_0_0_1_1.ttl,ローカルホスト接続 IPv4,127.0.0.1,1,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1007qx_ok_127_0_0_1_2.ttl,ローカルホスト接続 IPv4,127.0.0.1,2,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
-1008c1_ok_127_0_0_1_localhost_2200_1.ttl,SSH接続,127.0.0.1,1,1,1,SSH接続先IP,localhost:2200,admin,1,next_display,dummy,admin
-1009qx_ok_127_0_0_1_localhost_2200_2.ttl,SSH接続,127.0.0.1,2,1,2,SSH接続先IP,localhost:2200,admin,1,next_display,dummy,admin
-1010_ok_127_0_0_1_localhost_2200_3.ttl,SSH接続,127.0.0.1,3,1,3,SSH接続先IP,localhost:2200,admin,1,next_display,dummy,admin
-1011qx_ok_127_0_0_1_localhost_2200_cisco1_1.ttl,SSH踏み台,127.0.0.1,1,2,2,SSH接続先IP,localhost:2200,admin,1,次のdisplay,cisco1,nextadmin
-1012qx_ok_127_0_0_1_localhost_2200_cisco1_2.ttl,SSH踏み台,127.0.0.1,2,2,2,SSH接続先IP,localhost:2200,admin,1,次のdisplay,cisco1,nextadmin
-1013qx_ok_127_0_0_1_localhost_2200_cisco1_3.ttl,SSH踏み台,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,1,次のdisplay,cisco1,nextadmin
-1014qx_ok_127_0_0_1_localhost_2200_cisco2_1.ttl,SSH踏み台,127.0.0.1,1,2,2,SSH接続先IP,localhost:2200,admin,2,次のdisplay,cisco2,nextadmin
-1015qx_ok_127_0_0_1_localhost_2200_cisco2_2.ttl,SSH踏み台,127.0.0.1,2,2,2,SSH接続先IP,localhost:2200,admin,2,次のdisplay,cisco2,nextadmin
-1016qx_ok_127_0_0_1_localhost_2200_cisco2_3.ttl,SSH踏み台,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,2,次のdisplay,cisco2,nextadmin
-1017qx_ok_127_0_0_1_localhost_2200_qx_1.ttl,SSH踏み台,127.0.0.1,1,2,2,SSH接続先IP,localhost:2200,admin,3,次のdisplay_qx,qx,nextadmin
-1018qx_ok_127_0_0_1_localhost_2200_qx_2.ttl,SSH踏み台,127.0.0.1,2,2,2,SSH接続先IP,localhost:2200,admin,3,次のdisplay_qx,qx,nextadmin
-1019qx_ok_127_0_0_1_localhost_2200_qx_3.ttl,SSH踏み台,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,3,次のdisplay_qx,qx,nextadmin
+none,ローカルホスト接続,localhost,1,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,ローカルホスト接続,localhost,2,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,ローカルホスト接続,localhost,3,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,繋がらないテスト,10.0.0.1,1,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,繋がらないテスト,10.0.0.1,2,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,繋がらないテスト,10.0.0.1,3,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,ローカルホスト接続 IPv4,127.0.0.1,1,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+none,ローカルホスト接続 IPv4,127.0.0.1,2,0,2,base_display,localhost:2200,admin,1,next_display,dummy,admin
+1008c1_ok_localhost-2200_ping_127-0-0-1.ttl,SSH接続,127.0.0.1,1,1,1,SSH接続先IP,localhost:2200,admin,1,next_display,dummy,admin
+1009_ok_localhost-2200_trace_127-0-0-1.ttl,SSH接続,127.0.0.1,2,1,2,SSH接続先IP,localhost:2200,admin,1,next_display,dummy,admin
+1010qx_ok_localhost-2200_show.ttl,SSH接続,127.0.0.1,3,1,3,SSH接続先IP,localhost:2200,admin,1,next_display,dummy,admin
+1011_ok_cisco1_ping_127-0-0-1.ttl,SSH踏み台,127.0.0.1,1,2,2,SSH接続先IP,localhost:2200,admin,1,次のdisplay,cisco1,nextadmin
+1012_ok_cisco1_trace_127-0-0-1.ttl,SSH踏み台,127.0.0.1,2,2,2,SSH接続先IP,localhost:2200,admin,1,次のdisplay,cisco1,nextadmin
+1013_ok_cisco1_show.ttl,SSH踏み台,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,1,次のdisplay,cisco1,nextadmin
+1014_ok_cisco2_ping_127-0-0-1.ttl,SSH踏み台,127.0.0.1,1,2,2,SSH接続先IP,localhost:2200,admin,2,次のdisplay,cisco2,nextadmin
+1015_ok_cisco2_trace_127-0-0-1.ttl,SSH踏み台,127.0.0.1,2,2,2,SSH接続先IP,localhost:2200,admin,2,次のdisplay,cisco2,nextadmin
+1016_ok_cisco2_show.ttl,SSH踏み台,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,2,次のdisplay,cisco2,nextadmin
+1017_ok_qx_ping_127-0-0-1.ttl,SSH踏み台,127.0.0.1,1,2,2,SSH接続先IP,localhost:2200,admin,3,次のdisplay_qx,qx,nextadmin
+1018_ok_qx_trace_127-0-0-1.ttl,SSH踏み台,127.0.0.1,2,2,2,SSH接続先IP,localhost:2200,admin,3,次のdisplay_qx,qx,nextadmin
+1019_ok_qx_show.ttl,SSH踏み台,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,3,次のdisplay_qx,qx,nextadmin
+1020_ok_vmware_show.ttl,vmwareのテスト,127.0.0.1,3,2,2,SSH接続先IP,localhost:2200,admin,2,vmwareテスト,vmware,root

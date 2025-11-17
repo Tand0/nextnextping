@@ -221,54 +221,60 @@ if target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
 elseif target_type = 2 then 
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'traceroute '
+        strconcat command target_ip
+        call call_one_command
     elseif server_type == 2 then
-        command = 'tracepath '
+        strcompare "] " prompt
+        if result == 0 then
+            ; for vmware
+            command = 'traceroute '
+            strconcat command target_ip
+            call call_one_command
+        else
+            command = 'tracepath '
+            strconcat command target_ip
+            call call_one_command
+        endif
     else
         command = 'traceroute '
-    endif
-    strconcat command target_ip
-    sendln command
-    wait prompt
-    if result == 0 then
-        messagebox 'command is time up!' command
-        call call_ending
-        end
+        strconcat command target_ip
+        call call_one_command
     endif
 else
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+        ; for cisco
         command = 'show running-config'
-        sendln command
-        wait prompt '-- More --'
-        if result = 0 then
-            messagebox 'command is time up!' command
-            call call_ending
-            end
-        elseif result = 2 then
-            sendln ''
-            continue
-        endif
+        call call_one_command
         command = 'show ip interface brief'
+        call call_one_command
     elseif server_type == 2 then
-        command = 'ifconfig -a'
-    else
-        command = 'display current-configuration'
-    endif
-    sendln command
-    ; プロントのチェックを行う
-    while 1
-        ;
-        wait prompt '-- More --'
-        if result = 0 then
-            messagebox 'command is time up!' command
-            call call_ending
-            end
-        elseif result = 2 then
-            sendln ''
-            continue
+        strcompare "] " prompt
+        if result == 0 then
+            ; for vmware
+            command = 'esxcli network nic list'
+            call call_one_command
+            command = 'esxcli network vswitch standard list'
+            call call_one_command
+            command = 'esxcli network ip interface list'
+            call call_one_command
+        else
+            ; for linux
+            command = 'ifconfig -a'
+            call call_one_command
+            command = 'ip addr show'
+            call call_one_command
+            command = 'ip link show'
+            call call_one_command
+            command = 'ip route show'
+            call call_one_command
+            command = 'ss'
+            call call_one_command
         endif
-        ;
-        break
-    endwhile
+    else
+        ; for qx-s
+        command = 'display current-configuration'
+        call call_one_command
+    endif
 endif
 
 ; 終了処理
@@ -278,6 +284,30 @@ call call_ending
 error=''
 result = 1
 end
+
+
+:call_one_command
+; １コマンド分の処理
+sendln command
+wait command
+; プロントのチェックを行う
+while 1
+    ;
+    wait prompt '-- More --'
+    if result = 0 then
+        messagebox 'command is time up!' command
+        call call_ending
+        end
+    elseif result = 2 then
+        sendln ''
+        continue
+    endif
+    ;
+    break
+endwhile
+
+return
+
 
 ; SSHでログインするときに使うパスワード
 :call_base_password
@@ -312,15 +342,16 @@ return
     strconcat key_target next_account
     key_ip = next_ip
     key_base_display = next_display
+    call call_pass_all
 return
 
 ; パスワード関連まとめ
 :call_pass_all
     key_ip_replace = key_ip
     strreplace key_ip_replace 1 ':' '_' ; ipv6
-    strreplace key_ip_replace 1 #92'.' '_' ; ipv4 # 正規表現なので単純に.を渡すと全部消える
+    strreplace key_ip_replace 1 #92'.' '_'  ; ipv4 正規表現なので単純に.を渡すと全部消える
     getdir key_data
-    strconcat key_data #92 ;
+    strconcat key_data #92
     strconcat key_data "pass_" ; パスワード保存用
     strconcat key_data key_ip_replace
     strconcat key_data '.key'
@@ -342,7 +373,7 @@ return
     testlink
     if result==2  then
         closett
-        logclose
+        ; logclose
     endif
     result = 0
 return
@@ -352,7 +383,7 @@ return
     password_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --'
+        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --' '] '
         result_type = result
         if result_type == 0 then
             messagebox 'next prompt check fail!' 'title'
@@ -387,13 +418,13 @@ return
             strcompare prompt '>'
             if state_flag == 0 then
                 if result == 0 then
-                    call call_base_password_enable ; 特権モード移行用
+                    call call_base_password_enable  ; 特権モード移行用
                 else
                     call call_base_password
                 endif
             else
                 if result == 0 then
-                    call call_next_enable_password ; 特権モード移行用
+                    call call_next_enable_password  ; 特権モード移行用
                 else
                     call call_next_password
                 endif
@@ -403,6 +434,8 @@ return
         elseif result_type == 6 then
             sendln ''
             continue
+        elseif result_type == 7 then
+            prompt = '] '  ; for vmware
         else
             int2str strvar result_type
             message = "next promot not found("
@@ -1338,32 +1371,32 @@ class NextNextPing():
             base_type = 'qx'
         else:
             base_type = ''
-        action_name = self.get_target_type_to_action_name(target_type)
+        action_name = self.get_target_type_to_action_name(target_type, target_ip)
         if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            ans = f"{row_index}{base_type}_ok_{action_name}_{target_ip}"
+            return "none"  # not required ttl name
         elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            ans = f"{row_index}{base_type}_ok_{base_ip}_{action_name}_{target_ip}"
+            ans = f"{row_index}{base_type}_ok_{base_ip}_{action_name}"
         elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            ans = f"{row_index}{base_type}_ok_{next_ip}_{action_name}_{target_ip}"
+            ans = f"{row_index}{base_type}_ok_{next_ip}_{action_name}"
         else:
             ans = "unkown_next_ssh"
         #
         for replace_target in [
-                ".",  # ipv4
-                ":",  # ipv6
-                "/",  # folder
-                "@"]:  # account
-            ans = ans.replace(replace_target, "-")
+                '.',  # ipv4
+                ':',  # ipv6
+                '/',  # folder
+                '@']:  # account
+            ans = ans.replace(replace_target, '-')
         for replace_target in [
-                ",", "\'", "\"", "<", ">", "(", ")", "[", "]", ";", ""]:
-            ans = ans.replace(replace_target, "")
-        return ans + ".ttl"
+                ',', '\'', '\'', '<', '>', '(', ')', '[', ']', ';', ' ', "\r", "\n", "\t"]:
+            ans = ans.replace(replace_target, '')
+        return ans + '.ttl'
 
     def update_tool(self, item_id, values: list) -> list:
         # モーダルダイアログ
         dialog = tk.Toplevel(self.root)
-        dialog.title("tool_sheet_line")
-        dialog.geometry("400x450")
+        dialog.title('tool_sheet_line')
+        dialog.geometry('400x450')
         #
         # 不正対策
         while len(values) < len(NextNextPing.TARGET_PARAM):
@@ -1378,28 +1411,28 @@ class NextNextPing():
             """ コンボ選択処理 """
             target_type = int(name_var_list[3].get()[0])
             if target_type == 3:  # 1=ping , 2=traceroute , 3=show run
-                widget[2].config(state="disabled")
+                widget[2].config(state='disabled')
             else:
-                widget[2].config(state="normal")
+                widget[2].config(state='normal')
             #
             next_ssh = int(name_var_list[4].get()[0])
-            if next_ssh == 0:  # ("0=Windows", "1=SSH login", "2=sSSH step")
+            if next_ssh == 0:  # ('0=Windows', '1=SSH login', '2=sSSH step')
                 for entry in widget[5:]:
-                    entry.config(state="disabled")
+                    entry.config(state='disabled')
             elif next_ssh == 1:
                 for entry in widget[5:]:
-                    entry.config(state="normal")
+                    entry.config(state='normal')
                 for entry in widget[9:]:
-                    entry.config(state="disabled")
+                    entry.config(state='disabled')
             else:
                 for entry in widget[5:]:
-                    entry.config(state="normal")
+                    entry.config(state='normal')
         #
         for i, target_param in enumerate(NextNextPing.TARGET_PARAM):
             label_text = target_param[0]
             if japanese_flag:
                 label_text = target_param[1]
-            tk.Label(dialog, text=label_text).grid(row=i, column=0, padx=10, pady=5, sticky="e")
+            tk.Label(dialog, text=label_text).grid(row=i, column=0, padx=10, pady=5, sticky='e')
             if 0 < len(target_param[3]):
                 combo_list = target_param[3]  # target_type
                 selected_value = tk.StringVar()
@@ -1407,9 +1440,9 @@ class NextNextPing():
                 name_var_list.append(selected_value)
                 combo = ttk.Combobox(dialog, textvariable=selected_value)
                 widget.append(combo)
-                combo["values"] = combo_list
+                combo['values'] = combo_list
                 if i == 3 or i == 4:  # target_type, ssh_type
-                    combo.bind("<<ComboboxSelected>>", on_combo_select)
+                    combo.bind('<<ComboboxSelected>>', on_combo_select)
                 value_item = 0
                 j = 0
                 for combo_str in combo_list:
@@ -1428,7 +1461,7 @@ class NextNextPing():
                 widget.append(entry)
                 entry.grid(row=i, column=1, padx=10, pady=5)
                 if i == 0:
-                    entry.config(state="disabled")
+                    entry.config(state='disabled')
             #
         #
         # コンボ選択の反映
@@ -1540,14 +1573,14 @@ class NextNextPing():
             messagebox.showinfo("Info", "save_csv is ok")
             self.tool_tree.focus_set()
 
-    def get_target_type_to_action_name(self, target_type: int) -> str:
+    def get_target_type_to_action_name(self, target_type: int, target_ip: str) -> str:
         """ target_type を 1=ping , 2=trace , 3=show に変える """
         if target_type == 1:
-            return 'ping'
+            return f"ping_{target_ip}"
         elif target_type == 2:
-            return 'trace'
+            return f"trace_{target_ip}"
         elif target_type == 3:
-            return 'show'
+            return "show"  # showの時はtarget_typeはいらない
         #
         return str(target_type)
 
@@ -1569,31 +1602,33 @@ class NextNextPing():
             next_ip = values[11]
             #
             file_head_data = ''
-            action_name = self.get_target_type_to_action_name(target_type)
+            action_name = self.get_target_type_to_action_name(target_type, f"{target_display}({target_ip})")
             if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-                file_head_data = f"; {action_name}  {target_display}({target_ip})\n"
+                file_head_data = f"; {action_name}\n"
             elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-                file_head_data = f"; {base_display}({base_ip}) {action_name} {target_display}({target_ip})\n"
+                file_head_data = f"; {base_display}({base_ip}) {action_name} \n"
             elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-                file_head_data = f"; {base_display}({base_ip})->{next_display}({next_ip}) {action_name} {target_display}({target_ip})\n"
+                file_head_data = f"; {base_display}({base_ip})->{next_display}({next_ip}) {action_name}\n"
             else:
                 file_head_data = "; \n"
             #
             display_name = target_display
-            for replace_target in ["@", ":",",", "\'", "\"", "<", ">", "(", ")", "[", "]", ";", "#"]:
-                display_name = display_name.replace(replace_target, "")
+            for replace_target in ['@', ':', ',', '\'', '\'', '<', '>', '(', ')', '[', ']', ';', '#', ' ', "\r", "\n", "\t"]:
+                display_name = display_name.replace(replace_target, '')
             new_text = new_text + file_head_data
             new_text = new_text + '[' + display_name + ']'
             #
             if next_ssh == 0:
-                if target_type == 1:  # "1=ping", "2=traceroute", "3=show run"
+                # windowsから打つ場合はttlいらな
+                if target_type == 1:  # '1=ping', '2=traceroute', '3=show run'
                     new_text = new_text + target_ip + "\n"
                 elif target_type == 2:
-                    new_text = new_text + "(traceroute)" + target_ip + "\n"
+                    new_text = new_text + '(traceroute)' + target_ip + "\n"
                 else:
-                    new_text = new_text + "(show)" + target_ip + "\n"
+                    new_text = new_text + '(show)' + target_ip + "\n"
                 new_text = new_text + "\n"
             else:
+                # sshが必要なのでttlを出力する
                 new_text = new_text + "(ttl)" + file_name + "\n"
                 new_text = new_text + "\n"
                 # 

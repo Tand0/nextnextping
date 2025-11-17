@@ -35,7 +35,7 @@ def installer():
 def file_copy(base: str, dest: str):
     """ ファイルをコピーする """
     for filename in os.listdir(base):
-        if not ('.json' in filename or '.csv' in filename or '.png' in filename):
+        if not ('init.json' in filename or '.csv' in filename or '.png' in filename):
             continue
         #
         print("copy", base + filename, dest + filename)
@@ -154,6 +154,7 @@ h5 {
         line = line.rstrip("\r")
         line = re.sub(r'<!--.*-->', '', line)
         result = re.search(r"^\s*```", line)
+        index_level_now = -1
         if result:
             if tree_state:
                 line = "<code><pre>"
@@ -168,7 +169,6 @@ h5 {
         elif not re.search(r"\S", line):
             continue  # 空文なのでスキップ
         else:
-            index_level_now = -1
             result = re.search(r"^\s*(\#+)\s*(.*)", line)
             if result:
                 header_len = len(result.group(1))
@@ -180,22 +180,23 @@ h5 {
                     index_level_now = len(result.group(1))
                     line = result.group(2)
                     line = (" " * index_level_now) + "<li>" + line
-            if len(index_level) == 0 and 0 <= index_level_now:
-                # 最初は詰む
-                index_level.append(index_level_now)
-                line = "<ul>\n" + line
-            elif 0 < len(index_level) and index_level[-1] < index_level_now:
-                # もしも現状より現在スペースが大きいなら、レベルを１つ上げる
-                index_level.append(index_level_now)
-                line = (" " * index_level_now) + "<ul>\n" + line
-            # もし現状より現在スペースが小さいなら、同じインデントになるまで下げ続ける
-            while 0 < len(index_level):
-                if index_level_now < index_level[-1]:
-                    pre_post_text = "</ul>"
-                    line = pre_post_text + "\n" + line
-                    index_level = index_level[:-1]
-                    continue
-                break
+        # 戻し処理
+        if len(index_level) == 0 and 0 <= index_level_now:
+            # 最初は詰む
+            index_level.append(index_level_now)
+            line = "<ul>\n" + line
+        elif 0 < len(index_level) and index_level[-1] < index_level_now:
+            # もしも現状より現在スペースが大きいなら、レベルを１つ上げる
+            index_level.append(index_level_now)
+            line = (" " * index_level_now) + "<ul>\n" + line
+        # もし現状より現在スペースが小さいなら、同じインデントになるまで下げ続ける
+        while 0 < len(index_level):
+            if index_level_now < index_level[-1]:
+                pre_post_text = "</ul>"
+                line = pre_post_text + "\n" + line
+                index_level = index_level[:-1]
+                continue
+            break
         line = re.sub(r'`([^`]+)`', r"<code>\1</code>", line)
         line = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', "<a href=\"\\2\">\\1</a>", line)
         result_md_text = result_md_text + "\n" + line

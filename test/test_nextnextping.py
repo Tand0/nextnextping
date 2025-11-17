@@ -251,6 +251,8 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             state_base = 'y/n'
         elif 'more' in state_base:
             state_base = 'more'
+        elif 'vm' in state_base:  # vmware
+            state_base = 'vm'
         else:
             state_base = "$"
         self.state.append(state_base)
@@ -287,8 +289,11 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             self.prompt = 'Are you sure you want to continue connecting (yes/no)?'
         elif 'more' == state:
             self.prompt = '-- More --'
+        elif 'vm' == state:
+            self.prompt = '[root@localhost:~] '
         else:
             self.prompt = 'XXX$ '  # for linux
+        # print(f"update_prompt s={state} p={self.prompt}")
 
     def cleint_close(self):
         """ この処理が呼ばれたらクライアントをクローズする """

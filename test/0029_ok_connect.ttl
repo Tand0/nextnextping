@@ -199,54 +199,60 @@ if target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
 elseif target_type = 2 then 
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'traceroute '
+        strconcat command target_ip
+        call call_one_command
     elseif server_type == 2 then
-        command = 'tracepath '
+        strcompare "] " prompt
+        if result == 0 then
+            ; for vmware
+            command = 'traceroute '
+            strconcat command target_ip
+            call call_one_command
+        else
+            command = 'tracepath '
+            strconcat command target_ip
+            call call_one_command
+        endif
     else
         command = 'traceroute '
-    endif
-    strconcat command target_ip
-    sendln command
-    wait prompt
-    if result == 0 then
-        messagebox 'command is time up!' command
-        call call_ending
-        end
+        strconcat command target_ip
+        call call_one_command
     endif
 else
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+        ; for cisco
         command = 'show running-config'
-        sendln command
-        wait prompt '-- More --'
-        if result = 0 then
-            messagebox 'command is time up!' command
-            call call_ending
-            end
-        elseif result = 2 then
-            sendln ''
-            continue
-        endif
+        call call_one_command
         command = 'show ip interface brief'
+        call call_one_command
     elseif server_type == 2 then
-        command = 'ifconfig -a'
-    else
-        command = 'display current-configuration'
-    endif
-    sendln command
-    ; プロントのチェックを行う
-    while 1
-        ;
-        wait prompt '-- More --'
-        if result = 0 then
-            messagebox 'command is time up!' command
-            call call_ending
-            end
-        elseif result = 2 then
-            sendln ''
-            continue
+        strcompare "] " prompt
+        if result == 0 then
+            ; for vmware
+            command = 'esxcli network nic list'
+            call call_one_command
+            command = 'esxcli network vswitch standard list'
+            call call_one_command
+            command = 'esxcli network ip interface list'
+            call call_one_command
+        else
+            ; for linux
+            command = 'ifconfig -a'
+            call call_one_command
+            command = 'ip addr show'
+            call call_one_command
+            command = 'ip link show'
+            call call_one_command
+            command = 'ip route show'
+            call call_one_command
+            command = 'ss'
+            call call_one_command
         endif
-        ;
-        break
-    endwhile
+    else
+        ; for qx-s
+        command = 'display current-configuration'
+        call call_one_command
+    endif
 endif
 
 ; 終了処理
@@ -256,6 +262,30 @@ call call_ending
 error=''
 result = 1
 end
+
+
+:call_one_command
+; １コマンド分の処理
+sendln command
+wait command
+; プロントのチェックを行う
+while 1
+    ;
+    wait prompt '-- More --'
+    if result = 0 then
+        messagebox 'command is time up!' command
+        call call_ending
+        end
+    elseif result = 2 then
+        sendln ''
+        continue
+    endif
+    ;
+    break
+endwhile
+
+return
+
 
 ; SSHでログインするときに使うパスワード
 :call_base_password
@@ -290,15 +320,16 @@ return
     strconcat key_target next_account
     key_ip = next_ip
     key_base_display = next_display
+    call call_pass_all
 return
 
 ; パスワード関連まとめ
 :call_pass_all
     key_ip_replace = key_ip
     strreplace key_ip_replace 1 ':' '_' ; ipv6
-    strreplace key_ip_replace 1 #92'.' '_' ; ipv4 # 正規表現なので単純に.を渡すと全部消える
+    strreplace key_ip_replace 1 #92'.' '_'  ; ipv4 正規表現なので単純に.を渡すと全部消える
     getdir key_data
-    strconcat key_data #92 ;
+    strconcat key_data #92
     strconcat key_data "pass_" ; パスワード保存用
     strconcat key_data key_ip_replace
     strconcat key_data '.key'
@@ -320,7 +351,7 @@ return
     testlink
     if result==2  then
         closett
-        logclose
+        ; logclose
     endif
     result = 0
 return
@@ -330,7 +361,7 @@ return
     password_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --'
+        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --' '] '
         result_type = result
         if result_type == 0 then
             messagebox 'next prompt check fail!' 'title'
@@ -365,13 +396,13 @@ return
             strcompare prompt '>'
             if state_flag == 0 then
                 if result == 0 then
-                    call call_base_password_enable ; 特権モード移行用
+                    call call_base_password_enable  ; 特権モード移行用
                 else
                     call call_base_password
                 endif
             else
                 if result == 0 then
-                    call call_next_enable_password ; 特権モード移行用
+                    call call_next_enable_password  ; 特権モード移行用
                 else
                     call call_next_password
                 endif
@@ -381,6 +412,8 @@ return
         elseif result_type == 6 then
             sendln ''
             continue
+        elseif result_type == 7 then
+            prompt = '] '  ; for vmware
         else
             int2str strvar result_type
             message = "next promot not found("

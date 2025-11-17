@@ -1,8 +1,8 @@
 ;
-; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) show SSH踏み台(127.0.0.1)
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) show
 ;
 
-file_name = "1019_ok_qx_show_127_0_0_1.ttl"
+file_name = "1013_ok_cisco1_show.ttl"
 target_display = "SSH踏み台"
 target_ip = "127.0.0.1"
 target_type = 3  ; 1=ping , 2=traceroute , 3=show run
@@ -11,9 +11,9 @@ base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
 base_display = "SSH接続先IP"
 base_ip = "localhost:2200"
 base_account = "admin"
-next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
-next_display = "次のdisplay_qx"
-next_ip = "qx"
+next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+next_display = "次のdisplay"
+next_ip = "cisco1"
 next_account = "nextadmin"
 
 
