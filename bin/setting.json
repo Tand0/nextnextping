@@ -5,7 +5,7 @@
 [ローカルホスト接続](traceroute)localhost
 
 ; show
-[ローカルホスト接続](show)localhost
+[ローカルホスト接続](show) None
 
 ; ping_繋がらないテスト(10.0.0.1)
 [繋がらないテスト]10.0.0.1
@@ -14,7 +14,7 @@
 [繋がらないテスト](traceroute)10.0.0.1
 
 ; show
-[繋がらないテスト](show)10.0.0.1
+[繋がらないテスト](show) None
 
 ; ping_ローカルホスト接続 IPv4(127.0.0.1)
 [ローカルホスト接続IPv4]127.0.0.1
@@ -58,7 +58,7 @@
 ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) show
 [SSH踏み台](ttl)1019_ok_qx_show.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay_qx(vmware) show
+; SSH接続先IP(localhost:2200)->vmwareテスト(vmware) show
 [vmwareのテスト](ttl)1020_ok_vmware_show.ttl
 
 

@@ -1,0 +1,28 @@
+
+basename fname param1
+strcompare fname '0039_ok_param.ttl'
+assert result = 0 "param1 test" fname '0038_ok_param.ttl'
+
+assert 1 'param1' param1
+assert 1 'param2' param2
+assert 1 'param3' param3
+assert 1 'param4' param4
+assert 1 'param5' param5
+assert 1 'param6' param6
+assert 1 'param7' param7
+assert 1 'param8' param8
+assert 1 'param9' param9
+
+assert 1 'param1' param[1]
+assert 1 'param2' param[2]
+assert 1 'param3' param[3]
+assert 1 'param4' param[4]
+assert 1 'param5' param[5]
+assert 1 'param6' param[6]
+assert 1 'param7' param[7]
+assert 1 'param8' param[8]
+assert 1 'param9' param[9]
+
+
+result = 1
+end

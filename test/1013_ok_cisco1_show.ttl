@@ -2,7 +2,7 @@
 ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) show
 ;
 
-file_name = "1013_ok_cisco1_show.ttl"
+basename file_name param1
 target_display = "SSH踏み台"
 target_ip = "127.0.0.1"
 target_type = 3  ; 1=ping , 2=traceroute , 3=show run

@@ -148,8 +148,6 @@ if result == 0 then
 endif
 ; call_get_promptのために状態フラグを設定する
 state_flag = 0
-; call_get_promptのためにサーバ種別を設定する
-server_type = base_type
 ; プロンプトを決定する
 call call_get_prompt
 
@@ -169,24 +167,19 @@ if next_ssh == 2 then
     endif
     ; call_get_promptのために状態フラグを設定する
     state_flag = 1
-    ; call_get_promptのためにサーバ種別を設定する
-    if next_ssh == 1 then ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
-        server_type = base_type
-    else
-        server_type = next_type
-    endif
     ; プロンプトを決定する
     call call_get_prompt
 endif
 
 
-;; ここでおまじない必要
-if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+if server_type == 1 then  ; 1=cisco, 2=linux, 3=qx-s
+    ;; cisco のときはこれで -- More -- を出さないようにする
     command = 'terminal length 0'
     sendln command
     wait command
     wait prompt
-elseif server_type == 3 then ; 1=cisco, 2=linux, 3=qx-s
+elseif server_type == 3 then  ; 1=cisco, 2=linux, 3=qx-s
+    ;; qx-s のときはこれで -- More -- を出さないようにする
     command = 'screen-length disable'
     sendln command
     wait command
@@ -201,8 +194,27 @@ elseif server_type == 3 then ; 1=cisco, 2=linux, 3=qx-s
     wait prompt
 endif
 
+; 特殊コマンドを実行する
+my_command_flag = 1
+ifdefined my_command_int
+if result<>1 then
+    my_command_flag = 0
+endif
+ifdefined my_command
+if result<>6 then
+    my_command_flag = 0
+endif
+
 ;; 実コマンドの投入
-if target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
+if my_command_flag<>0 then
+    for i   0   (my_command_int - 1)
+        command = my_command[i]
+        strcompare command ""
+        if result<>0 then
+            call call_one_command
+        endif
+    next
+elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'ping '
     elseif server_type == 2 then
@@ -381,33 +393,45 @@ return
 
  :call_get_prompt
     password_flag = 0
+    enable_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --' '] '
+        wait '>' '#' '$' '] ' '(yes/no)' 'assword:' '-- More --'
         result_type = result
         if result_type == 0 then
+            ; タイムアウトのとき
             messagebox 'next prompt check fail!' 'title'
             call call_ending
             end
         elseif result_type == 1 then
             prompt = '>'
-            if server_type == 1 then
+            if enable_flag == 0 then
+                ; '>'が来たら一度だけenableを打ち、2度来たらqxモードと見なす
+                server_type = 1  ; 1=cisco, 2=linux, 3=qx-s
                 password_flag = 0
+                enable_flag = 1
                 command = 'enable'
                 sendln command
                 wait command
                 continue
+            else
+                server_type = 3  ; 1=cisco, 2=linux, 3=qx-s
             endif
         elseif result_type == 2 then
+            server_type = 1  ; 1=cisco, 2=linux, 3=qx-s
             prompt = '#'
         elseif result_type == 3 then
+            server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
             prompt = '$'
         elseif result_type == 4 then
+            server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
+            prompt = '] '  ; for vmware
+        elseif result_type == 5 then
             command = 'yes'
             sendln command
             wait command
             continue
-        elseif result_type == 5 then
+        elseif result_type == 6 then
             if password_flag <> 0 then
                 message = 'passdword ng!'
                 messagebox message 'title'
@@ -415,15 +439,14 @@ return
                 end
             endif
             password_flag = 1
-            strcompare prompt '>'
             if state_flag == 0 then
-                if result == 0 then
+                if enable_flag<>0 then
                     call call_base_password_enable  ; 特権モード移行用
                 else
                     call call_base_password
                 endif
             else
-                if result == 0 then
+                if enable_flag<>0 then
                     call call_next_enable_password  ; 特権モード移行用
                 else
                     call call_next_password
@@ -431,11 +454,9 @@ return
             endif
             sendln password
             continue
-        elseif result_type == 6 then
+        elseif result_type == 7 then
             sendln ''
             continue
-        elseif result_type == 7 then
-            prompt = '] '  ; for vmware
         else
             int2str strvar result_type
             message = "next promot not found("
@@ -801,9 +822,16 @@ class MyThread():
 
 
 class NextNextPing():
+    # ログファイル
+    LOG_JSON = 'log.json'
+
+    # 設定ファイル
+    SETTING_JSON = 'setting.json'
+
+    # 初期ファイル
+    INIT_JSON = 'init.json'
+
     def __init__(self):
-        self.LOG_JSON = 'log.json'
-        self.SETTING_JSON = 'setting.json'
         self.log = {}
         self.init = {}
         self.setting_text = ""
@@ -817,11 +845,12 @@ class NextNextPing():
         self.notebook = None
 
     def next_next_load(self, file_name: str):
+        # print(f"file={file_name}")
         setting = {}
         try:
             with open(file_name, 'r', encoding='utf-8') as f:
                 setting = json.load(f)
-        except FileNotFoundError:
+        except (json.decoder.JSONDecodeError, FileNotFoundError):
             setting = {}
         return setting
 
@@ -844,11 +873,14 @@ class NextNextPing():
 
     def save_log(self):
         self.stop()
-        self.next_next_save(self.LOG_JSON, self.log)
+        self.next_next_save(NextNextPing.LOG_JSON, self.log)
 
     def save_setting(self):
+        # 設定を保存
         setting = self.setting_text.get("1.0", tk.END)
-        self.next_text_save(self.SETTING_JSON, setting)
+        self.next_text_save(NextNextPing.SETTING_JSON, setting)
+        # initを保存
+        self.next_next_save(NextNextPing.INIT_JSON, self.init)
 
     def system_exit(self):
         self.stop()
@@ -1071,9 +1103,9 @@ class NextNextPing():
 
     def next_next_ping(self):
         # ログをロードする
-        self.log = self.next_next_load(self.LOG_JSON)
+        self.log = self.next_next_load(NextNextPing.LOG_JSON)
         # 初期値をロードする
-        self.init = self.next_next_load('init.json')
+        self.init = self.next_next_load(NextNextPing.INIT_JSON)
         # 初期値が入ってなかったら入れる
         for target in NextNextPing.INIT_DATA:
             if target not in self.init:
@@ -1085,7 +1117,7 @@ class NextNextPing():
             if target[2] not in self.init:
                 self.init[target[2]] = target[3]
         #
-        self.setting = self.next_text_load(self.SETTING_JSON)
+        self.setting = self.next_text_load(NextNextPing.SETTING_JSON)
         #
         #
         self.root = tk.Tk()
@@ -1174,7 +1206,10 @@ class NextNextPing():
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         #
         self.notebook.pack(expand=True, fill='both', padx=10, pady=10)
-
+        #
+        # 画面をトップ画面に切り替える
+        self.notebook.select(0)
+        #
         self.root.mainloop()
         #
 
@@ -1625,17 +1660,20 @@ class NextNextPing():
                 elif target_type == 2:
                     new_text = new_text + '(traceroute)' + target_ip + "\n"
                 else:
-                    new_text = new_text + '(show)' + target_ip + "\n"
+                    new_text = new_text + '(show) None\n'
                 new_text = new_text + "\n"
             else:
                 # sshが必要なのでttlを出力する
                 new_text = new_text + "(ttl)" + file_name + "\n"
                 new_text = new_text + "\n"
-                # 
+                #
                 file_head_data = ';\n' + file_head_data + ";\n\n"
                 #
                 # ファイルを書き込む
                 for i, value in enumerate(values):
+                    if i == 0:
+                        file_head_data = file_head_data + "basename file_name param1\n"
+                        continue
                     file_head_data = file_head_data + NextNextPing.TARGET_PARAM[i][0]
                     file_head_data = file_head_data + " = "
                     if isinstance(NextNextPing.TARGET_PARAM[i][2], int):
@@ -1654,6 +1692,14 @@ class NextNextPing():
                         #
                     file_head_data = file_head_data + "\n"
                 base_file = 'base.ttl'
+                file_head_data = file_head_data + "\n\n"
+                file_head_data = file_head_data + "; 特殊コマンドの開始\n"
+                file_head_data = file_head_data + "; my_command_int = 3\n"
+                file_head_data = file_head_data + "; my_command[0] = 'esxcli network nic list'\n"
+                file_head_data = file_head_data + "; my_command[1] = 'esxcli network vswitch standard list'\n"
+                file_head_data = file_head_data + "; my_command[2] = 'esxcli network nic list'\n"
+                file_head_data = file_head_data + "; 特殊コマンドの終了\n"
+                file_head_data = file_head_data + "\n\n"
                 file_head_data = file_head_data + "\n\n"
                 file_head_data = file_head_data + f"include \"{base_file}\""
                 file_head_data = file_head_data + "\n\n"

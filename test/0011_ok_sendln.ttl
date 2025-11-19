@@ -10,29 +10,30 @@ endif
 error=''
 assert 1  "connect start"
 connect 'localhost:2200 /user=aaa /passwd=bbb'
-assert result ==2  "connect start" error
+assert result ==2  "connect start" error result
 
 
 result = 0
 wait '$'
-assert result ==1  "wait test" error
+assert result ==1  "wait test" error result
 
 ; text
 sendln 'test'
+wait 'test'
 result = 0
-wait '$' ':'
-assert result ==1  "wait test" error
+wait '$' '#'
+assert result ==1  "wait test" error result
 
 ; text
 sendln 'work'
 result = 0
-wait ':' '$'
-assert result ==2  "wait test" error
+wait '#' '$'
+assert result ==2  "wait test" error result
 
 ; タイムアウトを発生させる
 timeout = 1
 wait 'xxxx'
-assert result ==0  "timeout test" error
+assert result ==0  "timeout test" error result
 
 gethostname hostname
 assert 1 "gethostname test" hostname

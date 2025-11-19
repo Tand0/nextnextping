@@ -2,7 +2,7 @@
 ; SSH接続先IP(localhost:2200) ping_SSH接続(127.0.0.1) 
 ;
 
-file_name = "1008c1_ok_localhost-2200_ping_127-0-0-1.ttl"
+basename file_name param1
 target_display = "SSH接続"
 target_ip = "127.0.0.1"
 target_type = 1  ; 1=ping , 2=traceroute , 3=show run

@@ -2,7 +2,7 @@
 ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) trace_SSH踏み台(127.0.0.1)
 ;
 
-file_name = "1018_ok_qx_trace_127-0-0-1.ttl"
+basename file_name param1
 target_display = "SSH踏み台"
 target_ip = "127.0.0.1"
 target_type = 2  ; 1=ping , 2=traceroute , 3=show run

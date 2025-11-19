@@ -120,6 +120,8 @@ line vty 0 4
 end
 """.replace('\n', '\r\n')
 
+    ENABLE_ERROR = "% Uncrecognized Command\r\n"
+
     PING = """PING localhost (127.0.0.1) 56(84) bytes of data.
 64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms
 
@@ -239,6 +241,8 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             state_base = 'c1'
         elif 'cisco2' in state_base or 'c2' in state_base:
             state_base = 'c2'
+        elif 'c3' in state_base:
+            state_base = 'c3'
         elif 'qx-s' in state_base or 'qx' in state_base:
             state_base = 'qx'
         elif 'linux' in state_base or 'ubuntu' in state_base:
@@ -249,6 +253,8 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             state_base = 'pass'
         elif 'y/n' in state_base:
             state_base = 'y/n'
+        elif 'system-view' in state_base:
+            state_base = 'system-view'
         elif 'more' in state_base:
             state_base = 'more'
         elif 'vm' in state_base:  # vmware
@@ -274,13 +280,17 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         state = self.state[-1]
         # print(f"update_prompt {state}")
         if 'c1' == state:
-            self.prompt = 'xxx>'  # for cisco not enable
+            self.prompt = 'Router>'  # for cisco not enable
         elif 'c2' == state:
-            self.prompt = 'xxx#'  # for cisco enable
+            self.prompt = 'Router#'  # for cisco enable
+        elif 'c3' == state:
+            self.prompt = 'Router(config)#'  # for cisco enable
         elif 'qx' == state:
-            self.prompt = '<xx>'  # for qx-s
+            self.prompt = '<Switch>'  # for qx-s
+        elif 'system-view' == state:
+            self.prompt = '[Switch]'  # for qx-s
         elif '$' == state:
-            self.prompt = 'xxx$ '  # for linux
+            self.prompt = 'root@localhost:~$ '  # for linux
         elif 'user' == state:
             self.prompt = 'User:'
         elif 'pass' == state:
@@ -292,7 +302,7 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         elif 'vm' == state:
             self.prompt = '[root@localhost:~] '
         else:
-            self.prompt = 'XXX$ '  # for linux
+            self.prompt = 'root@localhost:~$ '  # for linux
         # print(f"update_prompt s={state} p={self.prompt}")
 
     def cleint_close(self):
@@ -461,6 +471,8 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                     result9 = re.search("^\\s*display\\s+current-configuration", message)
                     result10 = re.search("^\\s*ifconfig", message)
                     result11 = re.search("^\\s*show\\s+ip\\s+interface\\s+brief", message)
+                    result12 = re.search("^\\s*system-view", message)
+                    result13 = re.search("^\\s*config(ure)?\\s+terminal", message)
                     if result1:
                         if not self.pop_state():
                             self.cleint_close()
@@ -485,12 +497,17 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                             self.push_state('y/n')
                         #
                     elif result4:
-                        # 新しい状態を積む
-                        self.push_state('c2')
-                        # パスワードを聞く
-                        self.push_state('pass')
-                    elif result5 and self.peek_state() in ['c2']:  # ciscoのenableモードのみ
-                        self.chan.send(ServerStarter.SHOW_RUNNING_CONFIG)
+                        if self.peek_state() == 'c1':
+                            # 新しい状態を積む
+                            self.push_state('c2')
+                            # パスワードを聞く
+                            self.push_state('pass')
+                        else:
+                            self.chan.send(ServerStarter.ENABLE_ERROR)
+                    elif result5:
+                        if self.peek_state() == 'c2':
+                            # ciscoのenableモードのみ
+                            self.chan.send(ServerStarter.SHOW_RUNNING_CONFIG)
                     elif result6:
                         self.chan.send(ServerStarter.TRACERT)
                     elif result7:
@@ -505,6 +522,12 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
                         self.chan.send(ServerStarter.IFCONFIG)
                     elif result11:
                         self.chan.send(ServerStarter.SHOW_IP_INTERFACE_BRIEF)
+                    elif result12:
+                        if self.peek_state() == 'qx':
+                            self.push_state('system-view')
+                    elif result13:
+                        if self.peek_state() == 'c2':
+                            self.push_state('c3')
                 #
                 # プロンプトを渡す
                 self.chan.send(f'{self.prompt}')

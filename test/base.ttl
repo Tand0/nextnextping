@@ -126,8 +126,6 @@ if result == 0 then
 endif
 ; call_get_promptのために状態フラグを設定する
 state_flag = 0
-; call_get_promptのためにサーバ種別を設定する
-server_type = base_type
 ; プロンプトを決定する
 call call_get_prompt
 
@@ -147,24 +145,19 @@ if next_ssh == 2 then
     endif
     ; call_get_promptのために状態フラグを設定する
     state_flag = 1
-    ; call_get_promptのためにサーバ種別を設定する
-    if next_ssh == 1 then ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
-        server_type = base_type
-    else
-        server_type = next_type
-    endif
     ; プロンプトを決定する
     call call_get_prompt
 endif
 
 
-;; ここでおまじない必要
-if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+if server_type == 1 then  ; 1=cisco, 2=linux, 3=qx-s
+    ;; cisco のときはこれで -- More -- を出さないようにする
     command = 'terminal length 0'
     sendln command
     wait command
     wait prompt
-elseif server_type == 3 then ; 1=cisco, 2=linux, 3=qx-s
+elseif server_type == 3 then  ; 1=cisco, 2=linux, 3=qx-s
+    ;; qx-s のときはこれで -- More -- を出さないようにする
     command = 'screen-length disable'
     sendln command
     wait command
@@ -179,8 +172,27 @@ elseif server_type == 3 then ; 1=cisco, 2=linux, 3=qx-s
     wait prompt
 endif
 
+; 特殊コマンドを実行する
+my_command_flag = 1
+ifdefined my_command_int
+if result<>1 then
+    my_command_flag = 0
+endif
+ifdefined my_command
+if result<>6 then
+    my_command_flag = 0
+endif
+
 ;; 実コマンドの投入
-if target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
+if my_command_flag<>0 then
+    for i   0   (my_command_int - 1)
+        command = my_command[i]
+        strcompare command ""
+        if result<>0 then
+            call call_one_command
+        endif
+    next
+elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'ping '
     elseif server_type == 2 then
@@ -359,33 +371,45 @@ return
 
  :call_get_prompt
     password_flag = 0
+    enable_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '(yes/no)' 'assword:' '-- More --' '] '
+        wait '>' '#' '$' '] ' '(yes/no)' 'assword:' '-- More --'
         result_type = result
         if result_type == 0 then
+            ; タイムアウトのとき
             messagebox 'next prompt check fail!' 'title'
             call call_ending
             end
         elseif result_type == 1 then
             prompt = '>'
-            if server_type == 1 then
+            if enable_flag == 0 then
+                ; '>'が来たら一度だけenableを打ち、2度来たらqxモードと見なす
+                server_type = 1  ; 1=cisco, 2=linux, 3=qx-s
                 password_flag = 0
+                enable_flag = 1
                 command = 'enable'
                 sendln command
                 wait command
                 continue
+            else
+                server_type = 3  ; 1=cisco, 2=linux, 3=qx-s
             endif
         elseif result_type == 2 then
+            server_type = 1  ; 1=cisco, 2=linux, 3=qx-s
             prompt = '#'
         elseif result_type == 3 then
+            server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
             prompt = '$'
         elseif result_type == 4 then
+            server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
+            prompt = '] '  ; for vmware
+        elseif result_type == 5 then
             command = 'yes'
             sendln command
             wait command
             continue
-        elseif result_type == 5 then
+        elseif result_type == 6 then
             if password_flag <> 0 then
                 message = 'passdword ng!'
                 messagebox message 'title'
@@ -393,15 +417,14 @@ return
                 end
             endif
             password_flag = 1
-            strcompare prompt '>'
             if state_flag == 0 then
-                if result == 0 then
+                if enable_flag<>0 then
                     call call_base_password_enable  ; 特権モード移行用
                 else
                     call call_base_password
                 endif
             else
-                if result == 0 then
+                if enable_flag<>0 then
                     call call_next_enable_password  ; 特権モード移行用
                 else
                     call call_next_password
@@ -409,11 +432,9 @@ return
             endif
             sendln password
             continue
-        elseif result_type == 6 then
+        elseif result_type == 7 then
             sendln ''
             continue
-        elseif result_type == 7 then
-            prompt = '] '  ; for vmware
         else
             int2str strvar result_type
             message = "next promot not found("
@@ -428,4 +449,3 @@ return
         break
     endwhile
 return
-

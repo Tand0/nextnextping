@@ -1,4 +1,5 @@
 {
+    "title": "nextnextping",
     "wait_time": 1,
     "loop": false,
     "debug": false,
@@ -9,7 +10,7 @@
         },
         {
             "name": "ping",
-            "ttl": false, 
+            "ttl": false,
             "command": "ping -n 1 %1",
             "ok": "(0%",
             "returncode": false,
@@ -17,7 +18,7 @@
         },
         {
             "name": "trace",
-            "ttl": false, 
+            "ttl": false,
             "command": "tracert %1",
             "ok": "Trace complete.",
             "returncode": false,
@@ -25,11 +26,13 @@
         },
         {
             "name": "show",
-            "ttl": false, 
+            "ttl": false,
             "command": "ipconfig /all",
             "returncode": false,
             "ok": "Windows IP Configuration",
             "timeout": 10
         }
-    ]
+    ],
+    "ignore_messagebox": true,
+    "ignore_log": false
 }

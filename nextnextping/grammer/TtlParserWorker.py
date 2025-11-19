@@ -188,12 +188,15 @@ class TtlPaserWolker():
             self.setValue('error', "")
             self.setValue('result', 1)
             #
-            # 初期パラメータの設定
-            i = 0
             # print(f" data={json.dumps(param_list, indent=2)}")
-            for param in param_list:
-                self.setValue('param' + str(i), param)
-                i = i + 1
+            for i in range(10):
+                self.setValue('param' + str(i + 1), '')
+                self.setValue('param[' + str(i + 1) + ']', '')
+            #
+            # 初期パラメータの設定
+            for i, param in enumerate(param_list):
+                self.setValue('param' + str(i + 1), param)
+                self.setValue('param[' + str(i + 1) + ']', param)
             #
             # 一発目のinclude
             self.include(filename)
@@ -1272,10 +1275,10 @@ class TtlPaserWolker():
             data = data[1:]
         return result
 
-    def intContext(self, data_list):
-        # print(f"intContext={data_list}")
+    def intContext(self, data_list) -> int:
         result = 0
         data = data_list[0]
+        # print(f"intContext={data}")
         if 0 < len(data) and data[0] == '$':
             result = self.getAsciiNum(data)
         else:
@@ -2183,6 +2186,7 @@ class TtlPaserWolker():
     def doIfdefined(self, strvar: str):
         result = 0
         if strvar in self.value_list:
+            # print(f"doIfdefined /{strvar}/")
             result = self.getValue(strvar)
             if isinstance(result, Label):
                 result = 4
