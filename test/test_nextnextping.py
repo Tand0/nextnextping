@@ -7,77 +7,28 @@ import sys
 import re
 import random
 import pathlib
+from paramiko import SFTPServerInterface, SFTPServer, SFTPAttributes, SFTPHandle, SFTP_OK
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../nextnextping")))
 # from grammer.TtlParserWorker import TtlPaserWolker
 from ttlmacro import ttlmacro
 
 
-class Server(paramiko.ServerInterface):
-    """ SSHサーバの実装 """
+PING = """PING localhost (127.0.0.1) 56(84) bytes of data.
+64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms
 
-    def __init__(self):
-        """ コンストラクタ """
-        self.event = threading.Event()
+--- localhost ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms
+""".replace('\n', '\r\n')
 
-    def check_channel_request(self, kind, chanid):
-        """ セッションの許可 """
-        print(f"test check_channel_request kind={kind} ")
-        if kind == "session":
-            return paramiko.OPEN_SUCCEEDED
-        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+PING_CISCO = """
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.1.1.1, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/3/5 ms
+""".replace('\n', '\r\n')
 
-    def check_auth_password(self, username, password):
-        """ パスワードチェック """
-        # print(f"test username={username}  password={password}")
-        return paramiko.AUTH_SUCCESSFUL
-
-    def check_auth_publickey(self, username, key):
-        """ 認証の許可 """
-        return paramiko.AUTH_SUCCESSFUL
-
-    def check_auth_gssapi_with_mic(
-        self, username, gss_authenticated=paramiko.AUTH_FAILED, cc_file=None
-    ):
-        """ 認証の許可 """
-        return paramiko.AUTH_SUCCESSFUL
-
-    def check_auth_gssapi_keyex(
-        self, username, gss_authenticated=paramiko.AUTH_FAILED, cc_file=None
-    ):
-        """ 認証の許可 """
-        return paramiko.AUTH_SUCCESSFUL
-
-    def get_allowed_auths(self, username):
-        """ 認証の許可 """
-        return "gssapi-keyex,gssapi-with-mic,password,publickey"
-
-    def check_channel_shell_request(self, channel):
-        """ shellの許可 """
-        # print("test check_channel_shell_request")
-        self.event.set()
-        return True
-
-    def check_channel_pty_request(self, channel, term, width, height, pixelwidth, pixelheight, modes):
-        """ ptyの許可 """
-        return True
-
-    def check_channel_subsystem_request(self, channel, name):
-        """ サブシステム要求の処理 """
-        print(f"test check_channel_subsystem_request {name}")
-        return False
-
-    def get_subsystem(self, name):
-        """ サブシステム名を返す """
-        print(f"test get_subsystem {name}")
-        return None
-
-
-class ServerStarter():
-    """ 実際のサーバ起動部分 """
-
-    KEY_FILE = "test_rsa.key"  # キーファイルの位置
-
-    SHOW_RUNNING_CONFIG = """Building configuration...
+SHOW_RUNNING_CONFIG = """Building configuration...
 
 Current configuration : 1234 bytes
 !
@@ -120,24 +71,9 @@ line vty 0 4
 end
 """.replace('\n', '\r\n')
 
-    ENABLE_ERROR = "% Uncrecognized Command\r\n"
+ENABLE_ERROR = "% Uncrecognized Command\r\n"
 
-    PING = """PING localhost (127.0.0.1) 56(84) bytes of data.
-64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms
-
---- localhost ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms
-""".replace('\n', '\r\n')
-
-    PING_CISCO = """
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 10.1.1.1, timeout is 2 seconds:
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 1/3/5 ms
-""".replace('\n', '\r\n')
-
-    TRACERT = """
+TRACERT = """
 Tracing route to t-ando [::1]
 over a maximum of 30 hops:
 
@@ -147,15 +83,15 @@ Trace complete.
 
 """.replace('\n', '\r\n')
 
-    TRACEROUTE = """traceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets
+TRACEROUTE = """traceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets
  1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms
 """
 
-    TRACEPATH = """traceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets
+TRACEPATH = """traceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets
  1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms
 """.replace('\n', '\r\n')
 
-    DISPLAY_CURRENT_CONFIGURATION = """#
+DISPLAY_CURRENT_CONFIGURATION = """#
 sysname QX-S3526
 #
 vlan 1
@@ -168,7 +104,7 @@ interface GigabitEthernet0/2
  port access vlan 20
 """.replace('\n', '\r\n')
 
-    DISPLAY_CURRENT_CONFIGURATION_MORE = """#
+DISPLAY_CURRENT_CONFIGURATION_MORE = """#
 interface Vlan-interface1
  ip address 192.168.1.1 255.255.255.0
 #
@@ -178,7 +114,7 @@ user-interface console 0
 #
 """.replace('\n', '\r\n')
 
-    IFCONFIG = """eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1440
+IFCONFIG = """eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1440
         inet xx.xx.209.61  netmask 255.255.240.0  broadcast xx.xx.223.255
         inet6 xx::xx:5dff:feae:24d3  prefixlen 64  scopeid 0x20<link>
         ether xx:xx:5d:ae:24:d3  txqueuelen 1000  (Ethernet)
@@ -198,11 +134,255 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
 
 """.replace('\n', '\r\n')
 
-    SHOW_IP_INTERFACE_BRIEF = """Interface        IP-Address      OK? Method Status                Protocol
+SHOW_IP_INTERFACE_BRIEF = """Interface        IP-Address      OK? Method Status                Protocol
 GigabitEthernet0/1 192.168.1.1     YES manual up                    up
 GigabitEthernet0/2 192.168.2.1     YES manual up                    down
 GigabitEthernet0/3 unassigned      YES manual administratively down down
 """.replace('\n', '\r\n')
+
+
+class Server(paramiko.ServerInterface):
+    """ SSHサーバの実装 """
+
+    def __init__(self):
+        """ コンストラクタ """
+        self.event = threading.Event()
+        self.sftp_flag = False
+
+    def check_channel_request(self, kind, chanid):
+        """ セッションの許可 """
+        print(f"test check_channel_request kind={kind} ")
+        if kind == "session":
+            return paramiko.OPEN_SUCCEEDED
+        return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
+
+    def check_auth_password(self, username, password):
+        """ パスワードチェック """
+        # print(f"test username={username}  password={password}")
+        return paramiko.AUTH_SUCCESSFUL
+
+    def check_auth_publickey(self, username, key):
+        """ 認証の許可 """
+        return paramiko.AUTH_SUCCESSFUL
+
+    def check_auth_gssapi_with_mic(
+        self, username, gss_authenticated=paramiko.AUTH_FAILED, cc_file=None
+    ):
+        """ 認証の許可 """
+        return paramiko.AUTH_SUCCESSFUL
+
+    def check_auth_gssapi_keyex(
+        self, username, gss_authenticated=paramiko.AUTH_FAILED, cc_file=None
+    ):
+        """ 認証の許可 """
+        return paramiko.AUTH_SUCCESSFUL
+
+    def get_allowed_auths(self, username):
+        """ 認証の許可 """
+        return "password,publickey"
+
+    def check_channel_shell_request(self, channel):
+        """ shellの許可 """
+        print("test check_channel_shell_request")
+        self.sftp_flag = False
+        self.event.set()
+        return True
+
+    def check_channel_pty_request(self, channel, term, width, height, pixelwidth, pixelheight, modes):
+        """ ptyの許可 """
+        return True
+
+    def check_channel_subsystem_request(self, channel, name):
+        """ サブシステム要求の処理 """
+        print(f"test check_channel_subsystem_request {name}")
+        self.sftp_flag = True
+        self.event.set()
+        return super().check_channel_subsystem_request(channel, name)
+
+    def is_sftp_flag(self):
+        """ sftpかどうかチェックする """
+        return self.sftp_flag
+
+
+class StubSFTPServer (SFTPServerInterface):
+    ROOT = os.getcwd()
+
+    def _realpath(self, path):
+        return self.ROOT + self.canonicalize(path)
+
+    def list_folder(self, path):
+        path = self._realpath(path)
+        try:
+            out = []
+            flist = os.listdir(path)
+            for fname in flist:
+                attr = SFTPAttributes.from_stat(os.stat(os.path.join(path, fname)))
+                attr.filename = fname
+                out.append(attr)
+            return out
+        except OSError as e:
+            print("test list_folder OSError")
+            return SFTPServer.convert_errno(e.errno)
+
+    def stat(self, path):
+        path = self._realpath(path)
+        try:
+            return SFTPAttributes.from_stat(os.stat(path))
+        except OSError as e:
+            print("test stat OSError")
+            return SFTPServer.convert_errno(e.errno)
+
+    def lstat(self, path):
+        path = self._realpath(path)
+        try:
+            return SFTPAttributes.from_stat(os.lstat(path))
+        except OSError as e:
+            print("test lstat OSError")
+            return SFTPServer.convert_errno(e.errno)
+
+    def open(self, path, flags, attr):
+        path = self._realpath(path)
+        try:
+            binary_flag = getattr(os, 'O_BINARY', 0)
+            flags |= binary_flag
+            mode = getattr(attr, 'st_mode', None)
+            if mode is not None:
+                fd = os.open(path, flags, mode)
+            else:
+                # os.open() defaults to 0777 which is
+                # an odd default mode for files
+                fd = os.open(path, flags, 0o666)
+        except OSError as e:
+            print("test open/0o666 OSError")
+            return SFTPServer.convert_errno(e.errno)
+        if (flags & os.O_CREAT) and (attr is not None):
+            attr._flags &= ~attr.FLAG_PERMISSIONS
+            SFTPServer.set_file_attr(path, attr)
+        if flags & os.O_WRONLY:
+            if flags & os.O_APPEND:
+                fstr = 'ab'
+            else:
+                fstr = 'wb'
+        elif flags & os.O_RDWR:
+            if flags & os.O_APPEND:
+                fstr = 'a+b'
+            else:
+                fstr = 'r+b'
+        else:
+            # O_RDONLY (== 0)
+            fstr = 'rb'
+        try:
+            f = os.fdopen(fd, fstr)
+        except OSError as e:
+            print("test open/fdopen OSError")
+            return SFTPServer.convert_errno(e.errno)
+        fobj = StubSFTPHandle(flags)
+        fobj.filename = path
+        fobj.readfile = f
+        fobj.writefile = f
+        return fobj
+
+    def remove(self, path):
+        path = self._realpath(path)
+        try:
+            os.remove(path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def rename(self, oldpath, newpath):
+        oldpath = self._realpath(oldpath)
+        newpath = self._realpath(newpath)
+        try:
+            os.rename(oldpath, newpath)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def mkdir(self, path, attr):
+        path = self._realpath(path)
+        try:
+            os.mkdir(path)
+            if attr is not None:
+                SFTPServer.set_file_attr(path, attr)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def rmdir(self, path):
+        path = self._realpath(path)
+        try:
+            os.rmdir(path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def chattr(self, path, attr):
+        path = self._realpath(path)
+        try:
+            SFTPServer.set_file_attr(path, attr)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def symlink(self, target_path, path):
+        path = self._realpath(path)
+        if (len(target_path) > 0) and (target_path[0] == '/'):
+            # absolute symlink
+            target_path = os.path.join(self.ROOT, target_path[1:])
+            if target_path[:2] == '//':
+                # bug in os.path.join
+                target_path = target_path[1:]
+        else:
+            # compute relative to path
+            abspath = os.path.join(os.path.dirname(path), target_path)
+            if abspath[:len(self.ROOT)] != self.ROOT:
+                # this symlink isn't going to work anyway -- just break it immediately
+                target_path = '<error>'
+        try:
+            os.symlink(target_path, path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        return SFTP_OK
+
+    def readlink(self, path):
+        path = self._realpath(path)
+        try:
+            symlink = os.readlink(path)
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+        # if it's absolute, remove the root
+        if os.path.isabs(symlink):
+            if symlink[:len(self.ROOT)] == self.ROOT:
+                symlink = symlink[len(self.ROOT):]
+                if (len(symlink) == 0) or (symlink[0] != '/'):
+                    symlink = '/' + symlink
+            else:
+                symlink = '<error>'
+        return symlink
+
+
+class StubSFTPHandle (SFTPHandle):
+    def stat(self):
+        try:
+            return SFTPAttributes.from_stat(os.fstat(self.readfile.fileno()))
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+
+    def chattr(self, attr):
+        # python doesn't have equivalents to fchown or fchmod, so we have to
+        # use the stored filename
+        try:
+            SFTPServer.set_file_attr(self.filename, attr)
+            return SFTP_OK
+        except OSError as e:
+            return SFTPServer.convert_errno(e.errno)
+
+
+class ServerStarter():
+    """ 実際のサーバ起動部分 """
+
+    KEY_FILE = "test_rsa.key"  # キーファイルの位置
 
     def __init__(self, port: int):
         """ コンストラクタ """
@@ -215,10 +395,10 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         self.DoGSSAPIKeyExchange = True
         self.port = port
         self.stop_flag = False
-        self.chan = None
+        self.channel = None
         self.client = None
-        self.t = None
-        self.sock = None
+        self.transport = None
+        self.server_socket = None
         self.state = []
         self.password_ng_flag = False
         self.prompt = None
@@ -235,14 +415,21 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
 
     def push_state(self, state_base: str):
         state_base = state_base.lower()
-        # print(f"test push_state {state_base}")
+        # print(f"test push_state ({state_base})")
         #
-        if 'cisco1' in state_base or 'c1' in state_base:
+        trigger_flag = False
+        for trigger in ServerStarter.TRIGGER:
+            if state_base == "":
+                continue
+            if trigger[0] == state_base or trigger[2] == state_base:
+                trigger_flag = True
+                break
+        if trigger_flag:
+            pass
+        elif 'cisco1' in state_base or 'c1' in state_base:
             state_base = 'c1'
         elif 'cisco2' in state_base or 'c2' in state_base:
             state_base = 'c2'
-        elif 'c3' in state_base:
-            state_base = 'c3'
         elif 'qx-s' in state_base or 'qx' in state_base:
             state_base = 'qx'
         elif 'linux' in state_base or 'ubuntu' in state_base:
@@ -253,8 +440,6 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             state_base = 'pass'
         elif 'y/n' in state_base:
             state_base = 'y/n'
-        elif 'system-view' in state_base:
-            state_base = 'system-view'
         elif 'more' in state_base:
             state_base = 'more'
         elif 'vm' in state_base:  # vmware
@@ -266,6 +451,7 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         # print(f"test push_state {state_base} // {self.state} // {self.prompt}")
 
     def peek_state(self) -> str:
+        # print(f"test peek_state ({self.state[-1]})")
         return self.state[-1]
 
     def pop_state(self) -> bool:
@@ -279,16 +465,22 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         """ ステートを使ってプロンプトを更新する """
         state = self.state[-1]
         # print(f"update_prompt {state}")
-        if 'c1' == state:
+        trigger_flag = False
+        for trigger in ServerStarter.TRIGGER:
+            if trigger[2] == '':
+                continue
+            if trigger[2] == state:
+                self.prompt = trigger[3]
+                trigger_flag = True
+                break
+        if trigger_flag:
+            pass
+        elif 'c1' == state:
             self.prompt = 'Router>'  # for cisco not enable
         elif 'c2' == state:
-            self.prompt = 'Router#'  # for cisco enable
-        elif 'c3' == state:
-            self.prompt = 'Router(config)#'  # for cisco enable
+            self.prompt = 'Router# '  # for cisco enable
         elif 'qx' == state:
-            self.prompt = '<Switch>'  # for qx-s
-        elif 'system-view' == state:
-            self.prompt = '[Switch]'  # for qx-s
+            self.prompt = '<Switch> '  # for qx-s
         elif '$' == state:
             self.prompt = 'root@localhost:~$ '  # for linux
         elif 'user' == state:
@@ -297,8 +489,6 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             self.prompt = 'Password:'
         elif 'y/n' == state:
             self.prompt = 'Are you sure you want to continue connecting (yes/no)?'
-        elif 'more' == state:
-            self.prompt = '-- More --'
         elif 'vm' == state:
             self.prompt = '[root@localhost:~] '
         else:
@@ -309,16 +499,16 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         """ この処理が呼ばれたらクライアントをクローズする """
         print("test clinet close!")
         #
-        local_t = self.t
-        self.t = None
-        if local_t is not None:
+        local_transport = self.transport
+        self.transport = None
+        if local_transport is not None:
             try:
-                local_t.close()
+                local_transport.close()
             except Exception:
                 pass
         #
-        local_chan = self.chan
-        self.chan = None
+        local_chan = self.channel
+        self.channel = None
         if local_chan is not None:
             try:
                 local_chan.close()
@@ -341,8 +531,8 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         self.stop()
         self.cleint_close()
         #
-        local_sock = self.sock
-        self.sock = None
+        local_sock = self.server_socket
+        self.server_socket = None
         if local_sock is not None:
             try:
                 local_sock.close()
@@ -358,23 +548,23 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         # now connect
         try:
             print(f"test bind p={self.port}")
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.sock.bind(("", self.port))
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.server_socket.bind(("", self.port))
             #
-            if self.sock is None:
-                return paramiko.SSHException("self.sock is None")
+            if self.server_socket is None:
+                return paramiko.SSHException("self.server_socket is None")
             #
             print("test Listen start ...")
-            self.sock.listen(100)
+            self.server_socket.listen(100)
             #
             while not self.stop_flag:
                 print("test while loop start!")
                 #
-                sock = self.sock
-                if sock is None:
-                    return paramiko.SSHException("self.sock is None")
-                self.client, _ = sock.accept()
+                local_socket = self.server_socket
+                if local_socket is None:
+                    return paramiko.SSHException("self.server_socket is None")
+                self.client, _ = local_socket.accept()
                 #
                 self.invoke_accept()
                 #
@@ -385,27 +575,29 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
             print(f"test *** Caught SSHException: {str(e.__class__)} : {str(e)}")
             return 1
         finally:
+            print("test finally self.close()")
             self.close()
         return 0
 
     def invoke_accept(self):
-        """ self.sock.accept()後の処理。本来であればスレッド化すべき個所 """
+        """ self.server_socket.accept()後の処理。本来であればスレッド化すべき個所 """
         print("test invoke_accept")
         try:
             #
             print("test Got a connection!")
-            self.t = paramiko.Transport(self.client, gss_kex=self.DoGSSAPIKeyExchange)
-            self.t.set_gss_host(socket.getfqdn(""))
-            self.t.load_server_moduli()
-            self.t.add_server_key(self.host_key)
+            self.transport = paramiko.Transport(self.client, gss_kex=self.DoGSSAPIKeyExchange)
+            # self.transport.set_gss_host(socket.getfqdn(""))
+            # self.transport.load_server_moduli()
+            self.transport.add_server_key(self.host_key)
+            self.transport.set_subsystem_handler('sftp', paramiko.SFTPServer, StubSFTPServer)
             #
             print("test Server start!")
             server = Server()
-            self.t.start_server(server=server)
+            self.transport.start_server(server=server)
             #
             # wait for auth
-            self.chan = self.t.accept()
-            if self.chan is None:
+            self.channel = self.transport.accept()
+            if self.channel is None:
                 print("test *** No channel.")
                 return
             #
@@ -421,118 +613,125 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
         except paramiko.SSHException as e:
             print(f"test *** Client SSHException: {str(e.__class__)} : {str(e)}")
         finally:
+            print("test finally self.cleint_close()")
             self.cleint_close()
         return
 
-    def invoke_client(self, server):
+    TRIGGER = [
+        ["", "^\\s*ping\\s+", '', '', PING],
+        ["", "^\\s*tracert", '', '', TRACERT],
+        ["", "^\\s*traceroute", '', '', TRACEROUTE],
+        ["", "^\\s*tracepath", '', '', TRACEPATH],
+        ["", "^\\s*ifconfig", '', '', IFCONFIG],
+        ["c1", "^\\s*ping\\s+", '', '', PING_CISCO],
+        ["c2", "^\\s*show\\s+ip\\s+interface\\s+brief", '', '', SHOW_IP_INTERFACE_BRIEF],
+        ["c2", "^\\s*config(ure)?\\s+terminal", "config", 'Router(config)# ', ''],
+        ["c2", "^\\s*ping\\s+", '', '', PING_CISCO],
+        ["c2", "^\\s*show\\s+running-config", '', '', SHOW_RUNNING_CONFIG],
+        ["config", "^\\s*vlan\\s+", "config-vlan", 'Router(config-vlan)# ', ''],
+        ["config", "^\\s*interface\\s+", "config-if", 'Router(config-if)# ', ''],
+        ["config", "^\\s*class-map\\s+", "config-cmap", 'Router(config-cmap)# ', ''],
+        ["config", "^\\s*policy-map\\s+", "config-pmap", 'Router(config-pmap)# ', ''],
+        ["config-pmap", "^\\s*class\\s+", "config-pmap-c", 'Router(config-pmap-c)# ', ''],
+        ["qx", "^\\s*display\\s+current-configuration", 'more', '-- More --', DISPLAY_CURRENT_CONFIGURATION],
+        ["qx", "^\\s*system-view", "qx-config", '[Switch] ', ''],
+        ["qx-config", "^\\s*interface\\s+gigabitethernet", "qx-gbe", '[Switch-GigabitEthernet] ', ''],
+        ["qx-config", "^\\s*interface\\s+vlan", "qx-Vlan", '[Switch-Vlan-interface] ', ''],
+        ["qx-config", "^\\s*traffic\\s+classifier", "qx-classifier", '[Switch-classifier] ', ''],
+        ["qx-config", "^\\s*qos\\s+policy", "qx-qospolicy", '[Switch-qospolicy] ', ''],
+        ["qx-config", "^\\s*traffic\\s+behavior", "qx-behavior", '[Switch-behavior] ', '']
+    ]
+
+    def invoke_client(self, server: Server):
         """ shellの実装 """
         #
         if not server.event.is_set():
             print("test *** Client never asked for a shell.")
             return
-            #
-        print("test is_set() OK!")
+
+        print(f"test is_set() OK! f={server.is_sftp_flag()}")
+        if server.is_sftp_flag():
+            # SFTpのときはこちらで無限待ちをする
+            try:
+                while self.transport is not None and self.transport.is_active():
+                    time.sleep(1)
+            finally:
+                print("test finally (sftp)")
+                return
         #
-        self.chan.send(f"{self.prompt}")
+        self.channel.send(f"{self.prompt}")
         message = ''
         while not self.stop_flag:
-            if self.chan is None or not self.chan.active:
+            #
+            if self.channel is None or not self.channel.active:
                 break
-            elif self.chan.recv_ready():
-                output = self.chan.recv(1).decode("utf-8")
+            elif self.channel.recv_ready():
+                output = self.channel.recv(1).decode("utf-8")
                 if "\r" == output:
-                    self.chan.send("\r\n")
+                    self.channel.send("\r\n")
                 elif "\n" == output:
-                    self.chan.send("\r\n")
+                    self.channel.send("\r\n")
                 else:
                     if self.peek_state() != 'pass':
-                        self.chan.send(output)
+                        self.channel.send(output)
                     message = message + output
                     continue
                 #
-                if self.peek_state() in ['y/n', 'user']:
+                trigger_flag = False
+                for trigger in ServerStarter.TRIGGER:
+                    if self.peek_state() != trigger[0] and '' != trigger[0]:
+                        continue
+                    resultX = re.search(trigger[1], message)
+                    if resultX:
+                        if '' != trigger[4]:
+                            self.channel.send(trigger[4])
+                        if '' != trigger[2]:
+                            self.push_state(trigger[2])
+                        trigger_flag = True
+                        break
+                result3 = re.search("^\\s*ssh\\s+([-_a-zA-Z0-9@]+)", message)
+                if trigger_flag:
+                    pass
+                elif self.peek_state() in ['y/n', 'user']:
                     # print(f"test peek={self.peek_state()}")
                     self.pop_state()
                 elif 'pass' in self.peek_state():
                     if not self.password_ng_flag:
                         self.pop_state()
                 elif 'more' == self.peek_state():
-                    self.chan.send(ServerStarter.DISPLAY_CURRENT_CONFIGURATION_MORE)
+                    self.channel.send(DISPLAY_CURRENT_CONFIGURATION_MORE)
                     self.pop_state()
-                else:
-                    result1 = re.search("^\\s*exit", message)
-                    result2 = re.search("^\\s*ping", message)
-                    result3 = re.search("^\\s*ssh\\s+([-_a-zA-Z0-9@]+)", message)
-                    result4 = re.search("^\\s*enable", message)
-                    result5 = re.search("^\\s*show\\s+running-config", message)
-                    result6 = re.search("^\\s*tracert", message)
-                    result7 = re.search("^\\s*traceroute", message)
-                    result8 = re.search("^\\s*tracepath", message)
-                    result9 = re.search("^\\s*display\\s+current-configuration", message)
-                    result10 = re.search("^\\s*ifconfig", message)
-                    result11 = re.search("^\\s*show\\s+ip\\s+interface\\s+brief", message)
-                    result12 = re.search("^\\s*system-view", message)
-                    result13 = re.search("^\\s*config(ure)?\\s+terminal", message)
-                    if result1:
-                        if not self.pop_state():
-                            self.cleint_close()
-                            return
-                    elif result2:
-                        if self.peek_state() in ['c1', 'c2']:
-                            self.chan.send(ServerStarter.PING_CISCO)
-                        else:
-                            self.chan.send(ServerStarter.PING)
-                    elif result3:
+                elif result3:
+                    # 新しい状態を積む
+                    ssh_state_flag = result3.group(1)
+                    if 'password_ng' in ssh_state_flag:
+                        self.password_ng_flag = True
+                    else:
+                        self.password_ng_flag = False
+                    self.push_state(ssh_state_flag)
+                    self.push_state('pass')
+                    #
+                    if random.randint(0, 1):
+                        # ランダムにy/nを聞く
+                        self.push_state('y/n')
+                    #
+                elif re.search("^\\s*(exit|quit)", message):
+                    if not self.pop_state():
+                        self.cleint_close()
+                        return
+                elif re.search("^\\s*enable", message):
+                    if self.peek_state() == 'c1':
                         # 新しい状態を積む
-                        ssh_state_flag = result3.group(1)
-                        if 'password_ng' in ssh_state_flag:
-                            self.password_ng_flag = True
-                        else:
-                            self.password_ng_flag = False
-                        self.push_state(ssh_state_flag)
+                        self.push_state('c2')
+                        # パスワードを聞く
                         self.push_state('pass')
-                        #
-                        if random.randint(0, 1):
-                            # ランダムにy/nを聞く
-                            self.push_state('y/n')
-                        #
-                    elif result4:
-                        if self.peek_state() == 'c1':
-                            # 新しい状態を積む
-                            self.push_state('c2')
-                            # パスワードを聞く
-                            self.push_state('pass')
-                        else:
-                            self.chan.send(ServerStarter.ENABLE_ERROR)
-                    elif result5:
-                        if self.peek_state() == 'c2':
-                            # ciscoのenableモードのみ
-                            self.chan.send(ServerStarter.SHOW_RUNNING_CONFIG)
-                    elif result6:
-                        self.chan.send(ServerStarter.TRACERT)
-                    elif result7:
-                        self.chan.send(ServerStarter.TRACEROUTE)
-                    elif result8:
-                        self.chan.send(ServerStarter.TRACEPATH)
-                    elif result9 and self.peek_state() in ['qx']:  # qxモードのみ
-                        self.chan.send(ServerStarter.DISPLAY_CURRENT_CONFIGURATION)
-                        # 新しい状態を積む
-                        self.push_state('more')
-                    elif result10:
-                        self.chan.send(ServerStarter.IFCONFIG)
-                    elif result11:
-                        self.chan.send(ServerStarter.SHOW_IP_INTERFACE_BRIEF)
-                    elif result12:
-                        if self.peek_state() == 'qx':
-                            self.push_state('system-view')
-                    elif result13:
-                        if self.peek_state() == 'c2':
-                            self.push_state('c3')
+                    else:
+                        self.channel.send(ENABLE_ERROR)
                 #
                 # プロンプトを渡す
-                self.chan.send(f'{self.prompt}')
+                self.channel.send(f'{self.prompt}')
                 message = ''
-            elif self.chan.exit_status_ready():
+            elif self.channel.exit_status_ready():
                 print("test Session ended")
                 break
             else:
@@ -552,7 +751,7 @@ class TTLLoader():
         #
         serverStarter = ServerStarter(2200)
         # スレッドオブジェクトを作成
-        th = threading.Thread(target=serverStarter.start)
+        th = threading.Thread(target=serverStarter.start, daemon=True)
         # スレッドを開始
         th.start()
         #
@@ -577,6 +776,10 @@ class TTLLoader():
                 if '.ttl' not in file:
                     continue
                 if 'base.ttl' in file:
+                    continue
+                if 'base1.ttl' in file:
+                    continue
+                if 'base2.ttl' in file:
                     continue
                 #
                 #
@@ -637,10 +840,15 @@ def test_load_ttl():
 
 if __name__ == "__main__":
     if len(sys.argv) <= 1:
+        #
         # スレッドだけ立てる(teratermでの評価用)
         serverStarter = ServerStarter(2200)
+        #
+        # カレントフォルダを保持する
+        current_folder = os.getcwd()
+        #
         # スレッドオブジェクトを作成
-        th = threading.Thread(target=serverStarter.start)
+        th = threading.Thread(target=serverStarter.start, daemon=True)
         # スレッドを開始
         th.start()
         #
@@ -657,6 +865,10 @@ if __name__ == "__main__":
             print("test start finally")
             serverStarter.close()
             sys.exit(-1)
+        #
+        # カレントフォルダを元に戻す
+        os.chdir(current_folder)
+        #
     else:
         # ファイル名を指定してテストを実施する
         file_name = sys.argv[1]
@@ -667,5 +879,6 @@ if __name__ == "__main__":
         file_name = str(file_name)
         tTLLoader = TTLLoader()
         tTLLoader.start(files=[file_name])
+        #
     #
 #

@@ -16,10 +16,12 @@
 
 ### メニューバー
 
-<img src="./screen009.png" width="25%">
+<img src="./screen009a.png" width="25%">
 
-  - メニューバー上の File ⇒ Save setting を実行すると、テキストは保存されます。
-  - メニューバー上の File ⇒ Save log を実行すると、実行したときのログが保存されます。
+  - メニューバー上の File ⇒ Save setting を実行すると、設定をセーブしれます。
+  - メニューバー上の File ⇒ Load setting を実行すると、設定をロードします。
+  - メニューバー上の File ⇒ Save log を実行すると、実行したときのログをセーブします。
+  - メニューバー上の File ⇒ Load log を実行すると、実行したときのログをロードします。
   - メニューバー上の File ⇒ Setting を実行すると、[設定画面](#設定画面) 用ダイアログが開きます。
 
 

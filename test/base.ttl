@@ -116,60 +116,33 @@ pause 1
 ;
 prompt = '$'
 timeout = 10
+state_flag = 0  ; call_get_promptのために状態フラグを設定する
 command = 'clear'
-sendln command
-wait command
-if result == 0 then
-    messagebox 'input check timeout failer' command
-    call call_ending
-    end
-endif
-; call_get_promptのために状態フラグを設定する
-state_flag = 0
-; プロンプトを決定する
-call call_get_prompt
-
+call call_get_prompt  ; プロンプトを決定する
 
 if next_ssh == 2 then
+    state_flag = 1  ; call_get_promptのために状態フラグを設定する
     ; ssh 接続 'ssh account@ip'
     command = "ssh "
     strconcat command next_account
     strconcat command "@"
     strconcat command next_ip
-    sendln command
-    wait command
-    if result == 0 then
-        messagebox 'input check timeout failer' command
-        call call_ending
-        end
-    endif
-    ; call_get_promptのために状態フラグを設定する
-    state_flag = 1
-    ; プロンプトを決定する
-    call call_get_prompt
+    call call_get_prompt  ; プロンプトを決定する
 endif
 
 
 if server_type == 1 then  ; 1=cisco, 2=linux, 3=qx-s
     ;; cisco のときはこれで -- More -- を出さないようにする
     command = 'terminal length 0'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
 elseif server_type == 3 then  ; 1=cisco, 2=linux, 3=qx-s
     ;; qx-s のときはこれで -- More -- を出さないようにする
     command = 'screen-length disable'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
     command = 'terminal pager offscreen-length disable'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
     command = 'set terminal pager disable'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
 endif
 
 ; 特殊コマンドを実行する
@@ -189,7 +162,12 @@ if my_command_flag<>0 then
         command = my_command[i]
         strcompare command ""
         if result<>0 then
-            call call_one_command
+            call call_check_command
+            if result <> 0 then
+                call call_get_prompt
+            else
+                call call_one_command
+            endif
         endif
     next
 elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
@@ -276,29 +254,6 @@ result = 1
 end
 
 
-:call_one_command
-; １コマンド分の処理
-sendln command
-wait command
-; プロントのチェックを行う
-while 1
-    ;
-    wait prompt '-- More --'
-    if result = 0 then
-        messagebox 'command is time up!' command
-        call call_ending
-        end
-    elseif result = 2 then
-        sendln ''
-        continue
-    endif
-    ;
-    break
-endwhile
-
-return
-
-
 ; SSHでログインするときに使うパスワード
 :call_base_password
     key_target = 'normal_'
@@ -369,7 +324,62 @@ return
 return
 
 
+:call_check_command
+    ; コマンドがプロンプトの変化を要求しているか確認する
+    strscan command "clear"
+    if result<>0 then
+        return
+    endif
+    strscan command "ssh "
+    if result<>0 then
+        return
+    endif
+    strscan command "quit"
+    if result<>0 then
+        return
+    endif
+    strscan command "exit"
+    if result<>0 then
+        return
+    endif
+    strscan command "system-view"
+return
+
+
+:call_one_command
+    ; １コマンド分の処理
+    sendln command
+    wait command
+    if result == 0 then
+        messagebox 'input command timeout failer' command
+        call call_ending
+        end
+    endif
+    ; プロントのチェックを行う
+    while 1
+        ;
+        wait prompt '-- More --'
+        if result = 0 then
+            messagebox 'command is time up!' command
+            call call_ending
+            end
+        elseif result = 2 then
+            sendln ''
+            continue
+        endif
+        ;
+        break
+    endwhile
+return
+
  :call_get_prompt
+    sendln command
+    wait command
+    if result == 0 then
+        messagebox 'input command timeout failer' command
+        call call_ending
+        end
+    endif
     password_flag = 0
     enable_flag = 0
     while 1

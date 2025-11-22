@@ -34,5 +34,6 @@
         }
     ],
     "ignore_messagebox": true,
-    "ignore_log": false
+    "ignore_log": false,
+    "setting": "D:/gitwork/nextnextping/bin/sample02_sshping/setting.txt"
 }

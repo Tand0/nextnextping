@@ -29,7 +29,7 @@ sendln command
 wait command
 result = 0
 wait '#' '>'
-assert result == 2 "wait OK" error ; 接続失敗
+assert result == 2 "wait OK" result error ; 接続失敗
 
 recvln
 recvln
@@ -59,7 +59,7 @@ pause 2
 disconnect
 testlink
 assert result != 2  "wait OK" error ; 接続失敗
-closett
+; closett
 
 pause 1
 

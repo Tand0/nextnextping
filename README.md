@@ -45,7 +45,7 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
 
 # 基本的な使い方
 
-  - Basic
+  - Basic -- sample01/setting.txt に例があります。
       - nextnextpingを起動します。
       - [トップ画面](./doc/screen.md#トップ画面)で適当にipを並べます。
       - メニューバーから、File ⇒ Setting で [設定画面](./doc/screen.md#設定画面) を開いて設定を変更します。
@@ -55,7 +55,7 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
       - メニューバーから、File ⇒ Save setting で設定の保存ができます。
       - メニューバーから、File ⇒ Save log でログの保存ができます。
       - メニューバーから、File ⇒ Exit で終了できます。
-  - Advanced
+  - Advanced -- sample02/setting.txt に例があります。
       - nextnextpingを起動します。
       - メニューバーから、Tool ⇒ Sheet をクリックします。
       - 設定用CSVファイルを作成します。やり方は２種類あります。
@@ -69,7 +69,7 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
       - しばらくするとpingに成功したものがOK、失敗したものがNGで表示されます。
       - メニューバーから、File ⇒ Save log でログの保存ができます。
       - メニューバーから、File ⇒ Exit で終了できます。
-  - Legend
+  - Legend -- sample03/setting.txt に例があります。
       - nextnextpingを起動します。
       - メニューバーから、File ⇒ Setting で [設定画面](./doc/screen.md#設定画面) を開いて設定を変更します。
       - ttlを自作します。

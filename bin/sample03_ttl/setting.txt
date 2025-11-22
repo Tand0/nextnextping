@@ -1,0 +1,11 @@
+[qx port no shutdown](ttl)0040_ok_qx_undo_shutdown.ttl
+[qx port shutdown](ttl)0041_ok_qx_shutdown.ttl
+[qx port polcing](ttl)0042_ok_qx_polcing.ttl
+[qx port no polcing](ttl)0043_ok_qx_undo_polcing.ttl
+[cisco port no shutdown](ttl)0044_ok_cisco_no_shutdown.ttl
+[cisco port shutdown](ttl)0045_ok_cisco_shutdown.ttl
+[cisco port polcing](ttl)0046_ok_cisco_policing.ttl
+[cisco port no polcing](ttl)0047_ok_cisco_no_policing.ttl
+[sftp sample](ttl)0048_ok_scp.ttl
+
+

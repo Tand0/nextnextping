@@ -1,0 +1,21 @@
+
+
+; 接続する
+connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
+if result != 2 then
+    messagebox "connect fail" "title"
+    result = 0
+    end
+endif
+
+; 書き込み
+scpsend "base.ttl" "base2.key"
+
+; 受信
+scprecv "base2.key" "base3.key"
+
+; ここまで到達したら成功
+result = 1
+end
+
+;

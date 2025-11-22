@@ -138,60 +138,33 @@ pause 1
 ;
 prompt = '$'
 timeout = 10
+state_flag = 0  ; call_get_promptのために状態フラグを設定する
 command = 'clear'
-sendln command
-wait command
-if result == 0 then
-    messagebox 'input check timeout failer' command
-    call call_ending
-    end
-endif
-; call_get_promptのために状態フラグを設定する
-state_flag = 0
-; プロンプトを決定する
-call call_get_prompt
-
+call call_get_prompt  ; プロンプトを決定する
 
 if next_ssh == 2 then
+    state_flag = 1  ; call_get_promptのために状態フラグを設定する
     ; ssh 接続 'ssh account@ip'
     command = "ssh "
     strconcat command next_account
     strconcat command "@"
     strconcat command next_ip
-    sendln command
-    wait command
-    if result == 0 then
-        messagebox 'input check timeout failer' command
-        call call_ending
-        end
-    endif
-    ; call_get_promptのために状態フラグを設定する
-    state_flag = 1
-    ; プロンプトを決定する
-    call call_get_prompt
+    call call_get_prompt  ; プロンプトを決定する
 endif
 
 
 if server_type == 1 then  ; 1=cisco, 2=linux, 3=qx-s
     ;; cisco のときはこれで -- More -- を出さないようにする
     command = 'terminal length 0'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
 elseif server_type == 3 then  ; 1=cisco, 2=linux, 3=qx-s
     ;; qx-s のときはこれで -- More -- を出さないようにする
     command = 'screen-length disable'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
     command = 'terminal pager offscreen-length disable'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
     command = 'set terminal pager disable'
-    sendln command
-    wait command
-    wait prompt
+    call call_one_command
 endif
 
 ; 特殊コマンドを実行する
@@ -211,7 +184,12 @@ if my_command_flag<>0 then
         command = my_command[i]
         strcompare command ""
         if result<>0 then
-            call call_one_command
+            call call_check_command
+            if result <> 0 then
+                call call_get_prompt
+            else
+                call call_one_command
+            endif
         endif
     next
 elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
@@ -298,29 +276,6 @@ result = 1
 end
 
 
-:call_one_command
-; １コマンド分の処理
-sendln command
-wait command
-; プロントのチェックを行う
-while 1
-    ;
-    wait prompt '-- More --'
-    if result = 0 then
-        messagebox 'command is time up!' command
-        call call_ending
-        end
-    elseif result = 2 then
-        sendln ''
-        continue
-    endif
-    ;
-    break
-endwhile
-
-return
-
-
 ; SSHでログインするときに使うパスワード
 :call_base_password
     key_target = 'normal_'
@@ -391,7 +346,62 @@ return
 return
 
 
+:call_check_command
+    ; コマンドがプロンプトの変化を要求しているか確認する
+    strscan command "clear"
+    if result<>0 then
+        return
+    endif
+    strscan command "ssh "
+    if result<>0 then
+        return
+    endif
+    strscan command "quit"
+    if result<>0 then
+        return
+    endif
+    strscan command "exit"
+    if result<>0 then
+        return
+    endif
+    strscan command "system-view"
+return
+
+
+:call_one_command
+    ; １コマンド分の処理
+    sendln command
+    wait command
+    if result == 0 then
+        messagebox 'input command timeout failer' command
+        call call_ending
+        end
+    endif
+    ; プロントのチェックを行う
+    while 1
+        ;
+        wait prompt '-- More --'
+        if result = 0 then
+            messagebox 'command is time up!' command
+            call call_ending
+            end
+        elseif result = 2 then
+            sendln ''
+            continue
+        endif
+        ;
+        break
+    endwhile
+return
+
  :call_get_prompt
+    sendln command
+    wait command
+    if result == 0 then
+        messagebox 'input command timeout failer' command
+        call call_ending
+        end
+    endif
     password_flag = 0
     enable_flag = 0
     while 1
@@ -600,7 +610,7 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                # print("result is none")
+                # print("result is None")
                 self.setValue('inputstr', -1)
             else:
                 # print(f"inputstr is {inputstr}")
@@ -737,6 +747,14 @@ class MyThread():
             self.myTtlPaserWolker.setLog(f"Exception create {str(e)}")
             return 0  # this is NG!
         try:
+            if not os.path.isabs(filename):
+                # 相対パスなので絶対パスに変換する
+                base_dir = self.next_next_ping.init["setting"]
+                base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+                base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+                os.chdir(base_dir)  # 起動フォルダを相対後に変更する
+                filename = os.path.join(base_dir, filename)  # ファイル名を決定
+            #
             self.myTtlPaserWolker.execute(filename, param_list_next)
         except Exception as e:
             self.myTtlPaserWolker.setLog(f"Exception execute {str(e)}")
@@ -825,9 +843,6 @@ class NextNextPing():
     # ログファイル
     LOG_JSON = 'log.json'
 
-    # 設定ファイル
-    SETTING_JSON = 'setting.json'
-
     # 初期ファイル
     INIT_JSON = 'init.json'
 
@@ -843,8 +858,9 @@ class NextNextPing():
         self.status_var = None
         self.result = None
         self.notebook = None
+        self.current_dir = os.getcwd()
 
-    def next_next_load(self, file_name: str):
+    def next_json_load(self, file_name: str):
         # print(f"file={file_name}")
         setting = {}
         try:
@@ -854,7 +870,7 @@ class NextNextPing():
             setting = {}
         return setting
 
-    def next_next_save(self, file_name: str, data):
+    def next_json_save(self, file_name: str, data):
         with open(file_name, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
@@ -872,15 +888,94 @@ class NextNextPing():
             f.write(data)
 
     def save_log(self):
+        """ logを保存 """
         self.stop()
-        self.next_next_save(NextNextPing.LOG_JSON, self.log)
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("json files", "*.json"), ("All json", "*.*")],
+            initialdir=base_dir,
+            initialfile=NextNextPing.LOG_JSON,
+            title="Save log"
+        )
+        if file_path:
+            self.next_json_save(file_path, self.log)
 
-    def save_setting(self):
-        # 設定を保存
+    def load_log(self):
+        """ logを保存 """
+        self.stop()
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+        full_path = os.path.join(base_dir, NextNextPing.LOG_JSON)  # ファイル名を決定
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+        file_path = filedialog.askopenfilename(
+            defaultextension=".json",
+            filetypes=[("json files", "*.json"), ("All files", "*.*")],
+            initialdir=base_dir,
+            initialfile=NextNextPing.LOG_JSON,
+            title="Load log"
+        )
+        if file_path:
+            self.log = self.next_json_load(full_path)
+            #
+            # アップデートまで実行する
+            self.update_setting()
+
+    def save_setting(self, file_path=None):
+        """ setting と init を保存 """
+        if file_path is None:
+            base_dir = self.init["setting"]
+            base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+            base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                initialdir=base_dir,
+                filetypes=[("txt files", "*.txt"), ("All files", "*.*")],
+                initialfile="setting.txt",
+                title="Save setting"
+            )
         setting = self.setting_text.get("1.0", tk.END)
-        self.next_text_save(NextNextPing.SETTING_JSON, setting)
+        if not file_path:
+            return  # キャンセルされた
+        #
+        # initにファイルを指定
+        self.init['setting'] = file_path
+        #
+        # 設定ファイルを保存
+        self.next_text_save(file_path, setting)
+        #
         # initを保存
-        self.next_next_save(NextNextPing.INIT_JSON, self.init)
+        self.next_json_save(NextNextPing.INIT_JSON, self.init)
+
+    def load_setting(self, file_path=None):
+        if file_path is None:
+            base_dir = self.init["setting"]
+            base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+            base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+            file_path = filedialog.askopenfilename(
+                defaultextension=".txt",
+                filetypes=[("txt files", "*.txt"), ("All files", "*.*")],
+                initialdir=base_dir,
+                initialfile="setting.txt",
+                title="Load setting"
+            )
+        if not file_path:
+            return  # キャンセルされた
+        #
+        # initにファイルを指定
+        self.init['setting'] = file_path
+        #
+        setting = self.next_text_load(file_path)  # ファイルをロード
+        self.setting_text.delete('1.0', 'end')  # 既存のテキストを削除
+        self.setting_text.insert(1.0, setting)  # テキストを差し替える
+        #
+        # アップデートまで実行する
+        self.update_setting()
 
     def system_exit(self):
         self.stop()
@@ -976,7 +1071,7 @@ class NextNextPing():
                 values_values.append(list(self.tree.item(child, 'values')))
             #
             self.my_thread = MyThread()
-            thread = threading.Thread(target=self.my_thread.start)
+            thread = threading.Thread(target=self.my_thread.start, daemon=True)
             self.my_thread.set_therad(self, thread, values_values)
             thread.start()
         else:
@@ -1065,6 +1160,7 @@ class NextNextPing():
         self.notebook.select(2)
 
     INIT_DATA = {
+        "setting": 'setting.txt',  # 設定ファイル
         "title": "nextnextping",
         "wait_time": 1,
         "loop": False,
@@ -1092,7 +1188,7 @@ class NextNextPing():
             },
             {
                 "name": "show",
-                "ttl": False, 
+                "ttl": False,
                 "command": "ipconfig /all",
                 "returncode": False,
                 "ok": "Windows IP Configuration",
@@ -1102,10 +1198,8 @@ class NextNextPing():
     }
 
     def next_next_ping(self):
-        # ログをロードする
-        self.log = self.next_next_load(NextNextPing.LOG_JSON)
         # 初期値をロードする
-        self.init = self.next_next_load(NextNextPing.INIT_JSON)
+        self.init = self.next_json_load(NextNextPing.INIT_JSON)
         # 初期値が入ってなかったら入れる
         for target in NextNextPing.INIT_DATA:
             if target not in self.init:
@@ -1116,8 +1210,6 @@ class NextNextPing():
                 continue
             if target[2] not in self.init:
                 self.init[target[2]] = target[3]
-        #
-        self.setting = self.next_text_load(NextNextPing.SETTING_JSON)
         #
         #
         self.root = tk.Tk()
@@ -1130,7 +1222,9 @@ class NextNextPing():
         file_menu = tk.Menu(menu_bar, tearoff=False)
         menu_bar.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Save setting", command=self.save_setting)
+        file_menu.add_command(label="Load setting", command=self.load_setting)
         file_menu.add_command(label="Save log", command=self.save_log)
+        file_menu.add_command(label="Load log", command=self.load_log)
         file_menu.add_command(label="Setting", command=self.command_settings)
         file_menu.add_command(label="Exit", command=self.system_exit)
         #
@@ -1154,7 +1248,7 @@ class NextNextPing():
         top_button.pack(side=tk.LEFT)
         #
         self.setting_text = tk.Text(tab1)
-        self.setting_text.insert(1.0, self.setting)
+        self.setting_text.insert(1.0, '; Enter the IP address to ping')
         self.setting_text.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         #
         tab2 = tk.Frame(self.notebook)
@@ -1189,8 +1283,6 @@ class NextNextPing():
         frame.rowconfigure(0, weight=1)
         frame.columnconfigure(0, weight=1)
         frame.pack(fill=tk.BOTH, expand=True)
-        #
-        self.update_setting()
         #
         tab3 = tk.Frame(self.notebook)
         self.notebook.add(tab3, text="log")
@@ -1240,9 +1332,12 @@ class NextNextPing():
         event.set()
 
     def show_dirdialog(self, event, p1):
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         dialog_path = filedialog.askdirectory(
             title=p1,
-            initialdir=os.getcwd()  # 現在の作業ディレクトリを初期値とする
+            initialdir=base_dir
         )
         self.result = None
         if dialog_path:
@@ -1253,9 +1348,12 @@ class NextNextPing():
         event.set()
 
     def show_filedialog(self, event, p1):
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         dialog_path = filedialog.askopenfilename(
             title=p1,
-            initialdir=os.getcwd()  # 現在の作業ディレクトリを初期値とする
+            initialdir=base_dir
         )
         if dialog_path:
             # 成功した！
@@ -1394,6 +1492,7 @@ class NextNextPing():
         row_index = str(1000 + row_index)
         #
         ans = ''
+        #
         target_ip = values[2]
         target_type = int(values[3])
         next_ssh = int(values[4])
@@ -1408,7 +1507,7 @@ class NextNextPing():
             base_type = ''
         action_name = self.get_target_type_to_action_name(target_type, target_ip)
         if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            return "none"  # not required ttl name
+            return "None"  # not required ttl name
         elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
             ans = f"{row_index}{base_type}_ok_{base_ip}_{action_name}"
         elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
@@ -1542,51 +1641,68 @@ class NextNextPing():
             self.tool_tree.delete(item)
 
     def load_csv(self):
-        """ 保存ダイアログを表示 """
+        """ 読み込みダイアログを表示 """
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         file_path = filedialog.askopenfilename(
             defaultextension=".csv",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialdir=base_dir,  # 設定ファイルが配置されているフォルダをベースにする
+            initialfile="setting.csv",
             title="Load csv"
         )
-        if file_path:
-            current_encoding = ""
-            if self.get_japanese_flag():
-                current_encoding = "cp932"
-            else:
-                current_encoding = locale.getpreferredencoding(False)
-            #
-            # ロード
-            values = []
-            with open(file_path, newline='', encoding=current_encoding) as f:
-                reader = csv.reader(f)
-                values = [row for row in reader]
-            #
-            # 表を一度クリア
-            for item in self.tool_tree.get_children():
-                self.tool_tree.delete(item)
-            #
-            for i, value in enumerate(values):
-                # 表への詰み込み
-                while len(value) < len(NextNextPing.TARGET_PARAM):
-                    value.append('')
-                if value[0].strip() == "":  # 先頭が空行なら無視する
-                    continue
-                target_values = []
-                for value_one in value:
-                    target_values.append(str(value_one))  # int避け
-                target_values[0] = self.get_target_filename(i, target_values)
-                self.tool_tree.insert("", "end", values=target_values)
-            #
-            messagebox.showinfo("Info", "load_csv is ok")
-            self.tool_tree.focus_set()
+        if not file_path:
+            return  # ファイルが指定されなかった
+        #
+        file_path = os.path.abspath(file_path)  # 絶対パスに変換
+        self.init["setting"] = os.path.splitext(file_path)[0] + ".txt"  # 設定ファイルを指定
+        #
+        current_encoding = ""
+        if self.get_japanese_flag():
+            current_encoding = "cp932"
+        else:
+            current_encoding = locale.getpreferredencoding(False)
+        #
+        # ロード
+        values = []
+        with open(file_path, newline='', encoding=current_encoding) as f:
+            reader = csv.reader(f)
+            values = [row for row in reader]
+        #
+        # 表を一度クリア
+        for item in self.tool_tree.get_children():
+            self.tool_tree.delete(item)
+        #
+        for i, value in enumerate(values):
+            # 表への詰み込み
+            while len(value) < len(NextNextPing.TARGET_PARAM):
+                value.append('')
+            if value[0].strip() == "":  # 先頭が空行なら無視する
+                continue
+            target_values = []
+            for value_one in value:
+                target_values.append(str(value_one))  # int避け
+            target_values[0] = self.get_target_filename(i, target_values)
+            self.tool_tree.insert("", "end", values=target_values)
+        #
+        messagebox.showinfo("Info", "load_csv is ok")
+        self.tool_tree.focus_set()
 
     def save_csv(self):
         """ 保存ダイアログを表示 """
+        base_dir = self.init["setting"]
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         file_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialdir=base_dir,  # 設定ファイルが配置されているフォルダをベースにする
+            initialfile="setting.csv",
             title="Save csv"
         )
+        if not file_path:
+            return  # ファイルが指定されなかった
         #
         all_items = self.tool_tree.get_children()
         values_list = []
@@ -1594,19 +1710,21 @@ class NextNextPing():
             values = self.tool_tree.item(item_id)["values"]
             values_list.append(values)
         #
-        if file_path:
-            current_encoding = ""
-            if self.get_japanese_flag():
-                current_encoding = "cp932"
-            else:
-                current_encoding = locale.getpreferredencoding(False)
-            #
-            with open(file_path, "w", encoding=current_encoding) as f:
-                writer = csv.writer(f, lineterminator="\n")
-                writer.writerows(values_list)
-            #
-            messagebox.showinfo("Info", "save_csv is ok")
-            self.tool_tree.focus_set()
+        file_path = os.path.abspath(file_path)  # 絶対パスに変換
+        self.init["setting"] = os.path.splitext(file_path)[0] + ".txt"  # 設定ファイルを指定
+        #
+        current_encoding = ""
+        if self.get_japanese_flag():
+            current_encoding = "cp932"
+        else:
+            current_encoding = locale.getpreferredencoding(False)
+        #
+        with open(file_path, "w", encoding=current_encoding) as f:
+            writer = csv.writer(f, lineterminator="\n")
+            writer.writerows(values_list)
+        #
+        messagebox.showinfo("Info", "save_csv is ok")
+        self.tool_tree.focus_set()
 
     def get_target_type_to_action_name(self, target_type: int, target_ip: str) -> str:
         """ target_type を 1=ping , 2=trace , 3=show に変える """
@@ -1621,6 +1739,11 @@ class NextNextPing():
 
     def create_ttl(self):
         """ リストを抽出してttlを作る """
+        # ベースフォルダを確定させる
+        base_dir = self.init["setting"]  # 設定ファイルを読み込み
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+        #
         new_text = ''
         all_items = self.tool_tree.get_children()
         for item_id in all_items:
@@ -1693,21 +1816,18 @@ class NextNextPing():
                     file_head_data = file_head_data + "\n"
                 base_file = 'base.ttl'
                 file_head_data = file_head_data + "\n\n"
-                file_head_data = file_head_data + "; 特殊コマンドの開始\n"
-                file_head_data = file_head_data + "; my_command_int = 3\n"
-                file_head_data = file_head_data + "; my_command[0] = 'esxcli network nic list'\n"
-                file_head_data = file_head_data + "; my_command[1] = 'esxcli network vswitch standard list'\n"
-                file_head_data = file_head_data + "; my_command[2] = 'esxcli network nic list'\n"
-                file_head_data = file_head_data + "; 特殊コマンドの終了\n"
-                file_head_data = file_head_data + "\n\n"
-                file_head_data = file_head_data + "\n\n"
                 file_head_data = file_head_data + f"include \"{base_file}\""
                 file_head_data = file_head_data + "\n\n"
-                if not os.path.exists(base_file):  # ベースファイルが存在しなければ作る
-                    with open(base_file, 'w', encoding='utf-8') as f:
+                #
+                # baseファイルの作成
+                full_path = os.path.join(base_dir, base_file)
+                if not os.path.exists(full_path):  # ベースファイルが存在しなければ作る
+                    with open(full_path, 'w', encoding='utf-8') as f:
                         f.write(SAMPLE_TTL)
                 #
-                with open(file_name, 'w', encoding='utf-8') as f:
+                # 実際のフォルダを指定する
+                full_path = os.path.join(base_dir, file_name)
+                with open(full_path, 'w', encoding='utf-8') as f:
                     f.write(file_head_data)
                 #
         # 設定シートを書き換える
@@ -1715,7 +1835,7 @@ class NextNextPing():
         self.setting_text.insert('1.0', new_text)  # 新しいテキストを挿入
         #
         # 設定シートを保存する
-        self.save_setting()
+        self.save_setting(self.init["setting"])
         #
         # resultシートを更新する
         self.update_setting()
@@ -1809,7 +1929,9 @@ class NextNextPing():
         self.root.wait_window(dialog)
 
     def brows_help(self):
-        path = os.path.abspath("_internal/README.html")
+        base_file = "_internal/README.html"
+        full_path = os.path.join(self.current_dir, base_file)
+        path = os.path.abspath(full_path)
         webbrowser.open(path)
 
 

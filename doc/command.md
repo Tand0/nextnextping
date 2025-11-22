@@ -37,8 +37,8 @@
   <!-- - [quickvansend](https://teratermproject.github.io/manual/5/ja/macro/command/quickvansend.html) -->
   - [recvln](https://teratermproject.github.io/manual/5/ja/macro/command/recvln.html)
   <!-- - [restoresetup](https://teratermproject.github.io/manual/5/ja/macro/command/restoresetup.html) -->
-  <!-- - [scprecv](https://teratermproject.github.io/manual/5/ja/macro/command/scprecv.html) -->
-  <!-- - [scpsend](https://teratermproject.github.io/manual/5/ja/macro/command/scpsend.html) -->
+   - [scprecv](https://teratermproject.github.io/manual/5/ja/macro/command/scprecv.html) // 諸般の事情で中身はsftpになっています
+   - [scpsend](https://teratermproject.github.io/manual/5/ja/macro/command/scpsend.html) // 諸般の事情で中身はsftpになっています
   - [send](https://teratermproject.github.io/manual/5/ja/macro/command/send.html)
   <!-- - [sendbinary](https://teratermproject.github.io/manual/5/ja/macro/command/sendbinary.html) -->
   - [sendbreak](https://teratermproject.github.io/manual/5/ja/macro/command/sendbreak.html) // `Ctrl-C` を投げるだけ

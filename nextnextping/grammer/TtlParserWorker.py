@@ -17,6 +17,95 @@ import json
 import base64
 import random
 import uptime
+import threading
+
+
+class MyShell():
+
+    def __init__(self):
+        # print("MyShell __init__ start")
+        self.data = ''
+        self.lock = threading.Lock()
+        self.active = 1
+        self.process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        thread = MyThread(self, self.process.stdout)
+        thread.start()
+        thread = MyThread(self, self.process.stderr)
+        thread.start()
+        # print("MyShell __init__ end")
+
+    def send_ready(self):
+        # print("send_ready")
+        if self.active == 0:
+            return 0
+        return self.process.stdin.writable()
+
+    def send(self, message):
+        # print(f"send /{message.strip()}/")
+        if self.active == 0:
+            return
+        self.process.stdin.write(message)
+        self.process.stdin.flush()
+
+    def recv_ready(self) -> bool:
+        self.process.stdout.flush()
+        self.process.stderr.flush()
+        ans = False
+        if 0 < len(self.data):
+            ans = True
+        # print(f"recv_ready {len(self.data)}")
+        return ans
+
+    def recv(self, _: int) -> str:
+        # print(f"recv d=/{self.data.strip()}/")
+        if len(self.data) <= 0:
+            return
+        local_data = ''
+        with self.lock:
+            local_data = self.data[0]
+            self.data = self.data[1:]
+        return local_data.encode("utf-8")
+
+    def close(self):
+        # print("client close")
+        self.active = 0
+        self.data = ''
+        local_process = self.process
+        self.local_process = None
+        if local_process is not None:
+            try:
+                local_process.terminate()
+            except Exception:
+                # どんなエラーがでようと必ず殺す
+                pass
+
+    def isActive(self) -> int:
+        return self.active
+
+
+class MyThread(threading.Thread):
+    def __init__(self, myShell: MyShell, stream):
+        # print("MyThread __init__ start")
+        super().__init__()
+        self.myShell = myShell
+        self.stream = stream
+        # print("MyThread __init__ end")
+
+    def run(self):
+        """ 外部プロセスからの読み込み """
+        # print(f"MyThread_run() f={type(self.myShell)}")
+        while self.myShell.isActive() != 0:
+            ans = self.stream.read(1)
+            # print(f"a=/{ans}/")
+            with self.myShell.lock:
+                self.myShell.data = self.myShell.data + ans
+        #
+        # activeでなくなったので念のため消す
+        try:
+            self.stream.close()
+        except Exception:
+            # どんなエラーがでようと必ず殺す
+            pass
 
 
 class Label():
@@ -115,7 +204,6 @@ class TtlPaserWolker():
         self.client = None
         self.shell = None
         self.stdout = ''
-        self.process = None
         self.file_handle_list = {}
         self.title = "dummy"
         self.title = self.getTitle()  # オーバーライドされたときにタイトルを差し替える
@@ -169,14 +257,6 @@ class TtlPaserWolker():
         if shell is not None:
             try:
                 shell.close()
-            except Exception:
-                # どんなエラーがでようと必ず殺す
-                pass
-        process = self.process
-        self.process = None
-        if process is not None:
-            try:
-                process.terminate()
             except Exception:
                 # どんなエラーがでようと必ず殺す
                 pass
@@ -304,7 +384,7 @@ class TtlPaserWolker():
             line = x['line']
             #
             # よくわからんがsleep入れないと不明なエラーが出る？
-            time.sleep(0.01)
+            # time.sleep(0.01)
             #
             if 'CommandlineContext' == name:
                 if ifFlag != 0:
@@ -337,8 +417,6 @@ class TtlPaserWolker():
                 command_name = x['child'][0]
                 if 'assert' == command_name:
                     self.doAssert(command_name, line, x['child'][1:])
-                elif 'dispstr' == command_name:
-                    self.doDispstr(x['child'][1:])
                 elif 'break' == command_name:
                     raise TtlBreakFlagException(command_name)
                 elif 'continue' == command_name:
@@ -350,398 +428,42 @@ class TtlPaserWolker():
                 elif 'return' == command_name:
                     raise TtlReturnFlagException(command_name)
                 elif 'include' == command_name:
-                    filename = self.getData(x['child'][1])
-                    self.include(filename)
+                    p1 = self.getData(x['child'][1])
+                    self.include(p1)
                 elif 'call' == command_name:
                     p1 = str(self.getKeywordName(x['child'][1]))
                     # print(f"call label={p1}")
                     self.callContext(p1)
-                elif 'str2int' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    right = int(self.getData(x['child'][2]))
-                    self.setValue(left, right)
-                elif 'code2str' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    right = x['child'][2]
-                    right = self.getData(right)
-                    if right == 0:
-                        self.setValue(left, '')
-                    else:
-                        right = self.getChrSharp(right)
-                        self.setValue(left, right)
-                elif 'strcompare' == command_name:
-                    left = str(self.getData(x['child'][1]))
-                    right = str(self.getData(x['child'][2]))
-                    result = 0
-                    if left == right:
-                        result = 0
-                    elif left < right:
-                        result = -1
-                    else:
-                        result = 1
-                    self.setValue('result', result)
-                elif 'strconcat' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    left_str = self.getValue(left)
-                    right_str = x['child'][2]
-                    left_str = left_str + self.getData(right_str)
-                    self.setValue(left, left_str)
-                elif 'strlen' == command_name:
-                    left = len(self.getData(x['child'][1]))
-                    self.setValue('result', left)
-                elif 'strmatch' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    p2 = str(self.getData(x['child'][2]))
-                    self.doStrmatch(p1, p2)
-                elif 'strscan' == command_name:
-                    left = str(self.getData(x['child'][1]))
-                    right = str(self.getData(x['child'][2]))
-                    index = left.find(right)
-                    if index < 0:
-                        index = 0
-                    else:
-                        index = index + 1
-                    # print(f"strscan {index}")
-                    self.setValue('result', index)
-                elif 'strtrim' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p1_var = self.getData(p1)
-                    p2 = self.getData(x['child'][2])
-                    p1_var = self.doStrtrim(p1_var, p2)
-                    self.setValue(p1, p1_var)
-                elif 'tolower' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    right = str(self.getData(x['child'][2]))
-                    right = right.lower()
-                    self.setValue(left, right)
-                elif 'toupper' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    right = str(self.getData(x['child'][2]))
-                    right = right.upper()
-                    self.setValue(left, right)
-                elif 'int2str' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    right = str(self.getData(x['child'][2]))
-                    self.setValue(left, right)
-                elif 'str2code' == command_name:
-                    # print("str2code")
-                    left = self.getKeywordName(x['child'][1])
-                    right = x['child'][2]
-                    # print(f"rightA={right}")
-                    right = self.getData(right)
-                    # print(f"rightB={right}")
-                    right = self.getSharpChr(right)
-                    # print(f"rightC={right}")
-                    self.setValue(left, right)
-                elif 'strcopy' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
-                    p3 = int(self.getData(x['child'][3]))
-                    p4 = self.getKeywordName(x['child'][4])
-                    if p2 < 0:
-                        p2 = 0
-                    p1 = p1[p2:p2 + p3]
-                    self.setValue(p4, p1)
-                elif 'strinsert' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
-                    p3 = str(self.getData(x['child'][3]))
-                    p1_val = self.getData(p1)
-                    # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
-                    p1_val = p1_val[:p2] + p3 + p1_val[p2:]
-                    self.setValue(p1, p1_val)
-                elif 'strjoin' == command_name:
-                    # print(f"### l={line} {command_name}")
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = str(self.getData(x['child'][2]))
-                    p3 = 9
-                    # print(f"len {len(x['child'])}")
-                    if 4 <= len(x['child']):
-                        p3 = int(self.getData(x['child'][3]))
-                    p1_val = ''
-                    for i in range(p3):
-                        if i != 0:
-                            p1_val = p1_val + p2
-                        p1_val = p1_val + self.getValue('groupmatchstr' + str(i + 1))
-                    self.setValue(p1, p1_val)
-                elif 'strreplace' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p1_val = self.getData(p1)
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
-                    p3 = str(self.getData(x['child'][3]))
-                    p4 = str(self.getData(x['child'][4]))
-                    self.doStrreplace(p1, p1_val, p2, p3, p4)
-                elif 'strremove' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
-                    p3 = int(self.getData(x['child'][3]))
-                    p1_val = self.getData(p1)
-                    # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
-                    p1_val = p1_val[:p2] + p1_val[p2 + p3:]
-                    self.setValue(p1, p1_val)
-                elif 'strspecial' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p1_val = self.getData(p1)
-                    if 3 <= len(x['child']):
-                        p1_val = str(self.getData(x['child'][2]))
-                    p1_val = p1_val.encode().decode("unicode_escape")
-                    self.setValue(p1, p1_val)
-                elif 'strsplit' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p1_val = self.getData(p1)
-                    p2 = str(self.getData(x['child'][2]))
-                    p3 = 10
-                    if 4 <= len(x['child']):
-                        p3 = int(self.getData(x['child'][3]))
-                    for i in range(9):
-                        self.setValue('groupmatchstr' + str(i + 1), '')
-                    i = 0
-                    while i < p3 - 1:
-                        index = p1_val.find(p2)
-                        if (0 <= index):
-                            # print(f"aa i{i + 1} {p3} /{p1_val[0:index]}/ /{p1_val[index + len(p2):]}/")
-                            self.setValue('groupmatchstr' + str(i + 1), p1_val[0:index])
-                            p1_val = p1_val[index + len(p2):]
-                        else:
-                            break
-                        i = i + 1
-                    if 0 < len(p1_val):
-                        # print(f"bb i{i + 1} {p3} /{p1_val}/")
-                        self.setValue('groupmatchstr' + str(i + 1), p1_val)
-                    i = i + 1
-                    # print(f"i={i}")
-                    self.setValue('result', i)
-                elif 'mpause' == command_name:
-                    left = int(self.getData(x['child'][1]))
-                    self.doPause(left / 1000)
-                elif 'pause' == command_name:
-                    left = int(self.getData(x['child'][1]))
-                    self.doPause(left)
-                elif 'connect' == command_name:
-                    self.doConnect(self.getData(x['child'][1]), line)
+                elif 'bplusrecv' == command_name:
+                    self.doBplusrecv(command_name, line)
+                elif 'bplussend' == command_name:
+                    p1 = self.getData(x['child'][1])
+                    self.doBplussend(command_name, line, p1)
+                elif 'callmenu' == command_name:
+                    p1 = int(self.getData(x['child'][1]))
+                    self.doCallmenu(command_name, line, p1)
+                elif command_name in ['setdir', 'changedir']:
+                    p1 = self.getData(x['child'][1])
+                    self.doChangedir(p1)
+                elif 'clearscreen' == command_name:
+                    p1 = int(self.getData(x['child'][1]))
+                    self.doClearscreen(command_name, line, p1)
                 elif command_name in ['closett', 'disconnect', 'unlink']:
                     self.closeClient()
-                elif 'testlink' == command_name:
-                    self.doTestlink()
-                elif command_name in ['send', 'sendbinary', 'sendtext']:
-                    self.doSend(x['child'][1:])
-                elif 'sendln' == command_name:
-                    self.doSendln(x['child'][1:])
-                elif 'sendbreak' == command_name:
-                    self.doSendbreak()
-                elif 'wait' == command_name:
-                    self.doWait(x['child'][1:])
-                elif 'waitln' == command_name:
-                    self.doWaitln(x['child'][1:])
-                elif 'recvln' == command_name:
-                    self.doRecvln()
-                elif 'exec' == command_name:
-                    self.doExec(line, x['child'][1:])
-                elif 'execcmnd' == command_name:
-                    left = self.getData(x['child'][1])
-                    result_json = self.include_data(left)
-                    self.execute_result(result_json['child'])
-                elif 'getenv' == command_name:
-                    left = str(self.getData(x['child'][1]))
-                    right = self.getKeywordName(x['child'][2])
-                    # print(f"getenv1 c=({command_name}) l={left} r={right}")
-                    left = os.getenv(left)
-                    if left is None:
-                        left = ''
-                    # print(f"getenv2 c=({command_name}) l={left} r={right}")
-                    self.setValue(right, left)
-                elif 'setenv' == command_name:
-                    left = str(self.getData(x['child'][1]))
-                    right = str(self.getData(x['child'][2]))
-                    os.environ[left] = right
-                    # print(f"setenv2 c=({command_name}) l={left} r={right}")
+                elif 'connect' == command_name:
+                    self.doConnect(self.getData(x['child'][1]), line)
+                elif 'dispstr' == command_name:
+                    self.doDispstr(x['child'][1:])
+                elif 'enablekeyb' == command_name:
+                    p1 = int(self.getData(x['child'][1]))
+                    self.doEnablekeyb(command_name, line, p1)
+                elif 'gethostname' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    self.doGethostname(p1)
                 elif 'gettitle' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
                     p1_val = self.getTitle()
                     self.setValue(p1, p1_val)
-                elif 'settitle' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    self.setTitle(p1)
-                elif 'expandenv' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    right = ''
-                    if 3 <= len(x['child']):
-                        right = self.getData(x['child'][2])
-                    else:
-                        right = self.getData(left)
-                    right = os.path.expandvars(right)
-                    # print(f"left={left} right={right}")
-                    self.setValue(left, right)
-                elif 'getdate' == command_name:
-                    self.doGetdate(x['child'][1:])
-                elif 'gettime' == command_name:
-                    self.doGetdate(x['child'][1:], format='%H:%M:%S')
-                elif 'sprintf' == command_name:
-                    self.doSprintf('inputstr', x['child'][1:])
-                elif 'sprintf2' == command_name:
-                    left = x['child'][1]
-                    left = self.getKeywordName(left)
-                    self.doSprintf(left, x['child'][2:])
-                elif command_name in ['setdir', 'changedir']:
-                    p1 = x['child'][1]
-                    p1_str = self.getData(p1)
-                    p1_str = pathlib.Path(p1_str)
-                    if p1_str.is_absolute():
-                        # print(f"pathA={p1_str}")
-                        os.chdir(p1_str)
-                    else:
-                        # print(f"pathB={p1_str}")
-                        p1_str = pathlib.Path.cwd() / p1_str
-                        os.chdir(p1_str)
-                elif 'makepath' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = str(self.getData(x['child'][2]))
-                    p3 = str(self.getData(x['child'][3]))
-                    self.doMakepath(p1, p2, p3)
-                elif 'basename' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = str(self.getData(x['child'][2]))
-                    p2 = os.path.basename(p2)
-                    self.setValue(p1, str(p2))
-                elif 'dirname' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = str(self.getData(x['child'][2]))
-                    # print(f"p2a={p2}")
-                    p2 = re.sub(r"[\/]$", '', p2)
-                    p2 = pathlib.Path(p2)
-                    # print(f"p2b={p2}")
-                    p2 = p2.parent
-                    # print(f"p2c={p2}")
-                    self.setValue(p1, str(p2))
-                elif 'getdir' == command_name:
-                    left = self.getKeywordName(x['child'][1])
-                    path = pathlib.Path.cwd()
-                    self.setValue(left, str(path))
-                elif 'intdim' == command_name:
-                    left = x['child'][1]
-                    right = int(str(self.getData(x['child'][2])))
-                    for i in range(right):
-                        self.setValue(left + '[' + str(i) + ']', 0)
-                elif 'strdim' == command_name:
-                    left = x['child'][1]
-                    right = int(str(self.getData(x['child'][2])))
-                    for i in range(right):
-                        self.setValue(left + '[' + str(i) + ']', '')
-                elif command_name in ["setpassword", "setpassword2"]:
-                    p1 = self.getData(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    p3 = self.getData(x['child'][3])
-                    self.doSetpassword(p1, p2, p3)
-                elif command_name in ["getpassword", "getpassword2"]:
-                    p1 = self.getData(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    p3 = self.getKeywordName(x['child'][3])
-                    self.doGetpassword(p1, p2, p3)
-                elif command_name in ["ispassword", "ispassword2"]:
-                    p1 = self.getData(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    self.doIspassword(p1, p2)
-                elif command_name in ["delpassword", "delpassword2"]:
-                    p1 = self.getData(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    self.doDelpassword(p1, p2)
-                elif 'fileopen' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    p3 = int(self.getData(x['child'][3]))
-                    p4 = 0
-                    if 5 <= len(x['child']):
-                        p4 = self.getData(x['child'][4])
-                    self.doFileopen(p1, p2, p3, p4)
-                elif 'filecreate' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    self.doFileopen(p1, p2, 0, 0)
-                elif 'fileclose' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    self.doFileclose(p1)
-                elif 'filewrite' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    self.doFilewrite(line, p1, p2)
-                elif 'filewriteln' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = self.getData(x['child'][2]) + "\n"
-                    self.doFilewrite(line, p1, p2)
-                elif 'fileread' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2]))
-                    p3 = self.getKeywordName(x['child'][3])
-                    self.doFileread(line, p1, p2, p3)
-                elif 'filereadln' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    p2 = str(self.getKeywordName(x['child'][2]))
-                    self.doFilereadln(line, p1, p2)
-                elif 'fileconcat' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    p2 = str(self.getData(x['child'][2]))
-                    self.doFileconcat(p1, p2)
-                elif 'filecopy' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    p2 = str(self.getData(x['child'][2]))
-                    self.doFilecopy(p1, p2)
-                elif 'filedelete' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    self.doFiledelete(p1)
-                elif 'filerename' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    p2 = str(self.getData(x['child'][2]))
-                    self.doFilerename(p1, p2)
-                elif 'filesearch' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    self.doFilesearch(p1)
-                elif 'filestat' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    p2 = str(self.getKeywordName(x['child'][2]))
-                    p3 = None
-                    if 4 <= len(x['child']):
-                        p3 = str(self.getKeywordName(x['child'][3]))
-                    p4 = None
-                    if 4 <= len(x['child']):
-                        p4 = str(self.getKeywordName(x['child'][4]))
-                    self.doFilestat(p1, p2, p3, p4)
-                elif 'foldercreate' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    self.doFoldercreate(p1)
-                elif 'folderdelete' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    self.doFolderdelete(p1)
-                elif 'foldersearch' == command_name:
-                    p1 = str(self.getData(x['child'][1]))
-                    self.doFoldersearch(p1)
-                elif 'getipv4addr' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    p2 = str(self.getKeywordName(x['child'][2]))
-                    self.doGetipv4addr(p1, p2)
-                elif 'getipv6addr' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    p2 = str(self.getKeywordName(x['child'][2]))
-                    self.doGetipv6addr(p1, p2)
-                elif 'gethostname' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    self.doGethostname(p1)
-                elif 'getver' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    p2 = None
-                    if 3 <= len(x['child']):
-                        p2 = float(self.getData(x['child'][2]))
-                    self.doGetver(p1, p2)
-                elif 'ifdefined' == command_name:
-                    p1 = str(x['child'][1])
-                    self.doIfdefined(p1)
-                elif 'random' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    p2 = int(self.getData(x['child'][2]))
-                    p1_val = random.randint(0, p2)
-                    self.setValue(p1, p1_val)
-                elif 'uptime' == command_name:
-                    p1 = str(self.getKeywordName(x['child'][1]))
-                    self.setValue(p1, int(uptime.uptime() * 1000))
                 elif 'logautoclosemode' == command_name:
                     p1 = int(self.getData(x['child'][1]))
                     self.doLogautoclosemode(command_name, line, p1)
@@ -785,6 +507,385 @@ class TtlPaserWolker():
                 elif 'logwrite' == command_name:
                     p1 = str(self.getData(x['child'][1]))
                     self.doLogwrite(p1)
+                elif 'recvln' == command_name:
+                    self.doRecvln()
+                elif 'scprecv' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = p1
+                    if 3 <= len(x['child']):
+                        p2 = str(self.getData(x['child'][2]))
+                    self.doScprecv(p1, p2)
+                elif 'scpsend' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = p1
+                    if 3 <= len(x['child']):
+                        p2 = str(self.getData(x['child'][2]))
+                    self.doScpsend(p1, p2)
+                elif command_name in ['send', 'sendbinary', 'sendtext']:
+                    self.doSend(x['child'][1:])
+                elif 'sendbreak' == command_name:
+                    self.doSendbreak()
+                elif 'sendln' == command_name:
+                    self.doSendln(x['child'][1:])
+                elif 'settitle' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.setTitle(p1)
+                elif 'testlink' == command_name:
+                    self.doTestlink()
+                elif 'wait' == command_name:
+                    self.doWait(x['child'][1:])
+                elif 'waitln' == command_name:
+                    self.doWaitln(x['child'][1:])
+                elif 'execcmnd' == command_name:
+                    p1 = self.getData(x['child'][1])
+                    result_json = self.include_data(p1)
+                    self.execute_result(result_json['child'])
+                elif 'mpause' == command_name:
+                    p1 = int(self.getData(x['child'][1]))
+                    self.doPause(p1 / 1000)
+                elif 'pause' == command_name:
+                    p1 = int(self.getData(x['child'][1]))
+                    self.doPause(p1)
+                elif 'code2str' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = x['child'][2]
+                    p2 = self.getData(p2)
+                    if p2 == 0:
+                        self.setValue(p1, '')
+                    else:
+                        p2 = self.getChrSharp(p2)
+                        self.setValue(p1, p2)
+                elif 'expandenv' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = ''
+                    if 3 <= len(x['child']):
+                        p2 = self.getData(x['child'][2])
+                    else:
+                        p2 = self.getData(p1)
+                    p2 = os.path.expandvars(p2)
+                    # print(f"p1={p1} p2={p2}")
+                    self.setValue(p1, p2)
+                elif 'int2str' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    self.setValue(p1, p2)
+                elif 'sprintf' == command_name:
+                    self.doSprintf('inputstr', x['child'][1:])
+                elif 'sprintf2' == command_name:
+                    p1 = x['child'][1]
+                    p1 = self.getKeywordName(p1)
+                    self.doSprintf(p1, x['child'][2:])
+                elif 'str2code' == command_name:
+                    # print("str2code")
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = x['child'][2]
+                    # print(f"p2A={p2}")
+                    p2 = self.getData(p2)
+                    # print(f"p2B={p2}")
+                    p2 = self.getSharpChr(p2)
+                    # print(f"p2C={p2}")
+                    self.setValue(p1, p2)
+                elif 'str2int' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2]))
+                    self.setValue(p1, p2)
+                elif 'strcompare' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    result = 0
+                    if p1 == p2:
+                        result = 0
+                    elif p1 < p2:
+                        result = -1
+                    else:
+                        result = 1
+                    self.setValue('result', result)
+                elif 'strconcat' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_str = self.getValue(p1)
+                    p2_str = x['child'][2]
+                    p1_str = p1_str + self.getData(p2_str)
+                    self.setValue(p1, p1_str)
+                elif 'strcopy' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = int(self.getData(x['child'][3]))
+                    p4 = self.getKeywordName(x['child'][4])
+                    if p2 < 0:
+                        p2 = 0
+                    p1 = p1[p2:p2 + p3]
+                    self.setValue(p4, p1)
+                elif 'strinsert' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = str(self.getData(x['child'][3]))
+                    p1_val = self.getData(p1)
+                    # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
+                    p1_val = p1_val[:p2] + p3 + p1_val[p2:]
+                    self.setValue(p1, p1_val)
+                elif 'strjoin' == command_name:
+                    # print(f"### l={line} {command_name}")
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = 9
+                    # print(f"len {len(x['child'])}")
+                    if 4 <= len(x['child']):
+                        p3 = int(self.getData(x['child'][3]))
+                    p1_val = ''
+                    for i in range(p3):
+                        if i != 0:
+                            p1_val = p1_val + p2
+                        p1_val = p1_val + self.getValue('groupmatchstr' + str(i + 1))
+                    self.setValue(p1, p1_val)
+                elif 'strlen' == command_name:
+                    p1 = len(self.getData(x['child'][1]))
+                    self.setValue('result', p1)
+                elif 'strmatch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doStrmatch(p1, p2)
+                elif 'strremove' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = int(self.getData(x['child'][3]))
+                    p1_val = self.getData(p1)
+                    # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
+                    p1_val = p1_val[:p2] + p1_val[p2 + p3:]
+                    self.setValue(p1, p1_val)
+                elif 'strreplace' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getData(p1)
+                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p3 = str(self.getData(x['child'][3]))
+                    p4 = str(self.getData(x['child'][4]))
+                    self.doStrreplace(p1, p1_val, p2, p3, p4)
+                elif 'strscan' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    index = p1.find(p2)
+                    if index < 0:
+                        index = 0
+                    else:
+                        index = index + 1
+                    # print(f"strscan {index}")
+                    self.setValue('result', index)
+                elif 'strspecial' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getData(p1)
+                    if 3 <= len(x['child']):
+                        p1_val = str(self.getData(x['child'][2]))
+                    p1_val = p1_val.encode().decode("unicode_escape")
+                    self.setValue(p1, p1_val)
+                elif 'strsplit' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_val = self.getData(p1)
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = 10
+                    if 4 <= len(x['child']):
+                        p3 = int(self.getData(x['child'][3]))
+                    for i in range(9):
+                        self.setValue('groupmatchstr' + str(i + 1), '')
+                    i = 0
+                    while i < p3 - 1:
+                        index = p1_val.find(p2)
+                        if (0 <= index):
+                            # print(f"aa i{i + 1} {p3} /{p1_val[0:index]}/ /{p1_val[index + len(p2):]}/")
+                            self.setValue('groupmatchstr' + str(i + 1), p1_val[0:index])
+                            p1_val = p1_val[index + len(p2):]
+                        else:
+                            break
+                        i = i + 1
+                    if 0 < len(p1_val):
+                        # print(f"bb i{i + 1} {p3} /{p1_val}/")
+                        self.setValue('groupmatchstr' + str(i + 1), p1_val)
+                    i = i + 1
+                    # print(f"i={i}")
+                    self.setValue('result', i)
+                elif 'strtrim' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p1_var = self.getData(p1)
+                    p2 = self.getData(x['child'][2])
+                    p1_var = self.doStrtrim(p1_var, p2)
+                    self.setValue(p1, p1_var)
+                elif 'tolower' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p2 = p2.lower()
+                    self.setValue(p1, p2)
+                elif 'toupper' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p2 = p2.upper()
+                    self.setValue(p1, p2)
+                elif 'basename' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p2 = os.path.basename(p2)
+                    self.setValue(p1, str(p2))
+                elif 'dirname' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    # print(f"p2a={p2}")
+                    p2 = re.sub(r"[\/]$", '', p2)
+                    p2 = pathlib.Path(p2)
+                    # print(f"p2b={p2}")
+                    p2 = p2.parent
+                    # print(f"p2c={p2}")
+                    self.setValue(p1, str(p2))
+                elif 'fileclose' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    self.doFileclose(p1)
+                elif 'fileconcat' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doFileconcat(p1, p2)
+                elif 'filecopy' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doFilecopy(p1, p2)
+                elif 'filecreate' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doFileopen(p1, p2, 0, 0)
+                elif 'filedelete' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFiledelete(p1)
+                elif 'fileopen' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = int(self.getData(x['child'][3]))
+                    p4 = 0
+                    if 5 <= len(x['child']):
+                        p4 = self.getData(x['child'][4])
+                    self.doFileopen(p1, p2, p3, p4)
+                elif 'filereadln' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doFilereadln(line, p1, p2)
+                elif 'fileread' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = int(self.getData(x['child'][2]))
+                    p3 = self.getKeywordName(x['child'][3])
+                    self.doFileread(line, p1, p2, p3)
+                elif 'filerename' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    self.doFilerename(p1, p2)
+                elif 'filewrite' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doFilewrite(line, p1, p2)
+                elif 'filewriteln' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2]) + "\n"
+                    self.doFilewrite(line, p1, p2)
+                elif 'filesearch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFilesearch(p1)
+                elif 'filestat' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    p3 = None
+                    if 4 <= len(x['child']):
+                        p3 = str(self.getKeywordName(x['child'][3]))
+                    p4 = None
+                    if 4 <= len(x['child']):
+                        p4 = str(self.getKeywordName(x['child'][4]))
+                    self.doFilestat(p1, p2, p3, p4)
+                elif 'foldercreate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFoldercreate(p1)
+                elif 'folderdelete' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFolderdelete(p1)
+                elif 'foldersearch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    self.doFoldersearch(p1)
+                elif 'getdir' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    path = pathlib.Path.cwd()
+                    self.setValue(p1, str(path))
+                elif 'makepath' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getData(x['child'][3]))
+                    self.doMakepath(p1, p2, p3)
+                elif command_name in ["setpassword", "setpassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = self.getData(x['child'][3])
+                    self.doSetpassword(p1, p2, p3)
+                elif command_name in ["getpassword", "getpassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = self.getKeywordName(x['child'][3])
+                    self.doGetpassword(p1, p2, p3)
+                elif command_name in ["ispassword", "ispassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doIspassword(p1, p2)
+                elif command_name in ["delpassword", "delpassword2"]:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doDelpassword(p1, p2)
+                elif 'exec' == command_name:
+                    self.doExec(line, x['child'][1:])
+                elif 'getdate' == command_name:
+                    self.doGetdate(x['child'][1:])
+                elif 'getenv' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = self.getKeywordName(x['child'][2])
+                    # print(f"getenv1 c=({command_name}) l={p1} r={p2}")
+                    p1 = os.getenv(p1)
+                    if p1 is None:
+                        p1 = ''
+                    # print(f"getenv2 c=({command_name}) l={p1} r={p2}")
+                    self.setValue(p2, p1)
+                elif 'getipv4addr' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doGetipv4addr(p1, p2)
+                elif 'getipv6addr' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doGetipv6addr(p1, p2)
+                elif 'gettime' == command_name:
+                    self.doGetdate(x['child'][1:], format='%H:%M:%S')
+                elif 'getttdir' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    self.setValue(p1, self.current_dir)
+                elif 'getver' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = None
+                    if 3 <= len(x['child']):
+                        p2 = float(self.getData(x['child'][2]))
+                    self.doGetver(p1, p2)
+                elif 'ifdefined' == command_name:
+                    p1 = str(x['child'][1])
+                    self.doIfdefined(p1)
+                elif 'intdim' == command_name:
+                    p1 = x['child'][1]
+                    p2 = int(str(self.getData(x['child'][2])))
+                    for i in range(p2):
+                        self.setValue(p1 + '[' + str(i) + ']', 0)
+                elif 'random' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = int(self.getData(x['child'][2]))
+                    p1_val = random.randint(0, p2)
+                    self.setValue(p1, p1_val)
+                elif 'setenv' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    os.environ[p1] = p2
+                    # print(f"setenv2 c=({command_name}) l={p1} r={p2}")
+                elif 'strdim' == command_name:
+                    p1 = x['child'][1]
+                    p2 = int(str(self.getData(x['child'][2])))
+                    for i in range(p2):
+                        self.setValue(p1 + '[' + str(i) + ']', '')
+                elif 'uptime' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    self.setValue(p1, int(uptime.uptime() * 1000))
                 else:
                     # print(f"### l={line} コマンドが分からない{name}")
                     self.commandContext(command_name, line, x['child'][1:])
@@ -849,13 +950,6 @@ class TtlPaserWolker():
         message = message
         self.setLog(message + "\n")
         return message
-
-    def doDispstr(self, data_list):
-        for data in data_list:
-            result = self.getData(data)
-            if isinstance(result, int):
-                result = chr(data & 0xFF)
-            self.setLogInner(result)
 
     def correctLabel(self):
         """ ラベルを収集する """
@@ -1330,6 +1424,33 @@ class TtlPaserWolker():
         if p1 == 0:
             raise TypeError(message)
 
+    def doBplusrecv(self, command_name: str, line: int):
+        """ bplusrecv 処理用 """
+        self.printCommand(command_name, line, [])
+
+    def doBplussend(self, command_name: str, line: int, p1):
+        """ bplussend 処理用 """
+        self.printCommand(command_name, line, [p1])
+
+    def doCallmenu(self, command_name: str, line: int, p1):
+        """ callmenu 処理用 """
+        self.printCommand(command_name, line, [p1])
+
+    def doChangedir(self, p1):
+        """ changedir 処理用 """
+        p1 = pathlib.Path(p1)
+        if p1.is_absolute():
+            # print(f"pathA={p1}")
+            os.chdir(p1)
+        else:
+            # print(f"pathB={p1}")
+            p1 = pathlib.Path.cwd() / p1
+            os.chdir(p1)
+
+    def doClearscreen(self, command_name: str, line: int, p1):
+        """ clearscreen 処理用 """
+        self.printCommand(command_name, line, [p1])
+
     def doConnect(self, data: str, line):
         ''' 接続する '''
         # print(f"do connect data={data}")
@@ -1429,13 +1550,36 @@ class TtlPaserWolker():
                 self.closeClient()
         else:
             # ここからcmd起動
-            self.process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            self.shell = MyShell()
             #
             # 接続成功
             self.setValue('result', 2)
 
+    def doDispstr(self, data_list):
+        for data in data_list:
+            result = self.getData(data)
+            if isinstance(result, int):
+                result = chr(data & 0xFF)
+            self.setLogInner(result)
+
+    def doEnablekeyb(self, command_name: str, line: int, p1):
+        """ enablekeyb 処理用 """
+        self.printCommand(command_name, line, [p1])
+
+    def doGethostname(self, p1):
+        """ ホスト名の取得"""
+        if self.client is not None and self.shell is not None and self.shell.active:
+            # 外部と接続しているとき
+            ip_address = self.client.get_transport().getpeername()[0]
+            self.setValue(p1, ip_address)
+        else:
+            #
+            # 何もリンクしていない、または cmdと接続しているとき
+            hostname = socket.gethostname()
+            self.setValue(p1, hostname)
+
     def doTestlink(self):
-        if (self.client is None or self.shell is None or not self.shell.active) and (self.process is None):
+        if self.shell is None or not self.shell.active:
             self.setValue('result', 0)
         else:
             self.setValue('result', 2)
@@ -1461,32 +1605,17 @@ class TtlPaserWolker():
 
     def doSendAll(self, message):
         # print(f"doSendAll d={message}")
-        if self.process is None:
-            while not self.end_flag:
-                shell = self.shell
-                if shell is None:
-                    # print("doSendAll shell None")
-                    break
-                elif shell.send_ready():
-                    # print(f"send! f=/{message}/")
-                    shell.send(message)
-                    break
-                else:
-                    time.sleep(0.1)
-        else:
-            # ここからCMD
-            while not self.end_flag:
-                process = self.process
-                if process is None:
-                    # print("doSendAll shell None")
-                    break
-                elif process.stdin.writable():
-                    # print(f"send! f=/{message}/")
-                    process.stdin.write(message)
-                    process.stdin.flush()
-                    break
-                else:
-                    time.sleep(0.1)
+        while not self.end_flag:
+            local_shell = self.shell
+            if local_shell is None:
+                # print("doSendAll shell None")
+                break
+            elif local_shell.send_ready():
+                # print(f"send! f=/{message}/")
+                local_shell.send(message)
+                break
+            else:
+                time.sleep(0.1)
 
     def doWait(self, data_list):
         result_list = []
@@ -1548,65 +1677,26 @@ class TtlPaserWolker():
                     result = 0
                     break
             #
-            process = self.process
-            if self.process is None:
-                # ここからSSH接続
-                #
-                shell = self.shell
-                if shell is None:
-                    break
-                #
-                # m_timeout は 0 の時無限待ちになる
-                if shell.recv_ready():
-                    # 最後の時間更新
-                    now_time = int(time.time() * 1000)
-                    # print("recv start!")
-                    output = shell.recv(1024).decode("utf-8")
-                    # print("recv! end")
-                    if output is None:
-                        # print("break!")
-                        break
-                    self.setLogInner(output)
-                    self.stdout = self.stdout + output
-                    #
-                else:
-                    # print("sleep")
-                    time.sleep(0.1)
-            else:
-                # ここからcmd
-                # print(f"x4 {flushrecv}")
-                if process.poll() is not None:
-                    # process not alive
-                    self.closeClient()
-                    break
-                if process.stdout.readable():
-                    # 最後の時間更新
-                    now_time = int(time.time() * 1000)
-                    # 読み込み
-                    # print(f"x3 /*{process.stdout}+/")
-                    output = process.stdout.read(1)
-                    # print("x2")
-                    if output is None:
-                        break
-                    self.setLogInner(output)
-                    #
-                    self.stdout = self.stdout + output
-                    #
-                else:
-                    # print("x5")
-                    time.sleep(0.1)
-
-    def doGethostname(self, p1):
-        """ ホスト名の取得"""
-        if self.client is not None and self.shell is not None and self.shell.active:
-            # 外部と接続しているとき
-            ip_address = self.client.get_transport().getpeername()[0]
-            self.setValue(p1, ip_address)
-        else:
+            local_ssh = self.shell
+            if local_ssh is None:
+                break
             #
-            # 何もリンクしていない、または cmdと接続しているとき
-            hostname = socket.gethostname()
-            self.setValue(p1, hostname)
+            # m_timeout は 0 の時無限待ちになる
+            if local_ssh.recv_ready():
+                # 最後の時間更新
+                now_time = int(time.time() * 1000)
+                # print("recv start! ============")
+                output = local_ssh.recv(1024).decode("utf-8")
+                # print(f"recv! end {output} ============")
+                if output is None:
+                    # print("break!")
+                    break
+                self.setLogInner(output)
+                self.stdout = self.stdout + output
+                #
+            else:
+                # print("sleep")
+                time.sleep(0.1)
 
     def getTimer(self) -> int:
         m_timeout = 0
@@ -1766,18 +1856,18 @@ class TtlPaserWolker():
         wait = 0
         if 3 <= (data_len):
             wait = int(self.getData(data_line[2]))
-        current_directory = '.'
+        base_directory = "."
         if 4 <= (data_len):
-            current_directory = self.getData(data_line[3])
+            base_directory = self.getData(data_line[3])
         # print(f"\tcommand_list={command_list}")
         # print(f"\tshow={show}")
         # print(f"\twait={wait}")
-        # print(f"\tcurrent_directory={current_directory}")
+        # print(f"\tbase_directory={base_directory}")
         #
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         si.wShowWindow = 0  # SW_HIDE
-        p = subprocess.Popen(command_list, startupinfo=si, cwd=current_directory, shell=True)
+        p = subprocess.Popen(command_list, startupinfo=si, cwd=base_directory, shell=True)
         if wait != 0:
             p.wait()  # プロセスが終了するまで待機
             self.setValue('result', p.returncode)
@@ -1812,19 +1902,19 @@ class TtlPaserWolker():
         self.setValue(inputstr, strvar)
         self.setValue('result', 0)
 
-    def doPause(self, left):
+    def doPause(self, p1):
         """ 指定された秒数待つ """
-        # print(f"pause {left}")
+        # print(f"pause {p1}")
         if self.end_flag:
             return
 
         # 1秒未満の待ち
-        mtime = left - int(left)
+        mtime = p1 - int(p1)
         if 0 < mtime:
             time.sleep(mtime)
 
         # 1秒以上の待ちは1秒づつ end_flagが立っていないか見る
-        for _ in range(int(left)):
+        for _ in range(int(p1)):
             if self.end_flag:
                 break
             time.sleep(1)
@@ -2207,4 +2297,19 @@ class TtlPaserWolker():
         # print(f"doIfdefined v={strvar} d={result}")
         self.setValue('result', result)
 
+    def doScprecv(self, p1, p2):
+        """ SCP 受信 """
+        if self.client is None:
+            return
+        sftp_connection = self.client.open_sftp()
+        sftp_connection.get(p1, p2)
+        sftp_connection.close()
+
+    def doScpsend(self, p1, p2):
+        """ SCP 転送 """
+        if self.client is None:
+            return
+        sftp_connection = self.client.open_sftp()
+        sftp_connection.put(p1, p2)
+        sftp_connection.close()
 #

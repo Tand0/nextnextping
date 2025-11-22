@@ -1,6 +1,9 @@
 getdir xxx
 assert 1  xxx
 
+getttdir xxx
+assert 1  xxx
+
 setdir "build"
 
 getdir xxx
@@ -8,5 +11,6 @@ assert 1  xxx
 
 strscan xxx "build"
 assert 0 < result "user profiele OK" result
+
 
 result = 1

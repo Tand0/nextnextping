@@ -1,0 +1,19 @@
+{
+    "ping": {
+        "localhost": {
+            "stdout": "\nPinging t-ando [::1] with 32 bytes of data:\nReply from ::1: time<1ms \n\nPing statistics for ::1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
+            "result": "OK",
+            "date": "2025/11/21 08:38:40"
+        },
+        "127.0.0.1": {
+            "stdout": "\nPinging 127.0.0.1 with 32 bytes of data:\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\n\nPing statistics for 127.0.0.1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
+            "result": "OK",
+            "date": "2025/11/21 08:38:51"
+        },
+        "::1": {
+            "stdout": "\nPinging ::1 with 32 bytes of data:\nReply from ::1: time<1ms \n\nPing statistics for ::1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
+            "result": "OK",
+            "date": "2025/11/21 08:39:02"
+        }
+    }
+}

@@ -27,7 +27,7 @@ assert 22==b xx[0] b "ifdefined array int test"
 c = 1
 yy[c] = "xxx"
 ifdefined yy
-assert 6==result b yy[c] result "ifdefined array str test"
+assert 6==result b yy[c] result "ifdefined array str test" result
 
 result = 1
 end

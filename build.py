@@ -35,11 +35,15 @@ def installer():
 def file_copy(base: str, dest: str):
     """ ファイルをコピーする """
     for filename in os.listdir(base):
-        if not ('init.json' in filename or '.csv' in filename or '.png' in filename):
-            continue
+        if not os.path.isdir(base + filename):
+            continue  # フォルダでなかった無視
+        if os.path.isdir(base + dest + filename):
+            continue  # 移動先のフォルダが存在したら無視
+        if 'sample' not in filename:
+            continue  # サンプルでないなら無視
         #
-        print("copy", base + filename, dest + filename)
-        shutil.copy(base + filename, dest + filename)
+        print("cp -r ", base + filename, dest + filename)
+        shutil.copytree(base + filename, dest + filename)
 
 
 def my_markdown():

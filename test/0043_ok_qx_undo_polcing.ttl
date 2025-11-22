@@ -1,0 +1,31 @@
+;INPUT_START
+
+basename file_name param1
+target_display = "pingを打つ装置"
+target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+base_display = "SSH接続する装置"
+base_ip = "localhost:2200"
+base_account = "boo"
+next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+next_display = "SSHからさらに接続する装置"
+next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+next_account = "xxx"  ; 踏み台先のIPアドレス
+
+; 特殊コマンドの開始
+my_command_int = 9
+my_command[ 0] = 'system-view'
+my_command[ 1] = 'interface gigabitethernet 1/0/1'
+my_command[ 2] = 'undo traffic-policy policy-nameA inbound'
+my_command[ 3] = 'undo traffic-policy policy-nameA outbound'
+my_command[ 4] = 'quit'
+my_command[ 5] = 'undo qos policy policy-nameA'
+my_command[ 6] = 'undo traffic classifier classifier-nameA'
+my_command[ 7] = 'undo traffic behavior behavior-nameA'
+my_command[ 8] = 'quit'
+; 特殊コマンドの終了
+
+getdir include_dir
+strconcat include_dir "/base.ttl"
+include include_dir
+
+;
