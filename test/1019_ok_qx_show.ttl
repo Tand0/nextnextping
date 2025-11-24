@@ -3,7 +3,7 @@
 ;
 
 basename file_name param1
-target_display = "SSH踏み台"
+target_display = "SSH踏み台/show"
 target_ip = "127.0.0.1"
 target_type = 3  ; 1=ping , 2=traceroute , 3=show run
 next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login

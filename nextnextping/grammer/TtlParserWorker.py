@@ -14,10 +14,48 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 import pathlib
 import json
-import base64
 import random
 import uptime
 import threading
+from cryptography.fernet import Fernet
+from cryptography.fernet import InvalidToken
+import base64
+
+
+class MyFindfirst():
+    """ find first用のハンドルクラス """
+    def __init__(self, target):
+        target = target.replace(".", "\\.").replace("*", ".*")
+        self.my_list = []
+        for f in os.listdir(os.getcwd()):
+            # print(f"MyFindfirst1 {target} {f}")
+            result = re.match(target, f)
+            if result:
+                # print("hit!")
+                self.my_list.append(str(f))
+
+    def close(self):
+        """ 何もしない """
+        pass
+
+    def write(self, _):
+        """ これは呼ばれないので何もしない """
+        pass
+
+    def read(self, _: int):
+        """ これは呼ばれないので何もしない """
+        pass
+
+    def readline(self) -> str:
+        ans = b''
+        if 0 < len(self.my_list):
+            ans = self.my_list[0]
+            self.my_list = self.my_list[1:]
+            # print(f"MyFindfirst {str(self.my_list)}")
+            ans = ans.encode("utf-8")
+        else:
+            raise OSError("readline exception")
+        return ans
 
 
 class MyShell():
@@ -216,6 +254,7 @@ class TtlPaserWolker():
         self.current_dir = pathlib.Path.cwd()
         #
         self.encrypt_file = {}
+        self.exitcode = None
 
     def stop(self, error=None):
         """ 強制停止処理 """
@@ -236,6 +275,9 @@ class TtlPaserWolker():
         #
         # カレントフォルダを戻す
         os.chdir(self.current_dir)
+        #
+        if self.exitcode is not None:
+            self.setValue('result', self.exitcode)
 
     def closeClient(self):
         """ SSH接続していたら止める """
@@ -454,9 +496,14 @@ class TtlPaserWolker():
                     self.doConnect(self.getData(x['child'][1]), line)
                 elif 'dispstr' == command_name:
                     self.doDispstr(x['child'][1:])
+                elif 'flushrecv' == command_name:
+                    self.doFlushrecv()
                 elif 'enablekeyb' == command_name:
                     p1 = int(self.getData(x['child'][1]))
                     self.doEnablekeyb(command_name, line, p1)
+                elif 'getmodemstatus' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    self.doGetmodemstatus(command_name, line, p1)
                 elif 'gethostname' == command_name:
                     p1 = str(self.getKeywordName(x['child'][1]))
                     self.doGethostname(p1)
@@ -532,7 +579,7 @@ class TtlPaserWolker():
                     self.setTitle(p1)
                 elif 'testlink' == command_name:
                     self.doTestlink()
-                elif 'wait' == command_name:
+                elif command_name in ['wait', 'wait4all']:
                     self.doWait(x['child'][1:])
                 elif 'waitln' == command_name:
                     self.doWaitln(x['child'][1:])
@@ -732,7 +779,7 @@ class TtlPaserWolker():
                     p2 = p2.parent
                     # print(f"p2c={p2}")
                     self.setValue(p1, str(p2))
-                elif 'fileclose' == command_name:
+                elif command_name in ['fileclose', 'findclose']:
                     p1 = self.getKeywordName(x['child'][1])
                     self.doFileclose(p1)
                 elif 'fileconcat' == command_name:
@@ -771,14 +818,6 @@ class TtlPaserWolker():
                     p1 = str(self.getData(x['child'][1]))
                     p2 = str(self.getData(x['child'][2]))
                     self.doFilerename(p1, p2)
-                elif 'filewrite' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    self.doFilewrite(line, p1, p2)
-                elif 'filewriteln' == command_name:
-                    p1 = self.getKeywordName(x['child'][1])
-                    p2 = self.getData(x['child'][2]) + "\n"
-                    self.doFilewrite(line, p1, p2)
                 elif 'filesearch' == command_name:
                     p1 = str(self.getData(x['child'][1]))
                     self.doFilesearch(p1)
@@ -792,6 +831,27 @@ class TtlPaserWolker():
                     if 4 <= len(x['child']):
                         p4 = str(self.getKeywordName(x['child'][4]))
                     self.doFilestat(p1, p2, p3, p4)
+                elif 'filetruncate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = int(self.getData(x['child'][2]))
+                    self.doFiletruncate(p1, p2)
+                elif 'filewrite' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doFilewrite(line, p1, p2)
+                elif 'filewriteln' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2]) + "\n"
+                    self.doFilewrite(line, p1, p2)
+                elif 'findfirst' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = self.getKeywordName(x['child'][3])
+                    self.doFindfirst(line, p1, p2, p3)
+                elif 'findnext' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
+                    self.doFindnext(line, p1, p2)
                 elif 'foldercreate' == command_name:
                     p1 = str(self.getData(x['child'][1]))
                     self.doFoldercreate(p1)
@@ -811,15 +871,21 @@ class TtlPaserWolker():
                     p3 = str(self.getData(x['child'][3]))
                     self.doMakepath(p1, p2, p3)
                 elif command_name in ["setpassword", "setpassword2"]:
-                    p1 = self.getData(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    p3 = self.getData(x['child'][3])
-                    self.doSetpassword(p1, p2, p3)
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getData(x['child'][3]))
+                    p4 = 'anonymouse'
+                    if 5 <= len(x['child']):
+                        p4 = str(self.getData(x['child'][4]))
+                    self.doSetpassword(p1, p2, p3, p4)
                 elif command_name in ["getpassword", "getpassword2"]:
-                    p1 = self.getData(x['child'][1])
-                    p2 = self.getData(x['child'][2])
-                    p3 = self.getKeywordName(x['child'][3])
-                    self.doGetpassword(p1, p2, p3)
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getKeywordName(x['child'][3]))
+                    p4 = 'anonymouse'
+                    if 5 <= len(x['child']):
+                        p4 = str(self.getData(x['child'][4]))
+                    self.doGetpassword(p1, p2, p3, p4)
                 elif command_name in ["ispassword", "ispassword2"]:
                     p1 = self.getData(x['child'][1])
                     p2 = self.getData(x['child'][2])
@@ -828,6 +894,46 @@ class TtlPaserWolker():
                     p1 = self.getData(x['child'][1])
                     p2 = self.getData(x['child'][2])
                     self.doDelpassword(p1, p2)
+                elif 'checksum8' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doChecksum8(p1, p2)
+                elif 'checksum8file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doChecksum8file(p1, p2)
+                elif 'checksum16' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doChecksum16(p1, p2)
+                elif 'checksum16file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doChecksum16file(p1, p2)
+                elif 'checksum32' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doChecksum32(p1, p2)
+                elif 'checksum32file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doChecksum32file(p1, p2)
+                elif 'crc16' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doCrc16(p1, p2)
+                elif 'crc16file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doCrc16file(p1, p2)
+                elif 'crc32' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doCrc32(p1, p2)
+                elif 'crc32file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    self.doCrc32file(p1, p2)
                 elif 'exec' == command_name:
                     self.doExec(line, x['child'][1:])
                 elif 'getdate' == command_name:
@@ -878,6 +984,9 @@ class TtlPaserWolker():
                     p2 = str(self.getData(x['child'][2]))
                     os.environ[p1] = p2
                     # print(f"setenv2 c=({command_name}) l={p1} r={p2}")
+                elif 'setexitcode' == command_name:
+                    p1 = int(str(self.getData(x['child'][1])))
+                    self.doSetexitcode(p1)
                 elif 'strdim' == command_name:
                     p1 = x['child'][1]
                     p2 = int(str(self.getData(x['child'][2])))
@@ -1564,7 +1673,13 @@ class TtlPaserWolker():
 
     def doEnablekeyb(self, command_name: str, line: int, p1):
         """ enablekeyb 処理用 """
-        self.printCommand(command_name, line, [p1])
+        pass
+
+    def doGetmodemstatus(self, command_name: str, line: int, p1):
+        """ getmodemstatus 処理用 """
+        # print(f"{p1}")
+        self.setValue(p1, 0)
+        self.setValue('result', 1)  # 必ず失敗
 
     def doGethostname(self, p1):
         """ ホスト名の取得"""
@@ -1634,6 +1749,26 @@ class TtlPaserWolker():
     def doRecvln(self):
         result_list = ["\n"]
         self.doWaitAll(result_list)
+
+    def doFlushrecv(self):
+        """ フラッシュする """
+        # すでに読んだものを空にする
+        self.stdout = ''
+        #
+        # まだ読めてないものを空にする
+        while not self.end_flag:
+            #
+            local_ssh = self.shell
+            if local_ssh is None:
+                break
+            #
+            if not local_ssh.recv_ready():
+                break
+            #
+            output = local_ssh.recv(1024).decode("utf-8")
+            if output is None:
+                break
+            self.setLogInner(output)
 
     def doWaitAll(self, result_list):
         # print(f"doWaitAll x=/{result_list}/")
@@ -1835,6 +1970,107 @@ class TtlPaserWolker():
         """ オーバーライドして使用します """
         print(strvar, end='')
 
+    def doChecksum8(self, p1: str, p2: str):
+        p2_byte = p2.encode("utf-8")
+        self.getChecksum(p1, p2_byte, 0x0F)
+
+    def doChecksum8file(self, p1: str, p2: str):
+        self.setValue(p1, 0)  # default value
+        try:
+            with open(p2, "rb") as f:
+                p2_byte = f.read()
+                self.getChecksum(p1, p2_byte, 0x0F)
+                self.setValue('result', 0)
+        except Exception:
+            self.setValue('result', -1)
+
+    def doChecksum16(self, p1: str, p2: str):
+        p2_byte = p2.encode("utf-8")
+        self.getChecksum(p1, p2_byte, 0xFF)
+
+    def doChecksum16file(self, p1: str, p2: str):
+        self.setValue(p1, 0)  # default value
+        try:
+            with open(p2, "rb") as f:
+                p2_byte = f.read()
+                self.getChecksum(p1, p2_byte, 0xFF)
+                self.setValue('result', 0)
+        except Exception:
+            self.setValue('result', -1)
+
+    def doChecksum32(self, p1: str, p2: str):
+        p2_byte = p2.encode("utf-8")
+        self.getChecksum(p1, p2_byte, 0xFFFF)
+
+    def doChecksum32file(self, p1: str, p2: str):
+        self.setValue(p1, 0)  # default value
+        try:
+            with open(p2, "rb") as f:
+                p2_byte = f.read()
+                self.getChecksum(p1, p2_byte, 0xFFFF)
+                self.setValue('result', 0)
+        except Exception:
+            self.setValue('result', -1)
+
+    def getChecksum(self, p1: str, p2_byte, mask: int):
+        sum = 0
+        for b in p2_byte:
+            # print(f"b={int(b):#02x}")
+            sum = (sum + int(b)) & mask
+        self.setValue(p1, sum)
+
+    def doCrc16(self, p1: str, p2: str):
+        p2_byte = p2.encode("utf-8")
+        self.crc16_IBM_SDLC(p1, p2_byte)
+
+    def doCrc16file(self, p1: str, p2: str):
+        self.setValue(p1, 0)  # default value
+        try:
+            with open(p2, "rb") as f:
+                p2_byte = f.read()
+                self.crc16_IBM_SDLC(p1, p2_byte)
+                self.setValue('result', 0)
+        except Exception:
+            self.setValue('result', -1)
+
+    def crc16_IBM_SDLC(self, p1: str, data: bytes):
+        r = 0xFFFF
+        for byte in data:
+            r = r ^ byte
+            for _ in range(8):
+                if r & 0x1 == 1:
+                    r = (r >> 1) ^ 0x8408
+                else:
+                    r = r >> 1
+        r = r ^ 0xFFFF
+        self.setValue(p1, r)
+
+    def doCrc32(self, p1: str, p2: str):
+        p2_byte = p2.encode("utf-8")
+        self.crc32_IBM_SDLC(p1, p2_byte)
+
+    def doCrc32file(self, p1: str, p2: str):
+        self.setValue(p1, 0)  # default value
+        try:
+            with open(p2, "rb") as f:
+                p2_byte = f.read()
+                self.crc32_IBM_SDLC(p1, p2_byte)
+                self.setValue('result', 0)
+        except Exception:
+            self.setValue('result', -1)
+
+    def crc32_IBM_SDLC(self, p1: str, data: bytes):
+        r = 0xFFFFFFFF
+        for byte in data:
+            r = r ^ byte
+            for _ in range(8):
+                if r & 0x1 == 1:
+                    r = (r >> 1) ^ 0xEDB88320
+                else:
+                    r = r >> 1
+        r = r ^ 0xFFFFFFFF
+        self.setValue(p1, r)
+
     def doExec(self, line, data_line):
         # print(f"### l={line} doExec() ")
         data_len = len(data_line)
@@ -1938,26 +2174,64 @@ class TtlPaserWolker():
             p1_var = p1_var[:-1]
         return p1_var
 
-    def doSetpassword(self, filename: str, password_name: str, password: str):
-        worker = self.encrypt_decrypt(filename)
-        worker[password_name] = password
-        # print(f"doSetpassword str={filename} p={password_name} p={password} w={worker}")
-        self.encrypt_encrypt(filename, worker)
-        self.setValue('result', 1)
+    def doSetpassword(self, filename: str, password_name: str, password: str, encrypt_str: str):
+        worker = {}
+        worker = self.get_encrypt_file(filename)
+        encrypt_byte = encrypt_str.encode("utf-8")
+        encrypt_byte = encrypt_byte.ljust(32, b'\0')  # 32byte以下なら増やす
+        encrypt_byte = encrypt_byte[:32]  # 32byte以上を無視する
+        encrypt_byte = base64.urlsafe_b64encode(encrypt_byte)
+        cipher = Fernet(encrypt_byte)
+        #
+        target_0 = password.encode("utf-8")  # 文字をセット
+        target_1 = f"{password}_{encrypt_str}".encode("utf-8")
+        # print(f"d {password_name} {password} 0={target_0}")
+        target_0 = cipher.encrypt(target_0)  # byte列に変更して暗号化
+        target_1 = cipher.encrypt(target_1)
+        target_0 = base64.b64encode(target_0).decode()  # base64に変更して文字にする
+        target_1 = base64.b64encode(target_1).decode()
+        worker[password_name] = [target_0, target_1]
+        # print(f"c {password_name} {password}  0={target_0}")
+        result = self.set_encrypt_file(filename, worker)
+        # print(f"doSetpassword2 str={filename} p={password_name} p={password} w={worker}")
+        self.setValue('result', result)
+        # print(f"doSetpassword3 str={filename} p={password_name} p={password} w={worker}")
 
-    def doGetpassword(self, filename: str, password_name: str, p3: str):
+    def doGetpassword(self, filename: str, password_name: str, p3: str, encrypt_str: str):
         # print(f"doGetpassword p3={p3}")
-        worker = self.encrypt_decrypt(filename)
+        worker = self.get_encrypt_file(filename)
         # print(f"doGetpassword worker={worker}")
-        if password_name in worker:
-            self.setValue(p3, worker[password_name])
-            self.setValue('result', 1)
+        if password_name in worker and 2 <= len(worker[password_name]):
+            encrypt_byte = encrypt_str.encode("utf-8")
+            encrypt_byte = encrypt_byte.ljust(32, b'\0')  # 32byte以下なら増やす
+            encrypt_byte = encrypt_byte[:32]  # 32byte以上を無視する
+            encrypt_byte = base64.urlsafe_b64encode(encrypt_byte)
+            cipher = Fernet(encrypt_byte)
+            #
+            # print(f"d {password_name} 0={worker[password_name][0]}")
+            target_0 = base64.b64decode(worker[password_name][0].encode())
+            target_1 = base64.b64decode(worker[password_name][1].encode())
+            try:
+                target_0 = cipher.decrypt(target_0).decode("utf-8")
+                target_1 = cipher.decrypt(target_1).decode("utf-8")
+            except InvalidToken:
+                self.setValue('result', 0)
+                return
+            # print(f"e {password_name} 0={target_0}")
+            # print(f"e {password_name} 0={target_1}")
+            #
+            if f"{target_0}_{encrypt_str}" == target_1:
+                self.setValue(p3, target_0)
+                self.setValue('result', 1)
+            else:
+                # encriptが一致しなかった
+                self.setValue('result', 0)
         else:
             self.setValue('result', 0)
 
     def doIspassword(self, filename: str, password_name: str):
         # print(f"doGetpassword p3={p3}")
-        worker = self.encrypt_decrypt(filename)
+        worker = self.get_encrypt_file(filename)
         # print(f"doGetpassword worker={worker}")
         if password_name in worker:
             self.setValue('result', 1)
@@ -1966,63 +2240,43 @@ class TtlPaserWolker():
 
     def doDelpassword(self, filename: str, password_name: str):
         # print(f"doGetpassword p3={p3}")
-        worker = self.encrypt_decrypt(filename)
+        worker = self.get_encrypt_file(filename)
         # print(f"doGetpassword worker={worker}")
         if password_name in worker:
             del worker[password_name]
-        self.encrypt_encrypt(filename, worker)
+        self.set_encrypt_file(filename, worker)
 
-    def set_encrypt_file(self, filename, encoded):
+    def set_encrypt_file(self, filename, worker: dict) -> int:
         """ 暗号化のファイル書き込み後、学習しておく """
+        # エンコードしたい元の文字列
+        original_text = json.dumps(worker)
         filename = str(pathlib.Path(filename).resolve())
-        self.encrypt_file[filename] = encoded
+        self.encrypt_file[filename] = worker
         #
         # ファイルへの書き込み
-        with open(filename, "wb") as f:
-            f.write(encoded)
+        try:
+            with open(filename, "wt") as f:
+                f.write(original_text)
+        except (FileNotFoundError, IOError):
+            return 0
+        return 1
 
     def get_encrypt_file(self, filename):
         """ 暗号化のファイル読み込みを１回で終わらせる """
+        #
+        # すでに読み込んでいるなら、それを使う
         filename = str(pathlib.Path(filename).resolve())
         if filename in self.encrypt_file:
             return self.encrypt_file[filename]
         #
         # データがないのでファイルからロードする
-        with open(filename, "rb") as f:
-            binary_data = f.read()
-            return binary_data
-
-    def encrypt_encrypt(self, filename, worker) -> str:
-        """ データを暗号化する """
-        # エンコードしたい元の文字列
-        original_text = json.dumps(worker)
-        #
-        # UTF-8でバイト列に変換
-        byte_data = original_text.encode("utf-8")
-        #
-        # Base64でエンコード
-        encoded = base64.b64encode(byte_data)
-        #
-        # ファイルへの書き込み
-        self.set_encrypt_file(filename, encoded)
-
-    def encrypt_decrypt(self, filename):
-        """ 暗号ファイルを復号化する """
-        binary_data = None
+        worker = {}
         try:
-            binary_data = self.get_encrypt_file(filename)
-        except FileNotFoundError:
-            return {}
-        #
-        # Base64でデコード
-        decoded = base64.b64decode(binary_data)
-        #
-        # バイト列を元の文字列に戻す
-        decoded_text = decoded.decode("utf-8")
-        #
-        # jsonをdictに変換する
-        worker = json.loads(decoded_text)
-        #
+            with open(filename, "rt") as f:
+                worker = json.loads(f.read())
+                self.encrypt_file[filename] = worker
+        except (FileNotFoundError, IOError, json.decoder.JSONDecodeError):
+            worker = {}
         return worker
 
     def doFileopen(self, file_handle, filename: str, append_flag: int, readonly_flag: int):
@@ -2035,6 +2289,25 @@ class TtlPaserWolker():
         self.file_handle_list[file_handle]['append_flag'] = append_flag
         self.file_handle_list[file_handle]['readonly_flag'] = readonly_flag
         self.getValue('result', 0)
+
+    def doFindfirst(self, line, file_handle, file_name: str, strvar: str):
+        """ ファイルハンドルを作る """
+        if file_handle in self.file_handle_list:
+            self.doFileClose(file_handle)
+        self.file_handle_list[file_handle] = {}
+        self.file_handle_list[file_handle]['file_handle'] = MyFindfirst(file_name)
+        self.file_handle_list[file_handle]['filename'] = file_name
+        self.file_handle_list[file_handle]['append_flag'] = False
+        self.file_handle_list[file_handle]['readonly_flag'] = True
+        self.doFindnext(line, file_handle, strvar)
+
+    def doFindnext(self, line, file_handle, strvar: str):
+        """ 次のファイルを取得する """
+        self.doFilereadln(line, file_handle, strvar)
+        if self.getValue('result') == 0:
+            self.setValue('result', 1)
+        else:
+            self.setValue('result', 0)
 
     def doFileclose(self, file_handle):
         """ ファイルハンドルがいたら消す """
@@ -2068,7 +2341,7 @@ class TtlPaserWolker():
             file_handle_base['file_handle'] = file_handle_file
         file_handle_file.write(data.encode('utf-8'))
 
-    def openHandle(self, line, file_handle,):
+    def openHandle(self, line, file_handle):
         if file_handle not in self.file_handle_list:
             raise TypeError(f"### l={line} file_handle not found f={file_handle}")
         file_handle_base = self.file_handle_list[file_handle]
@@ -2092,8 +2365,13 @@ class TtlPaserWolker():
     def doFilereadln(self, line, file_handle, strvar):
         file_handle_file = self.openHandle(line, file_handle)
         #
-        text = file_handle_file.readline()
-        self.setValue(strvar, text.decode())
+        try:
+            text = file_handle_file.readline()
+            self.setValue(strvar, text.decode())
+            self.setValue('result', 0)
+        except OSError:
+            self.setValue(strvar, '')
+            self.setValue('result', 1)
 
     def doFileconcat(self, p1, p2):
         if p1 == p2:
@@ -2104,7 +2382,7 @@ class TtlPaserWolker():
                 with open(p2, "rb") as f2:
                     f1.write(f2.read())
             self.setValue('result', 1)
-        except Exception:
+        except OSError:
             self.setValue('result', 0)
 
     def doFilecopy(self, p1, p2):
@@ -2116,7 +2394,7 @@ class TtlPaserWolker():
                 with open(p2, "wb") as f2:
                     f2.write(f1.read())
             self.setValue('result', 1)
-        except Exception:
+        except OSError:
             self.setValue('result', 0)
 
     def doFiledelete(self, filename):
@@ -2126,7 +2404,7 @@ class TtlPaserWolker():
         try:
             os.remove(filename)
             self.setValue('result', 1)
-        except Exception:
+        except OSError:
             self.setValue('result', 0)
 
     def doFilerename(self, p1, p2):
@@ -2143,7 +2421,7 @@ class TtlPaserWolker():
         try:
             os.rename(p1, p2)
             self.setValue('result', 0)
-        except Exception:
+        except OSError:
             self.setValue('result', 1)
 
     def doStrreplace(self, strvar, strvar_val, index, regex, newstr):
@@ -2195,6 +2473,28 @@ class TtlPaserWolker():
                 self.setValue(mtime, '')
             if drive is not None:
                 self.setValue(drive, '')
+            self.setValue('result', -1)
+
+    def doFiletruncate(self, filename: str, size: int):
+        size_val = 0
+        try:
+            size_val = os.path.getsize(filename)
+        except FileNotFoundError:
+            self.setValue(size, 0)
+            size_val = 0
+        if size_val == size:
+            return
+        try:
+            if size < size_val:
+                # 切り詰めが必要
+                with open(filename, "r+b") as f:
+                    fd = f.fileno()
+                    os.truncate(fd, size)
+            else:
+                # ゼロバイト加算
+                with open(filename, "ab") as f:
+                    f.write(bytes(size - size_val))
+        except OSError:
             self.setValue('result', -1)
 
     def doFoldercreate(self, folder_name):
@@ -2312,4 +2612,7 @@ class TtlPaserWolker():
         sftp_connection = self.client.open_sftp()
         sftp_connection.put(p1, p2)
         sftp_connection.close()
+
+    def doSetexitcode(self, p1):
+        self.exitcode = int(p1)
 #

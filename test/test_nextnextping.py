@@ -141,17 +141,18 @@ GigabitEthernet0/3 unassigned      YES manual administratively down down
 """.replace('\n', '\r\n')
 
 
-class Server(paramiko.ServerInterface):
+class StubServer(paramiko.ServerInterface):
     """ SSHサーバの実装 """
 
     def __init__(self):
         """ コンストラクタ """
         self.event = threading.Event()
         self.sftp_flag = False
+        self.username = "anonymouse"
 
     def check_channel_request(self, kind, chanid):
         """ セッションの許可 """
-        print(f"test check_channel_request kind={kind} ")
+        # print(f"test check_channel_request kind={kind} ")
         if kind == "session":
             return paramiko.OPEN_SUCCEEDED
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
@@ -159,6 +160,7 @@ class Server(paramiko.ServerInterface):
     def check_auth_password(self, username, password):
         """ パスワードチェック """
         # print(f"test username={username}  password={password}")
+        self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
     def check_auth_publickey(self, username, key):
@@ -199,9 +201,13 @@ class Server(paramiko.ServerInterface):
         self.event.set()
         return super().check_channel_subsystem_request(channel, name)
 
-    def is_sftp_flag(self):
+    def is_sftp_flag(self) -> bool:
         """ sftpかどうかチェックする """
         return self.sftp_flag
+
+    def get_username(self) -> str:
+        """ sftpかどうかチェックする """
+        return self.username
 
 
 class StubSFTPServer (SFTPServerInterface):
@@ -555,7 +561,7 @@ class ServerStarter():
             if self.server_socket is None:
                 return paramiko.SSHException("self.server_socket is None")
             #
-            print("test Listen start ...")
+            # print("test Listen start ...")
             self.server_socket.listen(100)
             #
             while not self.stop_flag:
@@ -592,7 +598,7 @@ class ServerStarter():
             self.transport.set_subsystem_handler('sftp', paramiko.SFTPServer, StubSFTPServer)
             #
             print("test Server start!")
-            server = Server()
+            server = StubServer()
             self.transport.start_server(server=server)
             #
             # wait for auth
@@ -642,14 +648,14 @@ class ServerStarter():
         ["qx-config", "^\\s*traffic\\s+behavior", "qx-behavior", '[Switch-behavior] ', '']
     ]
 
-    def invoke_client(self, server: Server):
+    def invoke_client(self, server: StubServer):
         """ shellの実装 """
         #
         if not server.event.is_set():
             print("test *** Client never asked for a shell.")
             return
 
-        print(f"test is_set() OK! f={server.is_sftp_flag()}")
+        # print(f"test is_set() OK! f={server.is_sftp_flag()}")
         if server.is_sftp_flag():
             # SFTpのときはこちらで無限待ちをする
             try:
@@ -658,6 +664,10 @@ class ServerStarter():
             finally:
                 print("test finally (sftp)")
                 return
+        #
+        username = server.get_username()
+        self.set_state(username)
+        # print(f"test username={username} state={self.peek_state()} p={self.prompt}")
         #
         self.channel.send(f"{self.prompt}")
         message = ''
@@ -777,10 +787,6 @@ class TTLLoader():
                     continue
                 if 'base.ttl' in file:
                     continue
-                if 'base1.ttl' in file:
-                    continue
-                if 'base2.ttl' in file:
-                    continue
                 #
                 #
                 ok_flag = False
@@ -794,14 +800,6 @@ class TTLLoader():
                 print()
                 print(f"test file={file}")
                 #
-                result = re.search("^[0-9]+([a-zA-Z][a-zA-Z0-9]*)_", os.path.basename(file))
-                if result:
-                    g1 = result.group(1)
-                    print(f"test state={g1} file={file}")
-                    serverStarter.set_state(g1)
-                else:
-                    print(f"test state=linux file={file}")
-                    serverStarter.set_state('$')
                 #
                 dummy_argv = ["python", file, 'param1', 'param2', 'param3']
                 try:

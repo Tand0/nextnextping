@@ -3,108 +3,108 @@
         "localhost": {
             "stdout": "\nPinging t-ando [::1] with 32 bytes of data:\nReply from ::1: time<1ms \n\nPing statistics for ::1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
             "result": "OK",
-            "date": "2025/11/22 16:44:45"
+            "date": "2025/11/23 22:07:04"
         },
         "10.0.0.1": {
             "stdout": "\nPinging 10.0.0.1 with 32 bytes of data:\nRequest timed out.\n\nPing statistics for 10.0.0.1:\n    Packets: Sent = 1, Received = 0, Lost = 1 (100% loss),\n",
             "result": "NG",
-            "date": "2025/11/21 08:31:56"
+            "date": "2025/11/23 08:30:38"
         },
         "127.0.0.1": {
             "stdout": "\nPinging 127.0.0.1 with 32 bytes of data:\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\n\nPing statistics for 127.0.0.1:\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n",
             "result": "OK",
-            "date": "2025/11/22 16:45:54"
-        }
-    },
-    "ttl": {
-        "1009_ok_localhost-2200_trace_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# terminal length 0\r\nRouter# traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:46:20"
-        },
-        "1011_ok_cisco1_ping_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@cisco1\r\nPassword:\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:46:38"
-        },
-        "1019_ok_qx_show.ttl": {
-            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ssh nextadmin@qx\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> display current-configuration\r\n#\r\nsysname QX-S3526\r\n#\r\nvlan 1\r\n name default\r\n#\r\ninterface GigabitEthernet0/1\r\n port access vlan 10\r\n#\r\ninterface GigabitEthernet0/2\r\n port access vlan 20\r\n-- More --\r\n#\r\ninterface Vlan-interface1\r\n ip address 192.168.1.1 255.255.255.0\r\n#\r\nuser-interface console 0\r\n authentication-mode password\r\n set authentication password cipher ********\r\n#\r\n<Switch> ",
-            "result": "OK",
-            "date": "2025/11/22 16:47:55"
-        },
-        "1008c1_ok_localhost-2200_ping_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# terminal length 0\r\nRouter# ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:46:13"
-        },
-        "1010qx_ok_localhost-2200_show.ttl": {
-            "stdout": "Router# clear\r\nRouter# terminal length 0\r\nRouter# show running-config\r\nBuilding configuration...\r\n\r\nCurrent configuration : 1234 bytes\r\n!\r\nversion 15.2\r\nservice timestamps debug datetime msec\r\nservice timestamps log datetime msec\r\nno service password-encryption\r\n!\r\nhostname SW-Floor-1\r\n!\r\n!\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n!\r\nno aaa new-model\r\n!\r\n!\r\ninterface GigabitEthernet0/1\r\n description \"Uplink to Core Router\"\r\n ip address 192.168.1.1 255.255.255.0\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/2\r\n description \"Server Port 1\"\r\n switchport mode access\r\n switchport access vlan 10\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/3\r\n description \"Access Point\"\r\n no shutdown\r\n!\r\n!\r\nline con 0\r\nline vty 0 4\r\n login local\r\n!\r\n!\r\nend\r\nRouter# show ip interface brief\r\nInterface        IP-Address      OK? Method Status                Protocol\r\nGigabitEthernet0/1 192.168.1.1     YES manual up                    up\r\nGigabitEthernet0/2 192.168.2.1     YES manual up                    down\r\nGigabitEthernet0/3 unassigned      YES manual administratively down down\r\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:46:28"
-        },
-        "1012_ok_cisco1_trace_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@cisco1\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:46:48"
-        },
-        "1013_ok_cisco1_show.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@cisco1\r\nPassword:\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# show running-config\r\nBuilding configuration...\r\n\r\nCurrent configuration : 1234 bytes\r\n!\r\nversion 15.2\r\nservice timestamps debug datetime msec\r\nservice timestamps log datetime msec\r\nno service password-encryption\r\n!\r\nhostname SW-Floor-1\r\n!\r\n!\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n!\r\nno aaa new-model\r\n!\r\n!\r\ninterface GigabitEthernet0/1\r\n description \"Uplink to Core Router\"\r\n ip address 192.168.1.1 255.255.255.0\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/2\r\n description \"Server Port 1\"\r\n switchport mode access\r\n switchport access vlan 10\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/3\r\n description \"Access Point\"\r\n no shutdown\r\n!\r\n!\r\nline con 0\r\nline vty 0 4\r\n login local\r\n!\r\n!\r\nend\r\nRouter# show ip interface brief\r\nInterface        IP-Address      OK? Method Status                Protocol\r\nGigabitEthernet0/1 192.168.1.1     YES manual up                    up\r\nGigabitEthernet0/2 192.168.2.1     YES manual up                    down\r\nGigabitEthernet0/3 unassigned      YES manual administratively down down\r\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:46:58"
-        },
-        "1014_ok_cisco2_ping_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@cisco2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:47:06"
-        },
-        "1015_ok_cisco2_trace_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@cisco2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:47:15"
-        },
-        "1016_ok_cisco2_show.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@cisco2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# show running-config\r\nBuilding configuration...\r\n\r\nCurrent configuration : 1234 bytes\r\n!\r\nversion 15.2\r\nservice timestamps debug datetime msec\r\nservice timestamps log datetime msec\r\nno service password-encryption\r\n!\r\nhostname SW-Floor-1\r\n!\r\n!\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n!\r\nno aaa new-model\r\n!\r\n!\r\ninterface GigabitEthernet0/1\r\n description \"Uplink to Core Router\"\r\n ip address 192.168.1.1 255.255.255.0\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/2\r\n description \"Server Port 1\"\r\n switchport mode access\r\n switchport access vlan 10\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/3\r\n description \"Access Point\"\r\n no shutdown\r\n!\r\n!\r\nline con 0\r\nline vty 0 4\r\n login local\r\n!\r\n!\r\nend\r\nRouter# show ip interface brief\r\nInterface        IP-Address      OK? Method Status                Protocol\r\nGigabitEthernet0/1 192.168.1.1     YES manual up                    up\r\nGigabitEthernet0/2 192.168.2.1     YES manual up                    down\r\nGigabitEthernet0/3 unassigned      YES manual administratively down down\r\nRouter# ",
-            "result": "OK",
-            "date": "2025/11/22 16:47:24"
-        },
-        "1017_ok_qx_ping_127-0-0-1.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh nextadmin@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\n<Switch> ",
-            "result": "OK",
-            "date": "2025/11/22 16:47:34"
-        },
-        "1018_ok_qx_trace_127-0-0-1.ttl": {
-            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ssh nextadmin@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\n<Switch> ",
-            "result": "OK",
-            "date": "2025/11/22 16:47:44"
-        },
-        "1020_ok_vmware_show.ttl": {
-            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ssh root@vmware\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\n[root@localhost:~] esxcli network nic list\r\n[root@localhost:~] esxcli network vswitch standard list\r\n[root@localhost:~] esxcli network ip interface list\r\n[root@localhost:~] ",
-            "result": "OK",
-            "date": "2025/11/22 16:48:04"
+            "date": "2025/11/23 22:08:14"
         }
     },
     "trace": {
         "localhost": {
             "stdout": "\nTracing route to t-ando [::1]\nover a maximum of 30 hops:\n\n  1    <1 ms    <1 ms    <1 ms  t-ando [::1] \n\nTrace complete.\n",
             "result": "OK",
-            "date": "2025/11/22 16:44:56"
+            "date": "2025/11/23 22:07:15"
         },
         "10.0.0.1": {
-            "stdout": "\nTracing route to 10.0.0.1 over a maximum of 30 hops\n\n  1     4 ms     4 ms     4 ms  OpenWrt.lan [192.168.179.1] \n  2     *      ",
+            "stdout": "\nTracing route to 10.0.0.1 over a maximum of 30 hops\n\n  1     3 ms     3 ms     2 ms  OpenWrt.lan [192.168.179.1] \n  2     *      ",
             "result": "NG",
-            "date": "2025/11/22 16:45:32"
+            "date": "2025/11/23 08:30:52"
         },
         "127.0.0.1": {
             "stdout": "\nTracing route to t-ando [127.0.0.1]\nover a maximum of 30 hops:\n\n  1    <1 ms    <1 ms    <1 ms  t-ando [127.0.0.1] \n\nTrace complete.\n",
             "result": "OK",
-            "date": "2025/11/22 16:46:05"
+            "date": "2025/11/23 22:08:25"
         }
     },
     "show": {
         "None": {
-            "stdout": "\nWindows IP Configuration\n\n   Host Name . . . . . . . . . . . . : t-ando\n   Primary Dns Suffix  . . . . . . . : \n   Node Type . . . . . . . . . . . . : Hybrid\n   IP Routing Enabled. . . . . . . . : No\n   WINS Proxy Enabled. . . . . . . . : No\n   DNS Suffix Search List. . . . . . : lan\n\nEthernet adapter イーサネット:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : tw-wds.local\n   Description . . . . . . . . . . . : Realtek PCIe GbE Family Controller\n   Physical Address. . . . . . . . . : D4-93-90-4E-19-F5\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n\nWireless LAN adapter ローカル エリア接続* 1:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Microsoft Wi-Fi Direct Virtual Adapter\n   Physical Address. . . . . . . . . : 98-BD-80-69-87-BF\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n\nWireless LAN adapter ローカル エリア接続* 2:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Microsoft Wi-Fi Direct Virtual Adapter #2\n   Physical Address. . . . . . . . . : 9A-BD-80-69-87-BE\n   DHCP Enabled. . . . . . . . . . . : No\n   Autoconfiguration Enabled . . . . : Yes\n\nWireless LAN adapter Wi-Fi:\n\n   Connection-specific DNS Suffix  . : lan\n   Description . . . . . . . . . . . : Intel(R) Wi-Fi 6E AX211 160MHz\n   Physical Address. . . . . . . . . : 98-BD-80-69-87-BE\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n   IPv6 Address. . . . . . . . . . . : 2001:268:7381:3550:7590:7ca7:4de5:a854(Preferred) \n   Temporary IPv6 Address. . . . . . : 2001:268:7381:3550:c019:ed65:1d79:ce31(Preferred) \n   Link-local IPv6 Address . . . . . : fe80::d340:100c:c122:d36a%19(Preferred) \n   IPv4 Address. . . . . . . . . . . : 192.168.179.26(Preferred) \n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Lease Obtained. . . . . . . . . . : 2025年11月22日 6:38:15\n   Lease Expires . . . . . . . . . . : 2025年11月23日 6:38:08\n   Default Gateway . . . . . . . . . : fe80::a8d8:68ff:feea:1d84%19\n                                       192.168.179.1\n   DHCP Server . . . . . . . . . . . : 192.168.179.1\n   DHCPv6 IAID . . . . . . . . . . . : 127450496\n   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-2F-87-EC-63-D4-93-90-4E-19-F5\n   DNS Servers . . . . . . . . . . . : fe80::a8d8:68ff:feea:1d84%19\n                                       192.168.179.1\n                                       fe80::a8d8:68ff:feea:1d84%19\n   NetBIOS over Tcpip. . . . . . . . : Enabled\n\nEthernet adapter Bluetooth ネットワーク接続:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Bluetooth Device (Personal Area Network)\n   Physical Address. . . . . . . . . : 98-BD-80-69-87-C2\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n\nEthernet adapter vEthernet (Default Switch):\n\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter\n   Physical Address. . . . . . . . . : 00-15-5D-F0-C2-00\n   DHCP Enabled. . . . . . . . . . . : No\n   Autoconfiguration Enabled . . . . : Yes\n   Link-local IPv6 Address . . . . . : fe80::6981:ea11:568b:9799%25(Preferred) \n   IPv4 Address. . . . . . . . . . . : 172.31.144.1(Preferred) \n   Subnet Mask . . . . . . . . . . . : 255.255.240.0\n   Default Gateway . . . . . . . . . : \n   DHCPv6 IAID . . . . . . . . . . . : 419435869\n   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-2F-87-EC-63-D4-93-90-4E-19-F5\n   NetBIOS over Tcpip. . . . . . . . : Enabled\n\nEthernet adapter vEthernet (WSL (Hyper-V firewall)):\n\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter #2\n   Physical Address. . . . . . . . . : 00-15-5D-E9-64-B9\n   DHCP Enabled. . . . . . . . . . . : No\n   Autoconfiguration Enabled . . . . : Yes\n   Link-local IPv6 Address . . . . . : fe80::2d5d:7bd5:7c29:3211%48(Preferred) \n   IPv4 Address. . . . . . . . . . . : 172.29.208.1(Preferred) \n   Subnet Mask . . . . . . . . . . . : 255.255.240.0\n   Default Gateway . . . . . . . . . : \n   DHCPv6 IAID . . . . . . . . . . . : 805311837\n   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-2F-87-EC-63-D4-93-90-4E-19-F5\n   NetBIOS over Tcpip. . . . . . . . : Enabled\n",
+            "stdout": "\nWindows IP Configuration\n\n   Host Name . . . . . . . . . . . . : t-ando\n   Primary Dns Suffix  . . . . . . . : \n   Node Type . . . . . . . . . . . . : Hybrid\n   IP Routing Enabled. . . . . . . . : No\n   WINS Proxy Enabled. . . . . . . . : No\n   DNS Suffix Search List. . . . . . : lan\n\nEthernet adapter イーサネット:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : tw-wds.local\n   Description . . . . . . . . . . . : Realtek PCIe GbE Family Controller\n   Physical Address. . . . . . . . . : D4-93-90-4E-19-F5\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n\nWireless LAN adapter ローカル エリア接続* 1:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Microsoft Wi-Fi Direct Virtual Adapter\n   Physical Address. . . . . . . . . : 98-BD-80-69-87-BF\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n\nWireless LAN adapter ローカル エリア接続* 2:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Microsoft Wi-Fi Direct Virtual Adapter #2\n   Physical Address. . . . . . . . . : 9A-BD-80-69-87-BE\n   DHCP Enabled. . . . . . . . . . . : No\n   Autoconfiguration Enabled . . . . : Yes\n\nWireless LAN adapter Wi-Fi:\n\n   Connection-specific DNS Suffix  . : lan\n   Description . . . . . . . . . . . : Intel(R) Wi-Fi 6E AX211 160MHz\n   Physical Address. . . . . . . . . : 98-BD-80-69-87-BE\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n   IPv6 Address. . . . . . . . . . . : 2001:268:7394:fa28:8e96:baa2:bea1:124e(Preferred) \n   Temporary IPv6 Address. . . . . . : 2001:268:7394:fa28:7cdf:db0e:85cd:9475(Preferred) \n   Link-local IPv6 Address . . . . . : fe80::d340:100c:c122:d36a%19(Preferred) \n   IPv4 Address. . . . . . . . . . . : 192.168.179.26(Preferred) \n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Lease Obtained. . . . . . . . . . : 2025年11月23日 18:16:31\n   Lease Expires . . . . . . . . . . : 2025年11月24日 18:16:31\n   Default Gateway . . . . . . . . . : fe80::a8d8:68ff:feea:1d84%19\n                                       192.168.179.1\n   DHCP Server . . . . . . . . . . . : 192.168.179.1\n   DHCPv6 IAID . . . . . . . . . . . : 127450496\n   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-2F-87-EC-63-D4-93-90-4E-19-F5\n   DNS Servers . . . . . . . . . . . : fe80::a8d8:68ff:feea:1d84%19\n                                       192.168.179.1\n                                       fe80::a8d8:68ff:feea:1d84%19\n   NetBIOS over Tcpip. . . . . . . . : Enabled\n\nEthernet adapter Bluetooth ネットワーク接続:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Bluetooth Device (Personal Area Network)\n   Physical Address. . . . . . . . . : 98-BD-80-69-87-C2\n   DHCP Enabled. . . . . . . . . . . : Yes\n   Autoconfiguration Enabled . . . . : Yes\n\nEthernet adapter vEthernet (Default Switch):\n\n   Connection-specific DNS Suffix  . : \n   Description . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter\n   Physical Address. . . . . . . . . : 00-15-5D-F0-C2-00\n   DHCP Enabled. . . . . . . . . . . : No\n   Autoconfiguration Enabled . . . . : Yes\n   Link-local IPv6 Address . . . . . : fe80::6981:ea11:568b:9799%25(Preferred) \n   IPv4 Address. . . . . . . . . . . : 172.30.0.1(Preferred) \n   Subnet Mask . . . . . . . . . . . : 255.255.240.0\n   Default Gateway . . . . . . . . . : \n   DHCPv6 IAID . . . . . . . . . . . : 419435869\n   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-2F-87-EC-63-D4-93-90-4E-19-F5\n   NetBIOS over Tcpip. . . . . . . . : Enabled\n",
             "result": "OK",
-            "date": "2025/11/22 16:45:43"
+            "date": "2025/11/23 22:08:03"
+        }
+    },
+    "ttl": {
+        "1008_ok_localhost-2200_ping_127-0-0-1.ttl": {
+            "stdout": "Router>clear\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:08:35"
+        },
+        "1009_ok_localhost-2200_trace_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ tracepath 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\r\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\r\nroot@localhost:~$ ",
+            "result": "OK",
+            "date": "2025/11/23 22:08:41"
+        },
+        "1010_ok_localhost-2200_show.ttl": {
+            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> display current-configuration\r\n#\r\nsysname QX-S3526\r\n#\r\nvlan 1\r\n name default\r\n#\r\ninterface GigabitEthernet0/1\r\n port access vlan 10\r\n#\r\ninterface GigabitEthernet0/2\r\n port access vlan 20\r\n-- More --\r\n#\r\ninterface Vlan-interface1\r\n ip address 192.168.1.1 255.255.255.0\r\n#\r\nuser-interface console 0\r\n authentication-mode password\r\n set authentication password cipher ********\r\n#\r\n<Switch> ",
+            "result": "OK",
+            "date": "2025/11/23 22:08:55"
+        },
+        "1011_ok_cisco1_ping_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@cisco1\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:06"
+        },
+        "1012_ok_cisco1_trace_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@cisco1\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:11"
+        },
+        "1013_ok_cisco1_show.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@cisco1\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter>enable\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# show running-config\r\nBuilding configuration...\r\n\r\nCurrent configuration : 1234 bytes\r\n!\r\nversion 15.2\r\nservice timestamps debug datetime msec\r\nservice timestamps log datetime msec\r\nno service password-encryption\r\n!\r\nhostname SW-Floor-1\r\n!\r\n!\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n!\r\nno aaa new-model\r\n!\r\n!\r\ninterface GigabitEthernet0/1\r\n description \"Uplink to Core Router\"\r\n ip address 192.168.1.1 255.255.255.0\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/2\r\n description \"Server Port 1\"\r\n switchport mode access\r\n switchport access vlan 10\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/3\r\n description \"Access Point\"\r\n no shutdown\r\n!\r\n!\r\nline con 0\r\nline vty 0 4\r\n login local\r\n!\r\n!\r\nend\r\nRouter# show ip interface brief\r\nInterface        IP-Address      OK? Method Status                Protocol\r\nGigabitEthernet0/1 192.168.1.1     YES manual up                    up\r\nGigabitEthernet0/2 192.168.2.1     YES manual up                    down\r\nGigabitEthernet0/3 unassigned      YES manual administratively down down\r\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:16"
+        },
+        "1014_ok_cisco2_ping_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@cisco2\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:24"
+        },
+        "1015_ok_cisco2_trace_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@cisco2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:29"
+        },
+        "1016_ok_cisco2_show.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@cisco2\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# show running-config\r\nBuilding configuration...\r\n\r\nCurrent configuration : 1234 bytes\r\n!\r\nversion 15.2\r\nservice timestamps debug datetime msec\r\nservice timestamps log datetime msec\r\nno service password-encryption\r\n!\r\nhostname SW-Floor-1\r\n!\r\n!\r\nboot-start-marker\r\nboot-end-marker\r\n!\r\n!\r\nno aaa new-model\r\n!\r\n!\r\ninterface GigabitEthernet0/1\r\n description \"Uplink to Core Router\"\r\n ip address 192.168.1.1 255.255.255.0\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/2\r\n description \"Server Port 1\"\r\n switchport mode access\r\n switchport access vlan 10\r\n no shutdown\r\n!\r\ninterface GigabitEthernet0/3\r\n description \"Access Point\"\r\n no shutdown\r\n!\r\n!\r\nline con 0\r\nline vty 0 4\r\n login local\r\n!\r\n!\r\nend\r\nRouter# show ip interface brief\r\nInterface        IP-Address      OK? Method Status                Protocol\r\nGigabitEthernet0/1 192.168.1.1     YES manual up                    up\r\nGigabitEthernet0/2 192.168.2.1     YES manual up                    down\r\nGigabitEthernet0/3 unassigned      YES manual administratively down down\r\nRouter# ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:34"
+        },
+        "1017_ok_qx_ping_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> ping 127.0.0.1\r\nPING localhost (127.0.0.1) 56(84) bytes of data.\r\n64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms\r\n\r\n--- localhost ping statistics ---\r\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\r\nrtt min/avg/max/mdev = 0.070/0.070/0.070/0.000 ms\r\n<Switch> ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:42"
+        },
+        "1018_ok_qx_trace_127-0-0-1.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@qx\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> traceroute 127.0.0.1\r\ntraceroute to localhost (127.0.0.1), 30 hops max, 60 byte packets\n 1  localhost (127.0.0.1)  0.099 ms  0.075 ms  0.071 ms\n<Switch> ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:47"
+        },
+        "1019_ok_qx_show.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh nextadmin@qx\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> display current-configuration\r\n#\r\nsysname QX-S3526\r\n#\r\nvlan 1\r\n name default\r\n#\r\ninterface GigabitEthernet0/1\r\n port access vlan 10\r\n#\r\ninterface GigabitEthernet0/2\r\n port access vlan 20\r\n-- More --\r\n#\r\ninterface Vlan-interface1\r\n ip address 192.168.1.1 255.255.255.0\r\n#\r\nuser-interface console 0\r\n authentication-mode password\r\n set authentication password cipher ********\r\n#\r\n<Switch> ",
+            "result": "OK",
+            "date": "2025/11/23 22:09:52"
+        },
+        "1020_ok_vmware_show.ttl": {
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh root@vmware\r\nPassword:\r\n[root@localhost:~] esxcli network nic list\r\n[root@localhost:~] esxcli network vswitch standard list\r\n[root@localhost:~] esxcli network ip interface list\r\n[root@localhost:~] ",
+            "result": "OK",
+            "date": "2025/11/23 22:10:01"
         }
     }
 }

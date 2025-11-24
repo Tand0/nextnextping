@@ -1,0 +1,22 @@
+
+filename = "build/work.key"
+
+; 新規作成
+filetruncate filename 20
+filestat filename size mtime drive
+assert size = 20 filename size mtime drive
+
+; 減らす
+filetruncate filename 10
+filestat filename size mtime drive
+assert size = 10 filename size mtime drive
+
+; 追加
+filetruncate filename 30
+filestat filename size mtime drive
+assert size = 30 filename size mtime drive
+
+
+result = 1
+end
+;

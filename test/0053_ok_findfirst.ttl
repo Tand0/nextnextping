@@ -1,0 +1,19 @@
+
+; ファイル検索
+extpat = '*.ttl'
+findfirst dh extpat filename
+
+i = 0
+while result != 0
+    assert result != 0 i result filename extpat
+	findnext dh filename
+    i = i + 1
+endwhile
+
+assert 50 < i "ttl text" i
+
+findclose dh
+
+result = 1
+end
+;

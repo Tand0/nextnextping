@@ -13,9 +13,9 @@
   - [connect](https://teratermproject.github.io/manual/5/ja/macro/command/connect.html) // 補足あり  [connect](#connect)
   <!-- -  [cygconnect](https://teratermproject.github.io/manual/5/ja/macro/command/cygconnect.html) -->
   - [disconnect](https://teratermproject.github.io/manual/5/ja/macro/command/disconnect.html)
-  <!-- - [dispstr](https://teratermproject.github.io/manual/5/ja/macro/command/dispstr.html) -->
+  - [dispstr](https://teratermproject.github.io/manual/5/ja/macro/command/dispstr.html)
   <!-- - [enablekeyb](https://teratermproject.github.io/manual/5/ja/macro/command/enablekeyb.html) -->
-  <!-- - [flushrecv](https://teratermproject.github.io/manual/5/ja/macro/command/flushrecv.html) -->
+  - [flushrecv](https://teratermproject.github.io/manual/5/ja/macro/command/flushrecv.html)
   - [gethostname](https://teratermproject.github.io/manual/5/ja/macro/command/gethostname.html)
   <!-- - [getmodemstatus](https://teratermproject.github.io/manual/5/ja/macro/command/getmodemstatus.html) -->
   - [gettitle](https://teratermproject.github.io/manual/5/ja/macro/command/gettitle.html)
@@ -67,7 +67,7 @@
   - [testlink](https://teratermproject.github.io/manual/5/ja/macro/command/testlink.html)
   - [unlink](https://teratermproject.github.io/manual/5/ja/macro/command/unlink.html)
   - [wait](https://teratermproject.github.io/manual/5/ja/macro/command/wait.html)
-  <!-- - [wait4all](https://teratermproject.github.io/manual/5/ja/macro/command/wait4all.html) -->
+  - [wait4all](https://teratermproject.github.io/manual/5/ja/macro/command/wait4all.html) // 実質waitと同じ
   <!-- - [waitevent](https://teratermproject.github.io/manual/5/ja/macro/command/waitevent.html) -->
   - [waitln](https://teratermproject.github.io/manual/5/ja/macro/command/waitln.html)
   - [waitn](https://teratermproject.github.io/manual/5/ja/macro/command/waitn.html)
@@ -143,11 +143,11 @@
   - [filestat](https://teratermproject.github.io/manual/5/ja/macro/command/filestat.html)
   <!-- - [filestrseek](https://teratermproject.github.io/manual/5/ja/macro/command/filestrseek.html) -->
   <!-- - [filestrseek2](https://teratermproject.github.io/manual/5/ja/macro/command/filestrseek2.html) -->
-  <!-- - [filetruncate](https://teratermproject.github.io/manual/5/ja/macro/command/filetruncate.html) -->
+  - [filetruncate](https://teratermproject.github.io/manual/5/ja/macro/command/filetruncate.html)
   <!-- - [fileunlock](https://teratermproject.github.io/manual/5/ja/macro/command/fileunlock.html) -->
   - [filewrite](https://teratermproject.github.io/manual/5/ja/macro/command/filewrite.html)
   - [filewriteln](https://teratermproject.github.io/manual/5/ja/macro/command/filewriteln.html)
-  <!-- - [findfirst, findnext, findclose](https://teratermproject.github.io/manual/5/ja/macro/command/findoperations.html) -->
+  - [findfirst, findnext, findclose](https://teratermproject.github.io/manual/5/ja/macro/command/findoperations.html)
   - [foldercreate](https://teratermproject.github.io/manual/5/ja/macro/command/foldercreate.html)
   - [folderdelete](https://teratermproject.github.io/manual/5/ja/macro/command/folderdelete.html)
   - [foldersearch](https://teratermproject.github.io/manual/5/ja/macro/command/foldersearch.html)
@@ -159,31 +159,31 @@
 
 - パスワードコマンド
   - [delpassword](https://teratermproject.github.io/manual/5/ja/macro/command/delpassword.html)
-  - [delpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/delpassword2.html) // 一部無視
+  - [delpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/delpassword2.html) // 補足あり [password](#password)
   - [getpassword](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword.html)
-  - [getpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword2.html) // 一部無視
+  - [getpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword2.html) // 補足あり [password](#password)
   - [ispassword](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword.html)
-  - [ispassword2](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword2.html) // 一部無視
+  - [ispassword2](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword2.html)
   - [passwordbox](https://teratermproject.github.io/manual/5/ja/macro/command/passwordbox.html) // 制限あり
   - [setpassword](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword.html)
-  - [setpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword2.html) // 一部無視
+  - [setpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword2.html) // 補足あり [password](#password)
 
 - その他のコマンド
   - [assert](#assert) // 独自コマンド
   <!-- - [beep](https://teratermproject.github.io/manual/5/ja/macro/command/beep.html) -->
   - [bringupbox](https://teratermproject.github.io/manual/5/ja/macro/command/bringupbox.html)  // 制限あり
-  <!-- - [checksum8](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html) -->
-  <!-- - [checksum8file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html) -->
-  <!-- - [checksum16](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html) -->
-  <!-- - [checksum16file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html) -->
-  <!-- - [checksum32](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html) -->
-  <!-- - [checksum32file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html) -->
+  - [checksum8](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html) -->
+  - [checksum8file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html)
+  - [checksum16](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html)
+  - [checksum16file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html)
+  - [checksum32](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html)
+  - [checksum32file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html)
   - [closesbox](https://teratermproject.github.io/manual/5/ja/macro/command/closesbox.html)  // 制限あり
   <!-- - [clipb2var](https://teratermproject.github.io/manual/5/ja/macro/command/clipb2var.html) -->
-  <!-- - [crc16](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html) -->
-  <!-- - [crc16file](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html) -->
-  <!-- - [crc32](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html) -->
-  <!-- - [crc32file](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html) -->
+  - [crc16](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html)  // CRC-16/IBM-SDLC
+  - [crc16file](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html) // CRC-16/IBM-SDLC
+  - [crc32](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html)  // CRC-32/ISO-HDLC
+  - [crc32file](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html)  // CRC-32/ISO-HDLC
   - [exec](https://teratermproject.github.io/manual/5/ja/macro/command/exec.html)
   - [dirnamebox](https://teratermproject.github.io/manual/5/ja/macro/command/dirnamebox.html)  // 制限あり
   - [filenamebox](https://teratermproject.github.io/manual/5/ja/macro/command/filenamebox.html)  // 制限あり
@@ -233,7 +233,7 @@ assert  1 = 0  "strval" ; 異常終了する
 ```
 connect <command line parameters>
 ```
-- SSH接続する。telnet接続やSSH1接続、COMポート接続はできません。
+- SSH接続します。telnet接続やSSH1接続、COMポート接続はできません。
 
 ### SSH2接続
 - pythonのparamikoを使って接続します。
@@ -249,7 +249,7 @@ connect 'myserver /ssh /2 /user=username /passwd=password /keyfile=private-key-f
 ```
 
 ### command line に接続
-- command lineに入ります。pingやsftpなど好きなコマンドが打てます。
+- command lineに入ります。pingなど好きなコマンドが打てます。
 
 ```
 connect '/cmd'
@@ -297,5 +297,13 @@ logopen <filename> <binary flag> <append flag> [<plain text flag> [<timestamp fl
 - あと、もはやttlとはまったく関係ないですが、
   - バッチファイルを `\\192.168.1.1\aaa` といった UNCパス形式の上で実行するとすべからく変な動きをします。
   - そういうときは `pushd` と `popd` を使いましょう。。。
+
+
+## password
+
+- `setpassword2`, `getpassword` は本家では aes-256-ctrで暗号化されていますが、こちらでは Python の `cryptography.fernet.Fernet` を使っています。
+- 何が言いたいのかというと、互換性はありません。
+
+
 
 

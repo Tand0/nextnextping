@@ -1,0 +1,80 @@
+str = #01#02
+checksum8 x str
+assert x == 3 "test" x
+sprintf '0x%08X' x
+assert 1 inputstr x
+
+str = 'this is a test string to be checksum16ed'
+fileopen fhandle 'base.key' 0
+filewrite fhandle str
+fileclose fhandle
+checksum8file y 'base.key'
+assert result = 0 "file check" ;; ファイルが読めた
+sprintf '0x%08X' y
+strcompare '0x00000009' inputstr
+assert result = 0 inputstr y
+
+; ファイルが読めない場合
+checksum8file x 'note_file'
+assert result = -1 "file foget" x
+
+checksum16 x str
+sprintf '0x%08X' x
+assert 1 inputstr x
+strcompare '0x00000059' inputstr
+assert result = 0 inputstr y
+
+checksum16file y 'base.key'
+assert result = 0 "file check" ;; ファイルが読めた
+sprintf '0x%08X' y
+strcompare '0x00000059' inputstr
+assert result = 0 inputstr y
+
+; ファイルが読めない場合
+checksum16file x 'note_file'
+assert result = -1 "file foget" x
+
+checksum32 x str
+sprintf '0x%08X' x
+assert 1 inputstr x
+strcompare '0x00000E59' inputstr
+assert result = 0 inputstr y
+
+checksum32file y 'base.key'
+assert result = 0 "file check" ;; ファイルが読めた
+sprintf '0x%08X' y
+assert 1 inputstr y
+strcompare '0x00000E59' inputstr
+assert result = 0 inputstr y
+
+; ファイルが読めない場合
+checksum32file x 'note_file'
+assert result = -1 "file foget" x
+
+
+crc16 crc str
+sprintf '0x%08X' crc
+strcompare inputstr '0x0000D798' ;; CRC-16/IBM-SDLC
+assert result == 0 "crc16" inputstr crc
+
+crc16file crc "base.key"
+sprintf '0x%08X' crc
+strcompare inputstr '0x0000D798' ;; CRC-16/IBM-SDLC
+assert result == 0 "crc16file" inputstr crc
+
+crc32 crc str
+sprintf '0x%08X' crc
+strcompare inputstr '0xE65AFC5D' ;; CRC-32/ISO-HDLC
+assert result == 0 "crc32" inputstr crc
+
+crc32file crc "base.key"
+sprintf '0x%08X' crc
+strcompare inputstr '0xE65AFC5D' ;; CRC-32/ISO-HDLC
+assert result == 0 "crc32file" inputstr crc
+
+
+
+; 正常ならここまで到達して終了
+result = 1
+end
+;

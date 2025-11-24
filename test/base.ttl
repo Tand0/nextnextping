@@ -5,12 +5,10 @@
 ;target_display = "pingを打つ装置"
 ;target_ip = "127.0.0.1"
 ;target_type = 1  ; 1=ping, 2=traceroute, 3=show run
-;base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
 ;base_display = "SSH接続する装置"
 ;base_ip = "localhost:2200"
 ;base_account = "foo" ; アカウント情報
 ;next_ssh = 2  ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
-;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 ;next_display = "SSHからさらに接続する装置"
 ;next_ip  = "c1"  ; 踏み台SSHのIPアドレス
 ;next_account = "bar"  ; 踏み台先のIPアドレス
@@ -33,10 +31,6 @@ ifdefined target_type
 if result == 0 then
     target_type = 1  ; 1=ping, 2=traceroute, 3=show run
 endif
-ifdefined base_type
-if result == 0 then
-    base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
-endif
 ifdefined base_display
 if result == 0 then
     base_display = "SSH接続する装置"
@@ -52,10 +46,6 @@ endif
 ifdefined next_ssh
 if result == 0 then
     next_ssh = 2
-endif
-ifdefined next_type
-if result == 0 then
-    next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 endif
 ifdefined next_display
 if result == 0 then
@@ -179,6 +169,7 @@ elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
         command = 'ping '
     endif
     strconcat command target_ip
+    flushrecv
     sendln command
     wait command
     wait prompt ' 0% packet loss' ' 0.0% packet loss' 'Success rate is 100 percent'
@@ -348,6 +339,7 @@ return
 
 :call_one_command
     ; １コマンド分の処理
+    flushrecv
     sendln command
     wait command
     if result == 0 then
@@ -364,6 +356,7 @@ return
             call call_ending
             end
         elseif result = 2 then
+            flushrecv
             sendln ''
             continue
         endif
@@ -373,6 +366,7 @@ return
 return
 
  :call_get_prompt
+    flushrecv
     sendln command
     wait command
     if result == 0 then
@@ -399,6 +393,7 @@ return
                 password_flag = 0
                 enable_flag = 1
                 command = 'enable'
+                flushrecv
                 sendln command
                 wait command
                 continue
@@ -416,6 +411,7 @@ return
             prompt = '] '  ; for vmware
         elseif result_type == 5 then
             command = 'yes'
+            flushrecv
             sendln command
             wait command
             continue
@@ -440,9 +436,11 @@ return
                     call call_next_password
                 endif
             endif
+            flushrecv
             sendln password
             continue
         elseif result_type == 7 then
+            flushrecv
             sendln ''
             continue
         else

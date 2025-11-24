@@ -22,41 +22,41 @@
 ; trace_ローカルホスト接続 IPv4(127.0.0.1)
 [ローカルホスト接続IPv4](traceroute)127.0.0.1
 
-; SSH接続先IP(localhost:2200) ping_SSH接続(127.0.0.1) 
-[SSH接続](ttl)1008c1_ok_localhost-2200_ping_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200) ping_SSH接続/ping(127.0.0.1) 
+[SSH接続/ping](ttl)1008_ok_localhost-2200_ping_127-0-0-1.ttl
 
-; SSH接続先IP(localhost:2200) trace_SSH接続(127.0.0.1) 
-[SSH接続](ttl)1009_ok_localhost-2200_trace_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200) trace_SSH接続/trace(127.0.0.1) 
+[SSH接続/trace](ttl)1009_ok_localhost-2200_trace_127-0-0-1.ttl
 
 ; SSH接続先IP(localhost:2200) show 
-[SSH接続](ttl)1010qx_ok_localhost-2200_show.ttl
+[SSH接続/show](ttl)1010_ok_localhost-2200_show.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) ping_SSH踏み台(127.0.0.1)
-[SSH踏み台](ttl)1011_ok_cisco1_ping_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) ping_SSH踏み台/ping(127.0.0.1)
+[SSH踏み台/ping](ttl)1011_ok_cisco1_ping_127-0-0-1.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台(127.0.0.1)
-[SSH踏み台](ttl)1012_ok_cisco1_trace_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台/trace(127.0.0.1)
+[SSH踏み台/trace](ttl)1012_ok_cisco1_trace_127-0-0-1.ttl
 
 ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) show
-[SSH踏み台](ttl)1013_ok_cisco1_show.ttl
+[SSH踏み台/show](ttl)1013_ok_cisco1_show.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) ping_SSH踏み台(127.0.0.1)
-[SSH踏み台](ttl)1014_ok_cisco2_ping_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) ping_SSH踏み台/ping(127.0.0.1)
+[SSH踏み台/ping](ttl)1014_ok_cisco2_ping_127-0-0-1.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台(127.0.0.1)
-[SSH踏み台](ttl)1015_ok_cisco2_trace_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台/trace(127.0.0.1)
+[SSH踏み台/trace](ttl)1015_ok_cisco2_trace_127-0-0-1.ttl
 
 ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) show
-[SSH踏み台](ttl)1016_ok_cisco2_show.ttl
+[SSH踏み台/show](ttl)1016_ok_cisco2_show.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) ping_SSH踏み台(127.0.0.1)
-[SSH踏み台](ttl)1017_ok_qx_ping_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) ping_SSH踏み台/ping(127.0.0.1)
+[SSH踏み台/ping](ttl)1017_ok_qx_ping_127-0-0-1.ttl
 
-; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) trace_SSH踏み台(127.0.0.1)
-[SSH踏み台](ttl)1018_ok_qx_trace_127-0-0-1.ttl
+; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) trace_SSH踏み台/trace(127.0.0.1)
+[SSH踏み台/trace](ttl)1018_ok_qx_trace_127-0-0-1.ttl
 
 ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) show
-[SSH踏み台](ttl)1019_ok_qx_show.ttl
+[SSH踏み台/show](ttl)1019_ok_qx_show.ttl
 
 ; SSH接続先IP(localhost:2200)->vmwareテスト(vmware) show
 [vmwareのテスト](ttl)1020_ok_vmware_show.ttl

@@ -17,15 +17,5 @@ next_ip = "vmware"
 next_account = "root"
 
 
-; 特殊コマンドの開始
-; my_command_int = 3
-; my_command[0] = 'esxcli network nic list'
-; my_command[1] = 'esxcli network vswitch standard list'
-; my_command[2] = 'esxcli network nic list'
-; 特殊コマンドの終了
-
-
-
-
 include "base.ttl"
 

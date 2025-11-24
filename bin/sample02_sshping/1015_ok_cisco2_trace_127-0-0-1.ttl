@@ -1,9 +1,9 @@
 ;
-; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台(127.0.0.1)
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台/trace(127.0.0.1)
 ;
 
 basename file_name param1
-target_display = "SSH踏み台"
+target_display = "SSH踏み台/trace"
 target_ip = "127.0.0.1"
 target_type = 2  ; 1=ping , 2=traceroute , 3=show run
 next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
@@ -15,16 +15,6 @@ next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
 next_display = "次のdisplay"
 next_ip = "cisco2"
 next_account = "nextadmin"
-
-
-; 特殊コマンドの開始
-; my_command_int = 3
-; my_command[0] = 'esxcli network nic list'
-; my_command[1] = 'esxcli network vswitch standard list'
-; my_command[2] = 'esxcli network nic list'
-; 特殊コマンドの終了
-
-
 
 
 include "base.ttl"

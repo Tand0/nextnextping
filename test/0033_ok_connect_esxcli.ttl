@@ -5,18 +5,18 @@ target_display = "pingを打つ装置"
 target_type = 3  ; 1=ping, 2=traceroute, 3=show run
 base_display = "SSH接続する装置"
 base_ip = "localhost:2200"
-base_account = "boo"
+base_account = "vmware"
 next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
 next_display = "SSHからさらに接続する装置"
 next_ip  = "vmware"  ; 踏み台SSHのIPアドレス
 next_account = "xxx"  ; 踏み台先のIPアドレス
 
 ; 特殊コマンドの開始
-my_command_int = 4
-my_command[0] = 'esxcli network nic list'
-my_command[1] = 'esxcli network vswitch standard list'
-my_command[2] = ''  ; ダミー
-my_command[3] = 'esxcli network nic list'
+;my_command_int = 4
+;my_command[0] = 'esxcli network nic list'
+;my_command[1] = 'esxcli network vswitch standard list'
+;my_command[2] = ''  ; ダミー
+;my_command[3] = 'esxcli network nic list'
 ; 特殊コマンドの終了
 
 getdir include_dir

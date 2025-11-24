@@ -1,9 +1,9 @@
 ;
-; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台(127.0.0.1)
+; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台/trace(127.0.0.1)
 ;
 
 basename file_name param1
-target_display = "SSH踏み台"
+target_display = "SSH踏み台/trace"
 target_ip = "127.0.0.1"
 target_type = 2  ; 1=ping , 2=traceroute , 3=show run
 next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login

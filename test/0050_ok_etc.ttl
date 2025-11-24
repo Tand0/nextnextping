@@ -1,0 +1,13 @@
+; 実装していないが、エラーが出ないことを確認する
+
+; 呼べればOK
+enablekeyb 0
+
+; 必ず失敗
+getmodemstatus intvar 
+assert intvar == 0
+assert result != 0
+
+result = 1
+end
+;

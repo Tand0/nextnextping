@@ -1,0 +1,12 @@
+
+; この場合成功になる
+; 失敗
+result = 0
+
+; 成功
+setexitcode 1
+
+; 失敗
+result = 0
+end
+;

@@ -21,18 +21,17 @@ from grammer.TtlParserWorker import TtlPaserWolker
 import webbrowser
 
 SAMPLE_TTL = '''
+
 ;INPUT_START
 
 ;file_name = "029c1_ok_connect.ttl"
 ;target_display = "pingを打つ装置"
 ;target_ip = "127.0.0.1"
 ;target_type = 1  ; 1=ping, 2=traceroute, 3=show run
-;base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
 ;base_display = "SSH接続する装置"
 ;base_ip = "localhost:2200"
 ;base_account = "foo" ; アカウント情報
 ;next_ssh = 2  ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
-;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 ;next_display = "SSHからさらに接続する装置"
 ;next_ip  = "c1"  ; 踏み台SSHのIPアドレス
 ;next_account = "bar"  ; 踏み台先のIPアドレス
@@ -55,10 +54,6 @@ ifdefined target_type
 if result == 0 then
     target_type = 1  ; 1=ping, 2=traceroute, 3=show run
 endif
-ifdefined base_type
-if result == 0 then
-    base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
-endif
 ifdefined base_display
 if result == 0 then
     base_display = "SSH接続する装置"
@@ -74,10 +69,6 @@ endif
 ifdefined next_ssh
 if result == 0 then
     next_ssh = 2
-endif
-ifdefined next_type
-if result == 0 then
-    next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 endif
 ifdefined next_display
 if result == 0 then
@@ -201,6 +192,7 @@ elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
         command = 'ping '
     endif
     strconcat command target_ip
+    flushrecv
     sendln command
     wait command
     wait prompt ' 0% packet loss' ' 0.0% packet loss' 'Success rate is 100 percent'
@@ -370,6 +362,7 @@ return
 
 :call_one_command
     ; １コマンド分の処理
+    flushrecv
     sendln command
     wait command
     if result == 0 then
@@ -386,6 +379,7 @@ return
             call call_ending
             end
         elseif result = 2 then
+            flushrecv
             sendln ''
             continue
         endif
@@ -395,6 +389,7 @@ return
 return
 
  :call_get_prompt
+    flushrecv
     sendln command
     wait command
     if result == 0 then
@@ -421,6 +416,7 @@ return
                 password_flag = 0
                 enable_flag = 1
                 command = 'enable'
+                flushrecv
                 sendln command
                 wait command
                 continue
@@ -438,6 +434,7 @@ return
             prompt = '] '  ; for vmware
         elseif result_type == 5 then
             command = 'yes'
+            flushrecv
             sendln command
             wait command
             continue
@@ -462,9 +459,11 @@ return
                     call call_next_password
                 endif
             endif
+            flushrecv
             sendln password
             continue
         elseif result_type == 7 then
+            flushrecv
             sendln ''
             continue
         else
@@ -495,6 +494,7 @@ class MyTtlPaserWolker(TtlPaserWolker):
         super().__init__()
 
     def setLog(self, strvar):
+        """ オーバライドしてログを設定する """
         self.log_type_param['stdout'] = self.log_type_param['stdout'] + strvar
 
     def doLogopen(self, filename, binary_flag, append_flag,
@@ -1239,61 +1239,89 @@ class NextNextPing():
         menu_bar.add_cascade(label="Help", menu=help_menu)
         #
         self.notebook = ttk.Notebook(self.root)
+        #
+        # tab1
+        #
         tab1 = tk.Frame(self.notebook)
         self.notebook.add(tab1, text="setting")
-        #
         top_frame = tk.Frame(tab1)
         top_frame.pack(side=tk.TOP)
         top_button = tk.Button(top_frame, text="Update", command=self.update_setting)
         top_button.pack(side=tk.LEFT)
-        #
-        self.setting_text = tk.Text(tab1)
+        main_frame = ttk.Frame(tab1)
+        self.setting_text = tk.Text(main_frame)
         self.setting_text.insert(1.0, '; Enter the IP address to ping')
         self.setting_text.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
+        # スクロールバーの設定
+        vsb = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.setting_text.yview)
+        self.setting_text.configure(yscrollcommand=vsb.set)
+        self.setting_text.grid(row=0, column=0, sticky='nsew')
+        vsb.grid(row=0, column=1, sticky='ns')
+        main_frame.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        #
+        # tab2
         #
         tab2 = tk.Frame(self.notebook)
         self.notebook.add(tab2, text="result")
-        column = ('OK/NG', 'Date', 'Display', 'Type', 'IP')
+        column = [
+            ['OK/NG', tk.CENTER, 60, False],
+            ['Date', tk.W, 120, False],
+            ['Display', tk.W, 20, True],
+            ['Type', tk.CENTER, 20, True],
+            ['IP', tk.W, 20, True]]
+        tree_colum = []
+        for var in column:
+            tree_colum.append(var[0])
         #
-        # フレームでTreeviewとScrollbarをまとめる
-        #
+        # フレームで Treeview と Scrollbar をまとめる
         top_frame = tk.Frame(tab2)
         top_frame.pack(side=tk.TOP)
         top_button = tk.Button(top_frame, text="Ping", command=self.command_ping)
         top_button.pack(side=tk.LEFT)
         top_button = tk.Button(top_frame, text="Stop", command=self.command_stop)
         top_button.pack(side=tk.LEFT)
-        frame = ttk.Frame(tab2)
-        self.tree = ttk.Treeview(frame, columns=column)
+        main_frame = ttk.Frame(tab2)
+        self.tree = ttk.Treeview(main_frame, columns=tree_colum)
         self.tree.column('#0', width=0, stretch='no')
-        for i, var in enumerate(column):
-            if i == 0 or i == 3:
-                self.tree.column(var, anchor=tk.CENTER, width=20)
-            else:
-                self.tree.column(var, anchor=tk.W, width=20)
-            self.tree.heading(var, text=var)
+        for var in column:
+            self.tree.column(var[0], anchor=var[1], width=var[2], minwidth=var[2], stretch=var[3])
+            self.tree.heading(var[0], text=var[0])
         self.tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
         self.tree.bind("<Double-Button-1>", self.on_select_double)
         # スクロールバーの設定
-        vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tree.yview)
+        vsb = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=vsb.set)
         self.tree.grid(row=0, column=0, sticky='nsew')
         vsb.grid(row=0, column=1, sticky='ns')
-        frame.rowconfigure(0, weight=1)
-        frame.columnconfigure(0, weight=1)
-        frame.pack(fill=tk.BOTH, expand=True)
+        main_frame.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        #
+        # tab3
         #
         tab3 = tk.Frame(self.notebook)
         self.notebook.add(tab3, text="log")
         #
-        self.log_text = tk.Text(tab3)
+        main_frame = ttk.Frame(tab3)
+        self.log_text = tk.Text(main_frame)
         self.log_text.insert(1.0, "Please attache table for result tag.")
         self.log_text.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
+        # スクロールバーの設定
+        vsb = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.log_text.yview)
+        self.log_text.configure(yscrollcommand=vsb.set)
+        self.log_text.grid(row=0, column=0, sticky='nsew')
+        vsb.grid(row=0, column=1, sticky='ns')
+        main_frame.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        #
+        # ステータスバー（Label）を下部に配置
         #
         self.status_var = tk.StringVar()
         self.command_status_threading("This is status bar")
-        # ステータスバー（Label）を下部に配置
         status_bar = tk.Label(self.root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         #
@@ -1496,22 +1524,15 @@ class NextNextPing():
         target_ip = values[2]
         target_type = int(values[3])
         next_ssh = int(values[4])
-        base_type = int(values[5])
         base_ip = values[7]
         next_ip = values[11]
-        if base_type == 1:
-            base_type = 'c1'
-        elif base_type == 3:
-            base_type = 'qx'
-        else:
-            base_type = ''
         action_name = self.get_target_type_to_action_name(target_type, target_ip)
         if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
             return "None"  # not required ttl name
         elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            ans = f"{row_index}{base_type}_ok_{base_ip}_{action_name}"
+            ans = f"{row_index}_ok_{base_ip}_{action_name}"
         elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            ans = f"{row_index}{base_type}_ok_{next_ip}_{action_name}"
+            ans = f"{row_index}_ok_{next_ip}_{action_name}"
         else:
             ans = "unkown_next_ssh"
         #
@@ -1666,9 +1687,14 @@ class NextNextPing():
         #
         # ロード
         values = []
-        with open(file_path, newline='', encoding=current_encoding) as f:
-            reader = csv.reader(f)
-            values = [row for row in reader]
+        try:
+            with open(file_path, newline='', encoding=current_encoding) as f:
+                reader = csv.reader(f)
+                values = [row for row in reader]
+        except UnicodeDecodeError:
+            with open(file_path, newline='', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                values = [row for row in reader]
         #
         # 表を一度クリア
         for item in self.tool_tree.get_children():

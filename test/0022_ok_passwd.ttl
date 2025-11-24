@@ -1,27 +1,82 @@
 
+filename1 = 'build/password1.key'
+filename2 = 'build/password2.key'
+password = 'password' 
+password_var = '' ; こちらに格納される
+setpassword filename1 'foo' password
+assert result != 0 'Password updated test' result filename1 password password_var
+setpassword filename1 'bar' password
+assert result != 0 'Password updated test' result filename1 password password_var
 
-filename = 'build/password.dat'
-password = 'bar'
-newpasswd = 'bar'
-setpassword filename 'foo' newpasswd
-assert result != 0 'Password updated test' newpasswd
-setpassword filename 'bar' newpasswd
-assert result != 0 'Password updated test' newpasswd
+; 新しいファイルで読めるか？
+filerename filename1 filename2
 
-getpassword filename 'foo' password
-strcompare newpasswd password
-assert result == 0 "setpassword/getpassword test" result newpasswd password
+getpassword filename2 'foo' password_var
+assert result != 0 'Password get test' result filename2 password password_var
+strcompare password_var password
+assert result == 0 "setpassword/getpassword test" result filename2 password password_var
 
-ispassword filename 'foo'
+ispassword filename2 'foo'
 assert result =! 0 "ispassword test"
 
-ispassword filename 'boo'
+ispassword filename2 'boo'
 assert result == 0 "ispassword test"
 
-delpassword filename 'foo'
-ispassword filename 'foo'
+delpassword filename2 'foo'
+ispassword filename2 'foo'
 assert result == 0 "delpassword/ispassword test"
 
+ispassword filename2 'bar'
+assert result != 0 "delpassword/ispassword test"
+
+
+; 全削除
+setpassword filename1 'foo' password_var
+assert result != 0 'Password updated test' password_var
+setpassword filename1 'bar' password_var
+assert result != 0 'Password updated test' password_var
+delpassword filename1 ''  ; 全消しする
+ispassword filename1 'bar'  ; 全消しされたかチェックする
+assert result != 0 "all delpassword test"
+
+setpassword filename1 'foo' password_var
+assert result != 0 'Password updated test' password_var
+setpassword filename1 'bar' password_var
+assert result != 0 'Password updated test' password_var
+
+; 2系のチェック
+encrypt_foo_str = 'anonymouse_foo'
+encrypt_bar_str = 'anonymouse_bar'
+password_foo = 'password_foo'
+password_bar = 'password_bar'
+setpassword2 filename1 'foo' password_foo encrypt_foo_str
+assert result != 0 'Password updated test' password_var encrypt_foo_str
+setpassword2 filename1 'bar' password_bar encrypt_bar_str
+assert result != 0 'Password updated test' password_var encrypt_bar_str
+getpassword2 filename1 'foo' password_var encrypt_foo_str
+assert result != 0 "setpassword/getpassword2 test" result filename1 password_foo password_var encrypt_foo_str
+strcompare password_var password_foo
+assert result == 0 "setpassword/getpassword2 test" result filename1 password_foo password_var encrypt_foo_str
+getpassword2 filename1 'foo' password_var encrypt_bar_str
+assert result == 0 "setpassword/getpassword2 test" result filename1 password_foo password_var encrypt_foo_str
+getpassword2 filename1 'bar' password_var encrypt_foo_str
+assert result == 0 "setpassword/getpassword2 test" result filename1 password_bar password_var encrypt_foo_str
+getpassword2 filename1 'bar' password_var encrypt_bar_str
+assert result != 0 "setpassword/getpassword2 test" result filename1 password_bar password_var encrypt_bar_str
+strcompare password_var password_bar
+assert result == 0 "setpassword/getpassword2 test" result filename1 password_bar password_var encrypt_bar_str
+
+
+ispassword2 filename1 'foo'
+assert result =! 0 "ispassword test"
+
+ispassword2 filename1 'boo'
+assert result == 0 "ispassword test"
+
+delpassword2 filename1 'foo'
+ispassword2 filename1 'foo'
+assert result == 0 "delpassword/ispassword test"
 
 result = 1
+end
 
