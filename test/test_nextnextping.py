@@ -432,6 +432,8 @@ class ServerStarter():
                 break
         if trigger_flag:
             pass
+        elif 'sudo' in state_base:
+            state_base = 'sudo'
         elif 'cisco1' in state_base or 'c1' in state_base:
             state_base = 'c1'
         elif 'cisco2' in state_base or 'c2' in state_base:
@@ -481,6 +483,8 @@ class ServerStarter():
                 break
         if trigger_flag:
             pass
+        elif 'sudo' == state:
+            self.prompt = '[sudo] password for user_name:'
         elif 'c1' == state:
             self.prompt = 'Router>'  # for cisco not enable
         elif 'c2' == state:
@@ -702,7 +706,7 @@ class ServerStarter():
                 result3 = re.search("^\\s*ssh\\s+([-_a-zA-Z0-9@]+)", message)
                 if trigger_flag:
                     pass
-                elif self.peek_state() in ['y/n', 'user']:
+                elif self.peek_state() in ['y/n', 'user', 'sudo']:
                     # print(f"test peek={self.peek_state()}")
                     self.pop_state()
                 elif 'pass' in self.peek_state():
@@ -729,6 +733,11 @@ class ServerStarter():
                     if not self.pop_state():
                         self.cleint_close()
                         return
+                elif re.search("^\\s*sudo\\s+.*", message):
+                    if self.peek_state() == '$':
+                        if random.randint(0, 1):
+                            # ランダムでパスワードを聞く
+                            self.push_state('sudo')
                 elif re.search("^\\s*enable", message):
                     if self.peek_state() == 'c1':
                         # 新しい状態を積む

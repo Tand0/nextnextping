@@ -433,7 +433,7 @@ class TtlPaserWolker():
                     self.commandlineContext(x['child'])
             elif 'ElseifContext' == name:
                 if ifFlag == 0:
-                    first = int(self.getData(x['child'][1]))
+                    first = self.getDataInt(x['child'][1])
                     if first != 0:
                         self.execute_result(x['child'][3:])
                         ifFlag = 1
@@ -482,13 +482,13 @@ class TtlPaserWolker():
                     p1 = self.getData(x['child'][1])
                     self.doBplussend(command_name, line, p1)
                 elif 'callmenu' == command_name:
-                    p1 = int(self.getData(x['child'][1]))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doCallmenu(command_name, line, p1)
                 elif command_name in ['setdir', 'changedir']:
                     p1 = self.getData(x['child'][1])
                     self.doChangedir(p1)
                 elif 'clearscreen' == command_name:
-                    p1 = int(self.getData(x['child'][1]))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doClearscreen(command_name, line, p1)
                 elif command_name in ['closett', 'disconnect', 'unlink']:
                     self.closeClient()
@@ -499,7 +499,7 @@ class TtlPaserWolker():
                 elif 'flushrecv' == command_name:
                     self.doFlushrecv()
                 elif 'enablekeyb' == command_name:
-                    p1 = int(self.getData(x['child'][1]))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doEnablekeyb(command_name, line, p1)
                 elif 'getmodemstatus' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
@@ -512,7 +512,7 @@ class TtlPaserWolker():
                     p1_val = self.getTitle()
                     self.setValue(p1, p1_val)
                 elif 'logautoclosemode' == command_name:
-                    p1 = int(self.getData(x['child'][1]))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doLogautoclosemode(command_name, line, p1)
                 elif 'logclose' == command_name:
                     self.doLogclose()
@@ -521,24 +521,24 @@ class TtlPaserWolker():
                     self.doLoginfo(command_name, line, p1)
                 elif 'logopen' == command_name:
                     p1 = str(self.getData(x['child'][1]))
-                    p2 = int(self.getData(x['child'][2]))
-                    p3 = int(self.getData(x['child'][3]))
+                    p2 = self.getDataInt(x['child'][2])
+                    p3 = self.getDataInt(x['child'][3])
                     p_len = len(x['child'])
                     p4 = 0
                     if 5 < p_len:
-                        p4 = int(self.getData(x['child'][4]))
+                        p4 = self.getDataInt(x['child'][4])
                     p5 = 0
                     if 6 <= p_len:
-                        p5 = int(self.getData(x['child'][5]))
+                        p5 = self.getDataInt(x['child'][5])
                     p6 = 0
                     if 7 <= p_len:
-                        p6 = int(self.getData(x['child'][6]))
+                        p6 = self.getDataInt(x['child'][6])
                     p7 = 0
                     if 8 <= p_len:
-                        p7 = int(self.getData(x['child'][7]))
+                        p7 = self.getDataInt(x['child'][7])
                     p8 = 0
                     if 9 <= p_len:
-                        p8 = int(self.getData(x['child'][8]))
+                        p8 = self.getDataInt(x['child'][8])
                     self.doLogopen(p1, p2, p3, p4, p5, p6, p7, p8)
                 elif 'logpause' == command_name:
                     self.doLogpause()
@@ -547,7 +547,7 @@ class TtlPaserWolker():
                     p_len = len(self.getData(x['child']))
                     p2 = None
                     if 3 < p_len:
-                        p2 = int(self.getData(x['child'][2]))
+                        p2 = self.getDataInt(x['child'][2])
                     self.doLogrotate(command_name, line, p1, p2)
                 elif 'logstart' == command_name:
                     self.doLogstart()
@@ -588,10 +588,10 @@ class TtlPaserWolker():
                     result_json = self.include_data(p1)
                     self.execute_result(result_json['child'])
                 elif 'mpause' == command_name:
-                    p1 = int(self.getData(x['child'][1]))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doPause(p1 / 1000)
                 elif 'pause' == command_name:
-                    p1 = int(self.getData(x['child'][1]))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doPause(p1)
                 elif 'code2str' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
@@ -634,7 +634,7 @@ class TtlPaserWolker():
                     self.setValue(p1, p2)
                 elif 'str2int' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2]))
+                    p2 = self.getDataInt(x['child'][2])
                     self.setValue(p1, p2)
                 elif 'strcompare' == command_name:
                     p1 = str(self.getData(x['child'][1]))
@@ -655,8 +655,8 @@ class TtlPaserWolker():
                     self.setValue(p1, p1_str)
                 elif 'strcopy' == command_name:
                     p1 = str(self.getData(x['child'][1]))
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
-                    p3 = int(self.getData(x['child'][3]))
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
+                    p3 = self.getDataInt(x['child'][3])
                     p4 = self.getKeywordName(x['child'][4])
                     if p2 < 0:
                         p2 = 0
@@ -664,7 +664,7 @@ class TtlPaserWolker():
                     self.setValue(p4, p1)
                 elif 'strinsert' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
                     p3 = str(self.getData(x['child'][3]))
                     p1_val = self.getData(p1)
                     # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
@@ -677,7 +677,7 @@ class TtlPaserWolker():
                     p3 = 9
                     # print(f"len {len(x['child'])}")
                     if 4 <= len(x['child']):
-                        p3 = int(self.getData(x['child'][3]))
+                        p3 = self.getDataInt(x['child'][3])
                     p1_val = ''
                     for i in range(p3):
                         if i != 0:
@@ -693,8 +693,8 @@ class TtlPaserWolker():
                     self.doStrmatch(p1, p2)
                 elif 'strremove' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
-                    p3 = int(self.getData(x['child'][3]))
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
+                    p3 = self.getDataInt(x['child'][3])
                     p1_val = self.getData(p1)
                     # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
                     p1_val = p1_val[:p2] + p1_val[p2 + p3:]
@@ -702,7 +702,7 @@ class TtlPaserWolker():
                 elif 'strreplace' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
                     p1_val = self.getData(p1)
-                    p2 = int(self.getData(x['child'][2])) - 1  # 1オリジン
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
                     p3 = str(self.getData(x['child'][3]))
                     p4 = str(self.getData(x['child'][4]))
                     self.doStrreplace(p1, p1_val, p2, p3, p4)
@@ -729,7 +729,7 @@ class TtlPaserWolker():
                     p2 = str(self.getData(x['child'][2]))
                     p3 = 10
                     if 4 <= len(x['child']):
-                        p3 = int(self.getData(x['child'][3]))
+                        p3 = self.getDataInt(x['child'][3])
                     for i in range(9):
                         self.setValue('groupmatchstr' + str(i + 1), '')
                     i = 0
@@ -800,7 +800,7 @@ class TtlPaserWolker():
                 elif 'fileopen' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
                     p2 = self.getData(x['child'][2])
-                    p3 = int(self.getData(x['child'][3]))
+                    p3 = self.getDataInt(x['child'][3])
                     p4 = 0
                     if 5 <= len(x['child']):
                         p4 = self.getData(x['child'][4])
@@ -811,7 +811,7 @@ class TtlPaserWolker():
                     self.doFilereadln(line, p1, p2)
                 elif 'fileread' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
-                    p2 = int(self.getData(x['child'][2]))
+                    p2 = self.getDataInt(x['child'][2])
                     p3 = self.getKeywordName(x['child'][3])
                     self.doFileread(line, p1, p2, p3)
                 elif 'filerename' == command_name:
@@ -833,7 +833,7 @@ class TtlPaserWolker():
                     self.doFilestat(p1, p2, p3, p4)
                 elif 'filetruncate' == command_name:
                     p1 = str(self.getData(x['child'][1]))
-                    p2 = int(self.getData(x['child'][2]))
+                    p2 = self.getDataInt(x['child'][2])
                     self.doFiletruncate(p1, p2)
                 elif 'filewrite' == command_name:
                     p1 = self.getKeywordName(x['child'][1])
@@ -976,7 +976,7 @@ class TtlPaserWolker():
                         self.setValue(p1 + '[' + str(i) + ']', 0)
                 elif 'random' == command_name:
                     p1 = str(self.getKeywordName(x['child'][1]))
-                    p2 = int(self.getData(x['child'][2]))
+                    p2 = self.getDataInt(x['child'][2])
                     p1_val = random.randint(0, p2)
                     self.setValue(p1, p1_val)
                 elif 'setenv' == command_name:
@@ -1112,9 +1112,9 @@ class TtlPaserWolker():
 
     def forNextContext(self, data_list):
         intvar = self.getKeywordName(data_list[1])
-        first = int(self.getData(data_list[2]))
+        first = self.getDataInt(data_list[2])
         self.setValue(intvar, first)
-        last = int(self.getData(data_list[3]))
+        last = self.getDataInt(data_list[3])
         # print(f"for intvar={intvar} first={first} last={last}")
         add = -1
         if first < last:
@@ -1140,7 +1140,7 @@ class TtlPaserWolker():
                 break
 
     def whileEndwhileContext(self, data_list):
-        while int(self.getData(data_list[1])) != 0:
+        while self.getDataInt(data_list[1]) != 0:
             try:
                 #
                 self.execute_result(data_list[2:-1])
@@ -1153,7 +1153,7 @@ class TtlPaserWolker():
                 break
 
     def untilEnduntilContext(self, data_list):
-        while int(self.getData(data_list[1])) == 0:
+        while self.getDataInt(data_list[1]) == 0:
             try:
                 #
                 self.execute_result(data_list[2:-1])
@@ -1178,7 +1178,7 @@ class TtlPaserWolker():
                         self.execute_result([data])
                     else:
                         # print(f"data={data['name']}")
-                        value = int(self.getData(data))
+                        value = self.getDataInt(data)
                         # print(f"value ={value}")
                         if value == 0:
                             # print(f"data ok={data}")
@@ -1189,15 +1189,26 @@ class TtlPaserWolker():
                 break
 
     def if1Context(self, data_list):
-        first = int(self.getData(data_list[1]))
+        first = self.getDataInt(data_list[1])
         # print(f"if1 first={first}")
         if 0 != first:
             self.execute_result(data_list[2:])
 
     def if2Context(self, data_list):
-        first = int(self.getData(data_list[1]))
+        first = self.getDataInt(data_list[1])
         # print(f"if2 first={first}")
         self.execute_result(data_list[3:-1], first)
+
+    def getDataInt(self, data) -> int:
+        result = self.getData(data)
+        try:
+            result = int(result)
+        except ValueError as e:
+            if isinstance(data, dict):
+                if 'line' in data:
+                    raise TypeError(f"### l={data['line']} {type(e).__name__} e={e}")
+            raise  # そのまま上流へ送る
+        return result
 
     def getData(self, data):
         """ 構文解析からデータを抽出する """
@@ -1265,13 +1276,13 @@ class TtlPaserWolker():
         if count == 1:
             return self.getData(data[0])
         # print(f"p9ExpressionContext count={count} data={data[0]['name']} child={data[0]['child'][0]} ")
-        # print("xxx 1")
-        val1 = int(self.getData(data[0]))
+        # print(f"xxx {data[0]}")
+        val1 = self.getDataInt(data[0])
         # print("xxx 2")
         oper = data[1]
         # print(f"p9ExpressionContext count={1} data={oper}")
         # print(f"p9ExpressionContext count={2} data={data[2]['name']} child={data[2]['child']} ")
-        val2 = int(self.getData(data[2]))
+        val2 = self.getDataInt(data[2])
         result = 0
         if '==' == oper or '=' == oper:
             result = val1 == val2
@@ -1285,9 +1296,9 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
+        val1 = self.getDataInt(data[0])
         oper = data[1]
-        val2 = int(self.getData(data[2]))
+        val2 = self.getDataInt(data[2])
         result = 0
         if '<' == oper:
             result = val1 < val2
@@ -1305,8 +1316,8 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
-        val2 = int(self.getData(data[2]))
+        val1 = self.getDataInt(data[0])
+        val2 = self.getDataInt(data[2])
         result = val1 or val2
         if result:
             return 1
@@ -1316,8 +1327,8 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
-        val2 = int(self.getData(data[2]))
+        val1 = self.getDataInt(data[0])
+        val2 = self.getDataInt(data[2])
         result = val1 ^ val2
         if result:
             return 1
@@ -1327,8 +1338,8 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
-        val2 = int(self.getData(data[2]))
+        val1 = self.getDataInt(data[0])
+        val2 = self.getDataInt(data[2])
         result = val1 and val2
         if result:
             return 1
@@ -1338,9 +1349,9 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
+        val1 = self.getDataInt(data[0])
         oper = data[1]
-        val2 = int(self.getData(data[2]))
+        val2 = self.getDataInt(data[2])
         result = 0
         if '>>>' == oper:
             result = val1 >> val2
@@ -1354,9 +1365,9 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
+        val1 = self.getDataInt(data[0])
         oper = data[1]
-        val2 = int(self.getData(data[2]))
+        val2 = self.getDataInt(data[2])
         result = 0
         if '+' == oper:
             result = val1 + val2
@@ -1368,9 +1379,9 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[0]))
+        val1 = self.getDataInt(data[0])
         oper = data[1]
-        val2 = int(self.getData(data[2]))
+        val2 = self.getDataInt(data[2])
         result = 0
         if '*' == oper:
             result = val1 * val2
@@ -1390,7 +1401,7 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = int(self.getData(data[1]))
+        val1 = self.getDataInt(data[1])
         if 0 == val1:
             return 1
         return 0
@@ -2091,7 +2102,7 @@ class TtlPaserWolker():
                 raise TypeError(f"doExec type error l={line}")
         wait = 0
         if 3 <= (data_len):
-            wait = int(self.getData(data_line[2]))
+            wait = self.getDataInt(data_line[2])
         base_directory = "."
         if 4 <= (data_len):
             base_directory = self.getData(data_line[3])

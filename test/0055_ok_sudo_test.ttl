@@ -1,0 +1,25 @@
+
+filename = "build/work.key"
+
+
+basename file_name param1
+target_display = "pingを打つ装置"
+target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+base_display = "SSH接続する装置"
+base_ip = "localhost:2200"
+base_account = "boo"
+next_ssh = 1  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+
+; 特殊コマンドの開始
+my_command_int = 4
+my_command[ 0] = 'sudo ls'
+my_command[ 1] = 'sudo pwd'
+my_command[ 2] = 'sudo xxx'
+my_command[ 3] = 'sudo echo xxx'
+; 特殊コマンドの終了
+
+getdir include_dir
+strconcat include_dir "/base.ttl"
+include include_dir
+
+;
