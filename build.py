@@ -3,20 +3,29 @@ import subprocess
 import shutil
 import re
 
+VERSION = 1.14
 INTERNAL = "nextnextping/dist/nextnextping/_internal/"
 
 
 def main():
     """ メイン処理 """
+    print("hello build version {str(VERSION)}")
     installer()
     file_copy("bin/", "nextnextping/dist/nextnextping/")
-    file_copy("doc/", INTERNAL)
     my_markdown()
+    make_version()
+
+
+def make_version():
+    print(f"make version v={str(VERSION)}")
+    with open("nextnextping/grammer/version.py", "w", encoding="utf-8") as f:
+        f.write("\n")
+        f.write(f"VERSION = {str(VERSION)}\n")
+        f.write("\n")
 
 
 def installer():
     """ pyinstaller を実行する """
-    print("hello build")
     os.chdir("nextnextping")
     #
     command = "pyinstaller --noconsole --noconfirm nextnextping.py --hidden-import=."
@@ -59,12 +68,14 @@ def my_markdown():
     #
     base = "./doc/"
     for filename in os.listdir(base):
-        if not ('.md' in filename):
-            continue
-        filename_html = filename.replace(".md", ".html")
-        md_text = file_load(base + filename)
-        html = markdown_to_html(md_text)
-        file_save(INTERNAL + filename_html, html)
+        if '.md' in filename:
+            filename_html = filename.replace(".md", ".html")
+            md_text = file_load(base + filename)
+            html = markdown_to_html(md_text)
+            file_save(INTERNAL + filename_html, html)
+        elif ".png" in filename:
+            print("cp -r ", base + filename, INTERNAL + filename)
+            shutil.copy2(base + filename, INTERNAL + filename)
 
 
 def file_load(filename: str) -> str:

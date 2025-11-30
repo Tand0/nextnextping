@@ -1,0 +1,195 @@
+
+a = not 1
+assert a == 0 a
+
+a = ~ 1
+assert a == 0 a
+
+a = +1
+assert a == 1 a
+
+a = -1
+assert a == -1 a
+
+
+a = 3 + -1
+assert a == 2 a
+
+a = 1 - 2 * 2
+assert a == -3 a
+
+a = (1 + 2) * 2
+assert a == 6 a
+
+a = 6 % 5
+assert a == 1 a
+
+a = 1 + 2 << 1
+assert a == 6 a
+
+a = (1 + 2) << 1
+assert a == 6 a
+
+a = 1 + (2 << 1)
+assert a == 5 a
+
+a = 1 + (4 >> 1)
+assert a == 3 a
+
+a = 1 + (4 >>> 1)
+assert a == 3 a
+a = 8 >>> 5 - 2 * 2
+assert a == 4 a
+
+b = 1
+a = b and (8 >>> 5 - 2 * 2 == 4)
+assert a a b
+
+b = 0
+a = b and (8 >>> 5 - 2 * 2 == 4)
+assert a == 0 a b
+
+a = $F00F
+b = $F0F0
+c = a and b
+assert c == $F000 a b c
+
+a = $F00F
+b = $F0F0
+c = a & b
+assert c == $F000 a b c
+
+
+a = $F00F
+b = $F0F0
+c = a xor b
+assert c == $00FF a b c
+
+a = $F00F
+b = $F0F0
+c = a ^ b
+assert c == $00FF a b c
+
+a = $F00F
+b = $F0F0
+c = a or b
+assert c == $F0FF a b c
+
+a = $F00F
+b = $F0F0
+c = a | b
+assert c == $F0FF a b c
+
+
+a = 0
+b = 1
+assert (a < b) != 0 a b
+
+a = 1
+b = 0
+assert (a < b) == 0 a b
+
+a = 1
+b = 1
+assert (a < b) == 0 a b
+
+a = 0
+b = 1
+assert (a > b) == 0 a b
+
+a = 1
+b = 0
+assert (a > b) != 0 a b
+
+a = 1
+b = 1
+assert (a > b) == 0 a b
+
+a = 0
+b = 1
+assert (a <= b) != 0 a b
+
+a = 1
+b = 0
+assert (a <= b) == 0 a b
+
+a = 1
+b = 1
+assert (a <= b) != 0 a b
+
+a = 0
+b = 1
+assert (a >= b) == 0 a b
+
+a = 1
+b = 0
+assert (a >= b) != 0 a b
+
+a = 1
+b = 1
+assert (a >= b) != 0 a b
+
+a = 0
+b = 1
+assert (a == b) == 0 a b
+
+a = 1
+b = 1
+assert (a == b) != 0 a b
+
+a = 0
+b = 1
+assert (a = b) == 0 a b
+
+a = 1
+b = 1
+assert (a = b) != 0 a b
+
+a = 0
+b = 1
+assert (a <> b) != 0 a b
+
+a = 1
+b = 1
+assert (a <> b) == 0 a b
+
+a = 0
+b = 1
+assert (a != b) != 0 a b
+
+a = 1
+b = 1
+assert (a != b) == 0 a b
+
+a = 0
+b = 0
+assert (a && b) == 0 a b
+a = 1
+b = 0
+assert (a && b) == 0 a b
+a = 0
+b = 1
+assert (a && b) == 0 a b
+a = 1
+b = 1
+assert (a && b) != 0 a b
+
+a = 0
+b = 0
+assert (a || b) == 0 a b
+a = 0
+b = 1
+assert (a || b) != 0 a b
+a = 1
+b = 0
+assert (a || b) != 0 a b
+a = 1
+b = 1
+assert (a || b) != 0 a b
+
+
+
+
+; 最後までいったらOK
+result = 1
+;

@@ -250,6 +250,7 @@ connect 'myserver /ssh /2 /user=username /passwd=password /keyfile=private-key-f
 
 ### command line に接続
 - command lineに入ります。pingなど好きなコマンドが打てます。
+- python起動の場合、windowsでは `cmd` 、それ以外では `/bin/sh` が起動します。
 
 ```
 connect '/cmd'

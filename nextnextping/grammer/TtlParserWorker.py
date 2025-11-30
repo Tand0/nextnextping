@@ -20,6 +20,7 @@ import threading
 from cryptography.fernet import Fernet
 from cryptography.fernet import InvalidToken
 import base64
+from .version import VERSION
 
 
 class MyFindfirst():
@@ -65,7 +66,10 @@ class MyShell():
         self.data = ''
         self.lock = threading.Lock()
         self.active = 1
-        self.process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        command = ['cmd']
+        if os.name != 'nt':
+            command = ['/bin/sh']
+        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         thread = MyThread(self, self.process.stdout)
         thread.start()
         thread = MyThread(self, self.process.stderr)
@@ -223,12 +227,12 @@ class TtlParseTreeVisitor(ParseTreeVisitor):
         x = TtlParserLexer.ruleNames[x - 1]
         y = node.getText()
         line_number = node.getSymbol().line
-        raise TypeError(f"visitErrorNode l={str(line_number)} type={x} text={y}")
+        raise TypeError(f"### l={str(line_number)} visitErrorNode type={x} text={y}")
 
 
 class ThrowingErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise TypeError(f"Token recognition error at line {line}:{column} - {msg}")
+        raise TypeError(f"### l={line}:{column} Token recognition error - {msg}")
 
 
 class TtlPaserWolker():
@@ -351,7 +355,7 @@ class TtlPaserWolker():
                 self.correctLabel()
                 #
         except Exception as e:
-            print(f"### except read file exception! f={str(e)}")
+            self.setLogInner(f"### except read file exception! f={str(e)}")
             self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
             raise  # そのまま上流へ送る
         #
@@ -364,7 +368,7 @@ class TtlPaserWolker():
             # exitコマンドが呼び出されときは正常終了です
             pass
         except Exception as e:
-            print(f"### except execute_result f={str(e)}")
+            self.setLogInner(f"### except execute_result f={str(e)}")
             self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
             raise  # そのまま上流へ送る
 
@@ -441,7 +445,7 @@ class TtlPaserWolker():
                 if ifFlag == 0:
                     self.execute_result(x['child'][1:])
             else:
-                self.stop(error=f"execute_result Unkown name={name} line={line} x={x}")
+                self.stop(error=f"### l={line} execute_result Unkown name={name} x={x}")
             if self.end_flag:
                 break
 
@@ -475,7 +479,7 @@ class TtlPaserWolker():
                 elif 'call' == command_name:
                     p1 = str(self.getKeywordName(x['child'][1]))
                     # print(f"call label={p1}")
-                    self.callContext(p1)
+                    self.callContext(line, p1)
                 elif 'bplusrecv' == command_name:
                     self.doBplusrecv(command_name, line)
                 elif 'bplussend' == command_name:
@@ -971,7 +975,7 @@ class TtlPaserWolker():
                     self.doIfdefined(p1)
                 elif 'intdim' == command_name:
                     p1 = x['child'][1]
-                    p2 = int(str(self.getData(x['child'][2])))
+                    p2 = self.getDataInt(x['child'][2])
                     for i in range(p2):
                         self.setValue(p1 + '[' + str(i) + ']', 0)
                 elif 'random' == command_name:
@@ -985,11 +989,11 @@ class TtlPaserWolker():
                     os.environ[p1] = p2
                     # print(f"setenv2 c=({command_name}) l={p1} r={p2}")
                 elif 'setexitcode' == command_name:
-                    p1 = int(str(self.getData(x['child'][1])))
+                    p1 = self.getDataInt(x['child'][1])
                     self.doSetexitcode(p1)
                 elif 'strdim' == command_name:
                     p1 = x['child'][1]
-                    p2 = int(str(self.getData(x['child'][2])))
+                    p2 = self.getDataInt(x['child'][2])
                     for i in range(p2):
                         self.setValue(p1 + '[' + str(i) + ']', '')
                 elif 'uptime' == command_name:
@@ -1013,7 +1017,7 @@ class TtlPaserWolker():
             elif 'LabelContext' != name:
                 pass
             else:
-                self.stop(error=f"Unkown name={name} line={line}")
+                self.stop(error=f"### l={line} Unkown name={name}")
             if self.end_flag:
                 break
 
@@ -1050,12 +1054,21 @@ class TtlPaserWolker():
     def printCommand(self, name: str, line: int, data_list) -> str:
         message = f"### l={line} c={name}"
         for data in data_list:
+            keywordName = None
+            try:
+                keywordName = self.getKeywordName(data)
+            except TypeError:
+                # print(f"type error {e}")
+                pass
             result = self.getData(data)
             if isinstance(result, int):
                 result = str(result)
             elif isinstance(result, Label):
                 result = "LABEL"
-            message = message + f" p({result})"
+            if keywordName is None:
+                message = message + f" p({result})"
+            else:
+                message = message + f" p({keywordName}/{result})"
         message = message
         self.setLog(message + "\n")
         return message
@@ -1091,15 +1104,15 @@ class TtlPaserWolker():
             if self.end_flag:
                 break
 
-    def callContext(self, label):
+    def callContext(self, line, label):
         #
         try:
             # print("callContest")
             label = self.getValue(label, error_stop=False)
             if label is None:
-                raise TypeError(f"No hit label error none label={label}")
+                raise TypeError(f"### l={line} No hit label error none label={label}")
             if not isinstance(label, Label):
-                raise TypeError(f"No hit label error label={label}")
+                raise TypeError(f"### l={line} No hit label error label={label}")
             for token in label.getTokenList():
                 # print(f"hit x {token}")
                 self.execute_result([token])
@@ -1200,10 +1213,10 @@ class TtlPaserWolker():
         self.execute_result(data_list[3:-1], first)
 
     def getDataInt(self, data) -> int:
-        result = self.getData(data)
         try:
+            result = self.getData(data)
             result = int(result)
-        except ValueError as e:
+        except (TypeError, ValueError) as e:
             if isinstance(data, dict):
                 if 'line' in data:
                     raise TypeError(f"### l={data['line']} {type(e).__name__} e={e}")
@@ -1226,8 +1239,6 @@ class TtlPaserWolker():
         elif 'P8ExpressionContext' == data['name']:
             result = self.p8ExpressionContext(data['child'])
         elif 'P7ExpressionContext' == data['name']:
-            result = self.p8ExpressionContext(data['child'])
-        elif 'P6ExpressionContext' == data['name']:
             result = self.p7ExpressionContext(data['child'])
         elif 'P6ExpressionContext' == data['name']:
             result = self.p6ExpressionContext(data['child'])
@@ -1259,17 +1270,21 @@ class TtlPaserWolker():
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = self.getData(data[0])
-        val2 = self.getData(data[2])
-        return val1 or val2
+        val1 = self.getDataInt(data[0])
+        val2 = self.getDataInt(data[2])
+        result = val1 or val2
+        # print(f"p11 {val1:x}/{val2:x}/{result:x}")
+        return result
 
     def p10ExpressionContext(self, data):
         count = len(data)
         if count == 1:
             return self.getData(data[0])
-        val1 = self.getData(data[0])
-        val2 = self.getData(data[2])
-        return val1 and val2
+        val1 = self.getDataInt(data[0])
+        val2 = self.getDataInt(data[2])
+        result = val1 and val2
+        # print(f"p10 {val1:x}/{val2:x}/{result:x}")
+        return result
 
     def p9ExpressionContext(self, data: list):
         count = len(data)
@@ -1317,22 +1332,23 @@ class TtlPaserWolker():
         if count == 1:
             return self.getData(data[0])
         val1 = self.getDataInt(data[0])
+        # oper = data[1]
         val2 = self.getDataInt(data[2])
-        result = val1 or val2
-        if result:
-            return 1
-        return 0
+        result = val1 | val2
+        # print(f"p7 oper={oper}")
+        return result
 
     def p6ExpressionContext(self, data):
+        # print(f"p6 d={data}")
         count = len(data)
         if count == 1:
             return self.getData(data[0])
         val1 = self.getDataInt(data[0])
+        # oper = data[1]
         val2 = self.getDataInt(data[2])
         result = val1 ^ val2
-        if result:
-            return 1
-        return 0
+        # print(f"p6 oper={oper} {val1:x}/{val2:x}/{result:x}")
+        return result
 
     def p5ExpressionContext(self, data):
         count = len(data)
@@ -1340,10 +1356,9 @@ class TtlPaserWolker():
             return self.getData(data[0])
         val1 = self.getDataInt(data[0])
         val2 = self.getDataInt(data[2])
-        result = val1 and val2
-        if result:
-            return 1
-        return 0
+        result = val1 & val2
+        # print(f"p5 {val1:x}/{val2:x}/{result:x}")
+        return result
 
     def p4ExpressionContext(self, data):
         count = len(data)
@@ -1518,8 +1533,10 @@ class TtlPaserWolker():
             raise TypeError("keywordName name not in data")
         #
         # this is dict
-        if 'KeywordContext' != data['name']:
-            raise TypeError(f"keywordName name is not KeywordContext line={data['line']}")
+        if 'StrExpressionContext' == data['name']:
+            return self.getKeywordName(data['child'][0])
+        elif 'KeywordContext' != data['name']:
+            raise TypeError(f"### l={data['line']} keywordName name is not KeywordContext {data}")
         #
         data = data['child']
         # print(f"data={data} len={len(data)}")
@@ -2099,7 +2116,7 @@ class TtlPaserWolker():
             elif 'hide' == show:
                 show = 0  # SW_HIDE
             else:
-                raise TypeError(f"doExec type error l={line}")
+                raise TypeError(f"### l={line} doExec type error")
         wait = 0
         if 3 <= (data_len):
             wait = self.getDataInt(data_line[2])
@@ -2565,7 +2582,7 @@ class TtlPaserWolker():
     def doGetver(self, strvar: str, target_version: float):
         """ バージョン情報 オーバーライドして使ってください """
         # print("doGetver")
-        now_version = float(1.0)
+        now_version = float(VERSION)
         self.setValue(strvar, str(now_version))
         if target_version is not None:
             if now_version == target_version:

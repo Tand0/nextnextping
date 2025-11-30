@@ -18,6 +18,7 @@ import re
 import locale
 import csv
 from grammer.TtlParserWorker import TtlPaserWolker
+from grammer.version import VERSION
 import webbrowser
 
 SAMPLE_TTL = '''
@@ -202,7 +203,7 @@ elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
         call call_ending
         end
     endif
-elseif target_type = 2 then 
+elseif target_type = 2 then
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'traceroute '
         strconcat command target_ip
@@ -742,7 +743,7 @@ class MyTtlPaserWolker(TtlPaserWolker):
 
 class MyThread():
     def __init__(self):
-        self.stop_flag = True
+        self.non_stop_flag = True
         self.next_next_ping = None
         self.threading = None
         self.values_values = []
@@ -754,7 +755,7 @@ class MyThread():
         self.values_values = values_values
 
     def start(self):
-        while (self.stop_flag):
+        while self.non_stop_flag:
             for values in self.values_values:
                 (result, date, display_name, type, command) = values
                 #
@@ -794,17 +795,17 @@ class MyThread():
                     0, lambda: self.next_next_ping.command_ping_threading(result, date, type, command))
                 self.command_status_threading(f"{result} {display_name} ({type}) {command}")
                 #
-                if not self.stop_flag:
+                if not self.non_stop_flag:
                     break
                 # print(f"wait_time={self.next_next_ping.init['wait_time']}")
                 time.sleep(self.next_next_ping.init['wait_time'])
-                if not self.stop_flag:
+                if not self.non_stop_flag:
                     break
             #
             # loopフラグが落ちていたら終了する
             if self.next_next_ping.init["loop"] is False:
-                messagebox.showinfo("Info", "ping end!")
                 self.stop()
+                messagebox.showinfo("Info", "ping end!")
                 break
 
     def ttl_result(self, type, param):
@@ -858,11 +859,16 @@ class MyThread():
             command_next = command_next.replace(key, value)
         command_next_list = command_next.split(' ')
         proc = None
+        default_locale = locale.getencoding()
         try:
+            if os.name == 'nt':
+                # 英語にしないと日本語で表示され、OK/NGが分からなくなる
+                subprocess.Popen(['chcp.com', '65001'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            #
             # print(f"f f={command_next_list}")
             proc = subprocess.Popen(command_next_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
             # print(f"T2={type} C=/{command}/")
-            while time.time() < seconds:
+            while self.non_stop_flag and time.time() < seconds:
                 if proc.stdout.readable():
                     buffer = proc.stdout.read(1)
                     if buffer is None:
@@ -886,6 +892,10 @@ class MyThread():
         except subprocess.TimeoutExpired:
             pass
         finally:
+            if os.name == 'nt':
+                # localeをもとに戻す
+                subprocess.Popen(['chcp.com', default_locale], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            #
             if proc is not None:
                 try:
                     proc.stdout.close()
@@ -904,7 +914,7 @@ class MyThread():
     def stop(self):
         if self.myTtlPaserWolker is not None:
             self.myTtlPaserWolker.stop()
-        self.stop_flag = False
+        self.non_stop_flag = False
 
     def command_status_threading(self, message: str):
         self.next_next_ping.root.after(
@@ -1132,7 +1142,8 @@ class NextNextPing():
         # logをクリアする
         self.log = {}
         #
-        if self.my_thread is None:
+        if self.my_thread is None or not self.my_thread.non_stop_flag:
+            #
             message = "Ping start!"
             self.command_status_threading(message)
             messagebox.showinfo("Info", message)
@@ -1147,19 +1158,28 @@ class NextNextPing():
             self.my_thread.set_therad(self, thread, values_values)
             thread.start()
         else:
-            message = "Ping already start!"
+            message = "Ping already start! (Stop)"
             self.command_status_threading(message)
             messagebox.showinfo("Info", message)
             self.stop()
 
     def command_stop(self):
-        if self.my_thread is None:
-            message = "Ping already stop!"
-        else:
-            message = "Ping stop!"
+        if self.my_thread is not None:
+            # スレッド側で終わったダイアログをだすので、こちらは不要
             self.stop()
+            return
+        message = "Ping already stop!"
         self.command_status_threading(message)
         messagebox.showinfo("Info", message)
+
+    def command_delete(self):
+        #
+        # 処理止めないと消えたものを実行しようとする
+        self.stop()
+        #
+        selected_items = self.tree.selection()
+        for item_id in selected_items:
+            self.tree.delete(item_id)
 
     def stop(self):
         my_thread = self.my_thread
@@ -1196,7 +1216,8 @@ class NextNextPing():
                 message = message + str(d)
         self.status_var.set(message)
 
-    def on_select(self, _):
+    def on_select_double(self, _):
+
         selected = self.tree.selection()
         if not selected:
             return
@@ -1227,8 +1248,7 @@ class NextNextPing():
         string = string + stdout
         self.log_text.delete("1.0", tk.END)
         self.log_text.insert(1.0, string)
-
-    def on_select_double(self, _):
+        #
         self.notebook.select(2)
 
     INIT_DATA = {
@@ -1307,7 +1327,8 @@ class NextNextPing():
         #
         # Help メニュー
         help_menu = tk.Menu(menu_bar, tearoff=False)
-        help_menu.add_command(label="Help", command=self.brows_help)
+        help_menu.add_command(label="Help", command=self.help_brows)
+        help_menu.add_command(label="About", command=self.help_about)
         menu_bar.add_cascade(label="Help", menu=help_menu)
         #
         self.notebook = ttk.Notebook(self.root)
@@ -1350,10 +1371,9 @@ class NextNextPing():
         # フレームで Treeview と Scrollbar をまとめる
         top_frame = tk.Frame(tab2)
         top_frame.pack(side=tk.TOP)
-        top_button = tk.Button(top_frame, text="Ping", command=self.command_ping)
-        top_button.pack(side=tk.LEFT)
-        top_button = tk.Button(top_frame, text="Stop", command=self.command_stop)
-        top_button.pack(side=tk.LEFT)
+        tk.Button(top_frame, text="Ping", command=self.command_ping).pack(side=tk.LEFT)
+        tk.Button(top_frame, text="Stop", command=self.command_stop).pack(side=tk.LEFT)
+        tk.Button(top_frame, text="Delete", command=self.command_delete).pack(side=tk.LEFT)
         main_frame = ttk.Frame(tab2)
         self.tree = ttk.Treeview(main_frame, columns=tree_colum)
         self.tree.column('#0', width=0, stretch='no')
@@ -1361,7 +1381,6 @@ class NextNextPing():
             self.tree.column(var[0], anchor=var[1], width=var[2], minwidth=var[2], stretch=var[3])
             self.tree.heading(var[0], text=var[0])
         self.tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
-        self.tree.bind("<<TreeviewSelect>>", self.on_select)
         self.tree.bind("<Double-Button-1>", self.on_select_double)
         # スクロールバーの設定
         vsb = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.tree.yview)
@@ -1510,7 +1529,7 @@ class NextNextPing():
         top_frame.pack(side=tk.TOP)
         top_button = tk.Button(top_frame, text="Create", command=self.create_tool)
         top_button.pack(side=tk.LEFT)
-        top_button = tk.Button(top_frame, text="Delete", command=self.delete_tooly)
+        top_button = tk.Button(top_frame, text="Delete", command=self.delete_tool)
         top_button.pack(side=tk.LEFT)
         #
         column = []
@@ -1728,7 +1747,29 @@ class NextNextPing():
 
         return values
 
-    def delete_tooly(self):
+    def help_about(self):
+        # モーダルダイアログ
+        dialog = tk.Toplevel(self.root)
+        dialog.title('About nextnextping')
+        dialog.geometry('400x200')
+        #
+        label_text_list = []
+        label_text_list.append(f"nextnextping Version {str(VERSION)} (C)2025 Toshikazu Ando")
+        label_text_list.append("")
+        label_text_list.append("Powerd by:")
+        label_text_list.append("  ANTLR 4.13.2")
+        label_text_list.append(f"  Python {sys.version}")
+        label_text_list.append("")
+        label_text_list.append("Author: https://github.com/Tand0/nextnextping")
+        #
+        for i, label_text in enumerate(label_text_list):
+            tk.Label(dialog, text=label_text, wraplength=380).grid(row=i, column=0, padx=10, pady=1, sticky=tk.W)
+
+        # ダイアログが閉じられるまで待つ
+        dialog.grab_set()
+        self.root.wait_window(dialog)
+
+    def delete_tool(self):
         selected_items = self.tool_tree.selection()
         for item in selected_items:
             self.tool_tree.delete(item)
@@ -2026,7 +2067,7 @@ class NextNextPing():
         dialog.grab_set()
         self.root.wait_window(dialog)
 
-    def brows_help(self):
+    def help_brows(self):
         base_file = "_internal/README.html"
         full_path = os.path.join(self.current_dir, base_file)
         path = os.path.abspath(full_path)

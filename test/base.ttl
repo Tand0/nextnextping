@@ -179,7 +179,7 @@ elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
         call call_ending
         end
     endif
-elseif target_type = 2 then 
+elseif target_type = 2 then
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'traceroute '
         strconcat command target_ip
