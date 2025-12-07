@@ -11,11 +11,6 @@
         src: ../nextnextping/grammer/
         dest: collections/ansible_collections/tand0/ttl/plugins/module_utils
 
-    - name: file copy (local environment)
-      copy:
-        src: collections
-        dest: /home/t-ando/work/
-
     - name: get version
       version:
       register: version
@@ -26,6 +21,11 @@
         path: collections/ansible_collections/tand0/ttl/galaxy.yml
         regexp: '^version:'
         line: 'version: "{{ version.version }}.1"'
+
+    - name: file copy (local environment)
+      copy:
+        src: collections
+        dest: /home/t-ando/work/
 
     - name: Execute ansible-test sanity
       command: ansible-test sanity --requirements --python-interpreter {{pythoninterpreter}} --skip-test import --skip-test validate-modules

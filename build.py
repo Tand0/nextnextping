@@ -6,7 +6,7 @@ import re
 import yaml
 
 
-VERSION = 1.16
+VERSION = 1.18
 
 INTERNAL = "nextnextping/dist/nextnextping/_internal/"
 ANSIBLE_README = "forwsl2/collections/ansible_collections/tand0/ttl/README.md"
@@ -99,7 +99,7 @@ def main():
     make_version()
     ansible_doc_to_html()
     site_import()
-    shutil.make_archive('nextnextping/dist/nextnextping', 'zip', 'nextnextping/dist/nextnextping')
+    shutil.make_archive(f'nextnextping/dist/nextnextping-{VERSION}.1', 'zip', 'nextnextping/dist/nextnextping')
 
 
 def make_version():

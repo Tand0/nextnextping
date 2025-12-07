@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .TtlParserLexer import TtlParserLexer
-from .TtlParserParser import TtlParserParser
+from .ttl_parser_lexer import TtlParserLexer
+from .ttl_parser_parser import TtlParserParser
 from antlr4.InputStream import InputStream
 from antlr4.CommonTokenStream import CommonTokenStream
 from antlr4.tree.Tree import ParseTreeVisitor

@@ -109,8 +109,8 @@ values:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.tand0.ttl.plugins.module_utils.TtlParserWorker import TtlPaserWolker
-from ansible_collections.tand0.ttl.plugins.module_utils.TtlParserWorker import Label
+from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import TtlPaserWolker
+from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import Label
 import os
 
 

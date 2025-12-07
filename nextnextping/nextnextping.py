@@ -18,7 +18,7 @@ import subprocess
 import re
 import locale
 import csv
-from grammer.TtlParserWorker import TtlPaserWolker
+from grammer.ttl_parser_worker import TtlPaserWolker
 from grammer.version import VERSION
 import webbrowser
 import platform

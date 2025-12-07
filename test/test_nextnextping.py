@@ -648,7 +648,7 @@ class ServerStarter():
         ["config", "^\\s*policy-map\\s+", "config-pmap", 'Router(config-pmap)# ', ''],
         ["config-pmap", "^\\s*class\\s+", "config-pmap-c", 'Router(config-pmap-c)# ', ''],
         ["qx", "^\\s*display\\s+current-configuration", 'more', '-- More --', DISPLAY_CURRENT_CONFIGURATION],
-        ["qx", "^\\s*system-view", "qx-config", '[Switch] ', ''],
+        ["qx", "^\\s*system-view", "qx-config", '[Switch]', ''],
         ["qx-config", "^\\s*interface\\s+gigabitethernet", "qx-gbe", '[Switch-GigabitEthernet] ', ''],
         ["qx-config", "^\\s*interface\\s+vlan", "qx-Vlan", '[Switch-Vlan-interface] ', ''],
         ["qx-config", "^\\s*traffic\\s+classifier", "qx-classifier", '[Switch-classifier] ', ''],

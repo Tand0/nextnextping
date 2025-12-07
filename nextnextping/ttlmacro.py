@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from grammer.TtlParserWorker import TtlPaserWolker
+from grammer.ttl_parser_worker import TtlPaserWolker
 
 
 class MyTtlPaserWolker(TtlPaserWolker):

@@ -9,7 +9,7 @@ namespace: tand0
 name: ttl
 
 # The version of the collection. Must be compatible with semantic versioning
-version: "1.16.1"
+version: "1.18.1"
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
@@ -27,7 +27,8 @@ description: your collection description
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- MIT License
+- MIT
+- GPL-3.0-or-later
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'
