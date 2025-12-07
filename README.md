@@ -92,6 +92,7 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
   - 以下、カレントフォルダを `.` とする
   - 必要なパッケージが入ってなかったら入れる
   - 別のPCにインストールしたときはフォルダ名等は見直す
+  - `python build.py` の中にあるバージョン情報を変更する 
   - `python build.py` を実行する
   - `cd .\bin` に移動する
         - `python ..\nextnextping\nextnextping` を実行して動作に問題ないことを確認する
