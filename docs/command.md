@@ -1,16 +1,16 @@
 
-# Terawaros Tkekitou Language コマンドリファレンス
+# TTL command reference
 
-コマンドの分類
+Command index
 
-- 通信コマンド
+- Communication commands
   <!-- - [bplusrecv](https://teratermproject.github.io/manual/5/ja/macro/command/bplusrecv.html) -->
   <!-- - [bplussend](https://teratermproject.github.io/manual/5/ja/macro/command/bplussend.html) -->
   <!-- - [callmenu](https://teratermproject.github.io/manual/5/ja/macro/command/callmenu.html) -->
   - [changedir](https://teratermproject.github.io/manual/5/ja/macro/command/changedir.html)
   <!-- -  [clearscreen](https://teratermproject.github.io/manual/5/ja/macro/command/clearscreen.html) -->
   - [closett](https://teratermproject.github.io/manual/5/ja/macro/command/closett.html)
-  - [connect](https://teratermproject.github.io/manual/5/ja/macro/command/connect.html) // 補足あり  [connect](#connect)
+  - [connect](https://teratermproject.github.io/manual/5/ja/macro/command/connect.html) // Supplementary information  [connect](#connect)
   <!-- -  [cygconnect](https://teratermproject.github.io/manual/5/ja/macro/command/cygconnect.html) -->
   - [disconnect](https://teratermproject.github.io/manual/5/ja/macro/command/disconnect.html)
   - [dispstr](https://teratermproject.github.io/manual/5/ja/macro/command/dispstr.html)
@@ -28,7 +28,7 @@
   <!-- - [logautoclosemode](https://teratermproject.github.io/manual/5/ja/macro/command/logautoclosemode.html) -->
   - [logclose](https://teratermproject.github.io/manual/5/ja/macro/command/logclose.html)
   - [loginfo](https://teratermproject.github.io/manual/5/ja/macro/command/loginfo.html)
-  - [logopen](https://teratermproject.github.io/manual/5/ja/macro/command/logopen.html) // 補足あり  [logopen](#logopen)
+  - [logopen](https://teratermproject.github.io/manual/5/ja/macro/command/logopen.html) // Supplementary information  [logopen](#logopen)
   - [logpause](https://teratermproject.github.io/manual/5/ja/macro/command/logpause.html)
   <!-- - [logrotate](https://teratermproject.github.io/manual/5/ja/macro/command/logrotate.html) -->
   - [logstart](https://teratermproject.github.io/manual/5/ja/macro/command/logstart.html)
@@ -37,14 +37,13 @@
   <!-- - [quickvansend](https://teratermproject.github.io/manual/5/ja/macro/command/quickvansend.html) -->
   - [recvln](https://teratermproject.github.io/manual/5/ja/macro/command/recvln.html)
   <!-- - [restoresetup](https://teratermproject.github.io/manual/5/ja/macro/command/restoresetup.html) -->
-   - [scprecv](https://teratermproject.github.io/manual/5/ja/macro/command/scprecv.html) // 諸般の事情で中身はsftpになっています
-   - [scpsend](https://teratermproject.github.io/manual/5/ja/macro/command/scpsend.html) // 諸般の事情で中身はsftpになっています
+   - [scprecv](https://teratermproject.github.io/manual/5/ja/macro/command/scprecv.html) // The contents are sftp
+   - [scpsend](https://teratermproject.github.io/manual/5/ja/macro/command/scpsend.html) // The contents are sftp
   - [send](https://teratermproject.github.io/manual/5/ja/macro/command/send.html)
   <!-- - [sendbinary](https://teratermproject.github.io/manual/5/ja/macro/command/sendbinary.html) -->
-  - [sendbreak](https://teratermproject.github.io/manual/5/ja/macro/command/sendbreak.html) // `Ctrl-C` を投げるだけ
+  - [sendbreak](https://teratermproject.github.io/manual/5/ja/macro/command/sendbreak.html) // Send to `Ctrl-C`
   <!-- - [sendbroadcast](https://teratermproject.github.io/manual/5/ja/macro/command/sendbroadcast.html) -->
-  - [sendfile](https://teratermproject.github.io/manual/5/ja/macro/command/sendfile.html) // 未実装
-    - [exec](https://teratermproject.github.io/manual/5/ja/macro/command/exec.html)でSCPを呼ぶか [logopen](#logopen) で `/cmd` モードから SFPTを呼んでください
+  - [sendfile](https://teratermproject.github.io/manual/5/ja/macro/command/sendfile.html) // Not implemented
   <!-- - [sendkcode](https://teratermproject.github.io/manual/5/ja/macro/command/sendkcode.html) -->
   - [sendln](https://teratermproject.github.io/manual/5/ja/macro/command/sendln.html)
   <!-- - [sendlnbroadcast](https://teratermproject.github.io/manual/5/ja/macro/command/sendlnbroadcast.html) -->
@@ -67,7 +66,7 @@
   - [testlink](https://teratermproject.github.io/manual/5/ja/macro/command/testlink.html)
   - [unlink](https://teratermproject.github.io/manual/5/ja/macro/command/unlink.html)
   - [wait](https://teratermproject.github.io/manual/5/ja/macro/command/wait.html)
-  - [wait4all](https://teratermproject.github.io/manual/5/ja/macro/command/wait4all.html) // 実質waitと同じ
+  - [wait4all](https://teratermproject.github.io/manual/5/ja/macro/command/wait4all.html) // Same as wait
   <!-- - [waitevent](https://teratermproject.github.io/manual/5/ja/macro/command/waitevent.html) -->
   - [waitln](https://teratermproject.github.io/manual/5/ja/macro/command/waitln.html)
   - [waitn](https://teratermproject.github.io/manual/5/ja/macro/command/waitn.html)
@@ -80,7 +79,7 @@
   <!-- - [zmodemrecv](https://teratermproject.github.io/manual/5/ja/macro/command/zmodemrecv.html) -->
   <!-- - [zmodemsend](https://teratermproject.github.io/manual/5/ja/macro/command/zmodemsend.html) -->
 
-- 制御コマンド
+- Control commands
   - [break](./syntax.md#break)
   - [call](./syntax.md#call)
   - [continue](./syntax.md#continue)
@@ -89,7 +88,7 @@
   - [execcmnd](https://teratermproject.github.io/manual/5/ja/macro/command/execcmnd.html)
   - [exit](./syntax.md#endexit)
   - [for, next](./syntax.md#for)
-  - goto // 実装していません。本家はインタプリタですが、こちらはコンパイラなので実装が難しいです。
+  - goto // It's not implemented.  I hate GOTO statements. When I was little, my mother forced me to use GOTO in Error Handling in VBA, but now I'm have the right not to use GOTO statements.
   - [if, then, elseif, else, endif](./syntax.md#if)
   - [include](./syntax.md#include)
   - [mpause](https://teratermproject.github.io/manual/5/ja/macro/command/mpause.html)
@@ -98,7 +97,7 @@
   - [until, enduntil](./syntax.md#until)
   - [while, endwhile](./syntax.md#while)
 
-- 文字列操作コマンド
+- String operation commands
   - [code2str](https://teratermproject.github.io/manual/5/ja/macro/command/code2str.html)
   - [expandenv](https://teratermproject.github.io/manual/5/ja/macro/command/expandenv.html)
   - [int2str](https://teratermproject.github.io/manual/5/ja/macro/command/int2str.html)
@@ -123,7 +122,7 @@
   - [tolower](https://teratermproject.github.io/manual/5/ja/macro/command/tolower.html)
   - [toupper](https://teratermproject.github.io/manual/5/ja/macro/command/toupper.html)
 
-- ファイル操作コマンド
+- File operation commands
   - [basename](https://teratermproject.github.io/manual/5/ja/macro/command/basename.html)
   - [dirname](https://teratermproject.github.io/manual/5/ja/macro/command/dirname.html)
   - [fileclose](https://teratermproject.github.io/manual/5/ja/macro/command/fileclose.html)
@@ -157,36 +156,36 @@
   - [setdir](https://teratermproject.github.io/manual/5/ja/macro/command/setdir.html)
   <!-- - [setfileattr](https://teratermproject.github.io/manual/5/ja/macro/command/setfileattr.html) -->
 
-- パスワードコマンド
+- Password commands
   - [delpassword](https://teratermproject.github.io/manual/5/ja/macro/command/delpassword.html)
-  - [delpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/delpassword2.html) // 補足あり [password](#password)
+  - [delpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/delpassword2.html) // Supplementary information [password](#password)
   - [getpassword](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword.html)
-  - [getpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword2.html) // 補足あり [password](#password)
+  - [getpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/getpassword2.html) // Supplementary information [password](#password)
   - [ispassword](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword.html)
   - [ispassword2](https://teratermproject.github.io/manual/5/ja/macro/command/ispassword2.html)
-  - [passwordbox](https://teratermproject.github.io/manual/5/ja/macro/command/passwordbox.html) // 制限あり
+  - [passwordbox](https://teratermproject.github.io/manual/5/ja/macro/command/passwordbox.html) // Limited
   - [setpassword](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword.html)
-  - [setpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword2.html) // 補足あり [password](#password)
+  - [setpassword2](https://teratermproject.github.io/manual/5/ja/macro/command/setpassword2.html) // Supplementary information [password](#password)
 
-- その他のコマンド
-  - [assert](#assert) // 独自コマンド
+- Miscellaneous commands
+  - [assert](#assert) // Original commands
   <!-- - [beep](https://teratermproject.github.io/manual/5/ja/macro/command/beep.html) -->
-  - [bringupbox](https://teratermproject.github.io/manual/5/ja/macro/command/bringupbox.html)  // 制限あり
+  - [bringupbox](https://teratermproject.github.io/manual/5/ja/macro/command/bringupbox.html)  // Limited
   - [checksum8](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html) -->
   - [checksum8file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum8.html)
   - [checksum16](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html)
   - [checksum16file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum16.html)
   - [checksum32](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html)
   - [checksum32file](https://teratermproject.github.io/manual/5/ja/macro/command/checksum32.html)
-  - [closesbox](https://teratermproject.github.io/manual/5/ja/macro/command/closesbox.html)  // 制限あり
+  - [closesbox](https://teratermproject.github.io/manual/5/ja/macro/command/closesbox.html)  // Limited
   <!-- - [clipb2var](https://teratermproject.github.io/manual/5/ja/macro/command/clipb2var.html) -->
   - [crc16](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html)  // CRC-16/IBM-SDLC
   - [crc16file](https://teratermproject.github.io/manual/5/ja/macro/command/crc16.html) // CRC-16/IBM-SDLC
   - [crc32](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html)  // CRC-32/ISO-HDLC
   - [crc32file](https://teratermproject.github.io/manual/5/ja/macro/command/crc32.html)  // CRC-32/ISO-HDLC
   - [exec](https://teratermproject.github.io/manual/5/ja/macro/command/exec.html)
-  - [dirnamebox](https://teratermproject.github.io/manual/5/ja/macro/command/dirnamebox.html)  // 制限あり
-  - [filenamebox](https://teratermproject.github.io/manual/5/ja/macro/command/filenamebox.html)  // 制限あり
+  - [dirnamebox](https://teratermproject.github.io/manual/5/ja/macro/command/dirnamebox.html)  // Limited
+  - [filenamebox](https://teratermproject.github.io/manual/5/ja/macro/command/filenamebox.html)  // Limited
   - [getdate](https://teratermproject.github.io/manual/5/ja/macro/command/getdate.html)
   - [getenv](https://teratermproject.github.io/manual/5/ja/macro/command/getenv.html)
   - [getipv4addr](https://teratermproject.github.io/manual/5/ja/macro/command/getipv4addr.html)
@@ -195,11 +194,11 @@
   - [gettime](https://teratermproject.github.io/manual/5/ja/macro/command/gettime.html)
   - [getttdir](https://teratermproject.github.io/manual/5/ja/macro/command/getttdir.html)
   - [getver](https://teratermproject.github.io/manual/5/ja/macro/command/getver.html)
-  - [ifdefined](https://teratermproject.github.io/manual/5/ja/macro/command/ifdefined.html) // labelは未実装です
-  - [inputbox](https://teratermproject.github.io/manual/5/ja/macro/command/inputbox.html)  // 制限あり
+  - [ifdefined](https://teratermproject.github.io/manual/5/ja/macro/command/ifdefined.html)
+  - [inputbox](https://teratermproject.github.io/manual/5/ja/macro/command/inputbox.html)  // Limited
   - [intdim](https://teratermproject.github.io/manual/5/ja/macro/command/intdim.html)
-  - [listbox](https://teratermproject.github.io/manual/5/ja/macro/command/listbox.html)  // 制限あり
-  - [messagebox](https://teratermproject.github.io/manual/5/ja/macro/command/messagebox.html)  // 制限あり
+  - [listbox](https://teratermproject.github.io/manual/5/ja/macro/command/listbox.html)  // Limited
+  - [messagebox](https://teratermproject.github.io/manual/5/ja/macro/command/messagebox.html)  // Limited
   - [random](https://teratermproject.github.io/manual/5/ja/macro/command/random.html)
   <!-- - [rotateleft](https://teratermproject.github.io/manual/5/ja/macro/command/rotateleft.html) -->
   <!-- - [rotateright](https://teratermproject.github.io/manual/5/ja/macro/command/rotateright.html) -->
@@ -209,37 +208,45 @@
   <!-- - [setexitcode](https://teratermproject.github.io/manual/5/ja/macro/command/setexitcode.html) -->
   <!-- - [settime](https://teratermproject.github.io/manual/5/ja/macro/command/settime.html) -->
   <!-- - [show](https://teratermproject.github.io/manual/5/ja/macro/command/show.html) -->
-  - [statusbox](https://teratermproject.github.io/manual/5/ja/macro/command/statusbox.html)  // 制限あり
+  - [statusbox](https://teratermproject.github.io/manual/5/ja/macro/command/statusbox.html)  // Limited
   - [strdim](https://teratermproject.github.io/manual/5/ja/macro/command/strdim.html)
   - [uptime](https://teratermproject.github.io/manual/5/ja/macro/command/uptime.html)
   <!-- - [var2clipb](https://teratermproject.github.io/manual/5/ja/macro/command/var2clipb.html) -->
-  - [yesnobox](https://teratermproject.github.io/manual/5/ja/macro/command/yesnobox.html)  // 制限あり
+  - [yesnobox](https://teratermproject.github.io/manual/5/ja/macro/command/yesnobox.html)  // Limited
 
 
 ## assert
-- こんなコマンドは本来(?)のttlにはありませんが、評価用に作成しました。
-- 第一引数が0の場合は異常終了します。第一引数が偽(つまりゼロ)の場合も同様です。
+- This command does not exist in the original ttl, but I created it for evaluation purposes.
+    - こんなコマンドは本来(?)のttlにはありませんが、評価用に作成しました。
+- If the first argument is 0, the function will terminate abnormally. The same applies if the first argument is false (i.e., zero).
+    - 第一引数が0の場合は異常終了します。第一引数が偽(つまりゼロ)の場合も同様です。
 
 ```
 assert "intvar"  "strval"+
 ```
 
 ```
-assert  0 = 0  "strval" ; 正常終了する
-assert  1 = 0  "strval" ; 異常終了する
+assert  0 = 0  "strval" ; Completes normally
+assert  1 = 0  "strval" ; Completes NOT normally
 ```
 
 ## connect
 ```
 connect <command line parameters>
 ```
-- SSH接続します。telnet接続やSSH1接続、COMポート接続はできません。
+- SSH connection. Telnet connection, SSH1 connection, and COM port connection are not possible.
+  - SSH接続します。telnet接続やSSH1接続、COMポート接続はできません。
 
-### SSH2接続
-- pythonのparamikoを使って接続します。
-- `/ask4passwd` は使えません。
-- `/2` を省略するとSSH2で接続します。
-- 注意！：ssh接続をするには接続先のサーバが必要です。
+### SSH2 connection
+- Connect using python paramiko.
+    - pythonのparamikoを使って接続します。
+- `/ask4passwd` cannot be used.
+    - `/ask4passwd` は使えません。
+- SSH1 cannot be used due to security issues.
+- telnet cannot be used due to security issues.
+- If you omit `/2`, you will connect using SSH2.
+- To make an ssh connection, you need a server to connect to.
+  - ssh接続をするには接続先のサーバが必要です。
 
 ```
 connect 'myserver /ssh    /user=username /passwd=password'
@@ -248,45 +255,51 @@ connect 'myserver /ssh    /user=username /passwd=password /keyfile=private-key-f
 connect 'myserver /ssh /2 /user=username /passwd=password /keyfile=private-key-file'
 ```
 
-### command line に接続
-- command lineに入ります。pingなど好きなコマンドが打てます。
-- python起動の場合、windowsでは `cmd` 、それ以外では `/bin/sh` が起動します。
+### command line connection
+- '/cmd' goes into the command line.
+    - '/cmd'はcommand lineに入ります。
+- When starting python, `cmd` is launched on Windows, and `/bin/sh` on other systems.
+    - python起動の場合、windowsでは `cmd` 、それ以外では `/bin/sh` が起動します。
 
 ```
 connect '/cmd'
 ```
+
 ## logopen
 
 ```
 logopen <filename> <binary flag> <append flag> [<plain text flag> [<timestamp flag> [<hide dialog flag> [<include screen buffer flag> [<timestamp type>]]]]]
 ```
 
-- ログを開始する。
-- ファイル `filename` に受信した文字が書き込まれる。ファイル名はログの設定の書式が利用でき`ない`。
-- ログを開始したあとも次のコマンドは実行される。
-- ログの設定のフォルダにログは作成される。
-- カレントディレクトリを変更するには `changedir` マクロを使用する。
-- `binary flag` は無視される。
-- `append flag` の値が0以外の場合、そのファイルに追加して書き込む。
-- `plain text flag` は無視される。
-- `timestamp flag` が 0 以外の場合、ログの行頭に時刻を追加する。
-- ただし、`binary flag` が 0 以外の場合、`plain text flag`, `timestamp flag` は両方とも無視される。
-- `hide dialog flag` は無視される。
-- `include screen buffer flag>`は無視される。
-- `timestamp type` は 以下の形式を指定する。デフォルトは `0`である。
+- Causes to start logging.
+- Received characters are written to the file `filename`. The file name CANNOT use the format specified in the log settings.
+    - ファイル `filename` に受信した文字が書き込まれる。ファイル名はログの設定の書式が利用でき`ない`。
+- To change the current directory, use the `changedir` macro.
+    - カレントディレクトリを変更するには `changedir` マクロを使用する。
+- The `binary flag` is ignored.
+- If `append flag` != 0 then append to the file.
+- `plain text flag` is ignored.
+- If `timestamp flag` != 0 then add the time to the beginning of the log line.
+- If `binary flag` == 0 then `plain text flag`, `timestamp flag` is ignored.
+- `hide dialog flag` is ignored.
+- `include screen buffer flag>` is ignored.
+- `timestamp type` specifies the format following. The default is `0`.
+    - `timestamp type` は 以下の形式を指定する。デフォルトは `0`である。
+
 ```
-値	意味
-0	ローカルタイム
+value	Meaning
+0	Local Time
 1	UTC
-2	経過時間 (Logging)
-3	経過時間 (Connection)
+2	Elapsed Time (Logging)
+3	Elapsed Time (Connection)
 ```
 
-## xxxxbox系の制限について
+## About the restrictions of xxxxbox
 
-- `ttlmacoro.py` から直接ttlを呼ぶと、xxxbox系は無視されます。
-- nextnextpingをGUIで起動すると、画面はでますがかなりいい加減に作っています。
-  - そもそも論として pingがしたいだけなのになぜ実装した……
+- Commands in xxxxbox are ignored
+    - `ttlmacoro.py` から直接ttlを呼ぶと、xxxbox系は無視されます。
+    - nextnextpingをGUIで起動すると、画面はでますがかなりいい加減に作っています。
+        - そもそも論として pingがしたいだけなのになぜTTLを実装した……
 
 ## execの実行について
 
@@ -301,10 +314,7 @@ logopen <filename> <binary flag> <append flag> [<plain text flag> [<timestamp fl
 
 
 ## password
-
-- `setpassword2`, `getpassword` は本家では aes-256-ctrで暗号化されていますが、こちらでは Python の `cryptography.fernet.Fernet` を使っています。
-- 何が言いたいのかというと、互換性はありません。
-
-
-
+- It is not compatible with TeraTerm.
+    - `setpassword2`, `getpassword` は本家では aes-256-ctrで暗号化されていますが、こちらでは Python の `cryptography.fernet.Fernet` を使っています。
+    - 何が言いたいのかというと、互換性はありません。
 

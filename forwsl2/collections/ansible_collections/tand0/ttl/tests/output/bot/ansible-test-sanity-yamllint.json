@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/yamllint.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test yamllint` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/yamllint.html)] failed with 2 errors:", 
+            "output": "plugins/modules/ttl.py:72:8: error: EXAMPLES: syntax error: mapping values are not allowed here (syntax)\nplugins/modules/ttl.py:72:8: unparsable-with-libyaml: EXAMPLES: mapping values are not allowed in this context"
+        }
+    ], 
+    "verified": false
+}

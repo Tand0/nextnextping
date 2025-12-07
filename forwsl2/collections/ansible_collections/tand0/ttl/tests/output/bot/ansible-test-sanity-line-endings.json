@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/line-endings.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test line-endings` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/line-endings.html)] failed with 2 errors:", 
+            "output": "README.md:0:0: use \"\\n\" for line endings instead of \"\\r\\n\"\nplugins/module_utils/version.py:0:0: use \"\\n\" for line endings instead of \"\\r\\n\""
+        }
+    ], 
+    "verified": false
+}

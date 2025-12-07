@@ -35,5 +35,5 @@
     ],
     "ignore_messagebox": true,
     "ignore_log": false,
-    "setting": "D:\\gitwork\\nextnextping\\bin\\sample02_sshping\\setting.txt"
+    "setting": "/mnt/d/gitwork/nextnextping/bin/sample01_winping/setting.txt"
 }

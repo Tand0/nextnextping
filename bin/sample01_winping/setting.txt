@@ -1,4 +1,6 @@
 localhost
 127.0.0.1
 ::1
+(show)localhost
+(trace)localhost
 

@@ -1,0 +1,109 @@
+
+
+str = "%WINDIR%\notepad.exe"
+expandenv str
+messagebox str "env"    ; C:\WINDOWS\notepad.exe
+tolower str str
+strscan str "windows"
+assert 0 != result "expandenv" str result
+
+expandenv str "%WINDIR%\notepad.exe"
+messagebox str "env"    ; C:\WINDOWS\notepad.exe
+tolower str str
+strscan str "windows"
+assert 0 != result "expandenv" str result
+
+expandenv str "%test%\notepad.exe"
+messagebox str "env"    ; %test%\notepad.exe
+strscan str "%test%"
+assert 0 != result "expandenv %test%" str result
+
+str = "%WINDIR%\notepad.exe"
+expandenv str
+messagebox str "env"    ; C:\WINDOWS\notepad.exe
+tolower str str
+strscan str "windows"
+assert 0 != result "expandenv" str result
+
+
+expandenv str "%WINDIR%"
+tolower str str
+strcompare "c:\windows" str
+assert 0 == result str result
+
+command = "%systemroot%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%programfiles%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%programfiles(x86)%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%userprofile%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+result_text = str
+
+command = "%Userprofile%"
+expandenv str command
+strcompare str result_text
+assert 0 == result command str result
+
+command = "%appdata%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+
+command = "%localappdata%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%temp%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%tmp%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+
+command = "%COMMONPROGRAMFILES%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%public%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%computername%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+
+command = "%username%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+command = "%path%"
+expandenv str command
+strcompare str command
+assert 0 != result command str result  ; not same
+
+result = 1
+

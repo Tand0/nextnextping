@@ -1,0 +1,4503 @@
+- name: ttl 0000_ok_test.ttl
+  ttl:
+    filename: 0000_ok_test.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0000_ok_test.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0000_ok_test.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0001_ng_test.ttl
+  ttl:
+    filename: 0001_ng_test.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0001_ng_test.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0001_ng_test.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0002_ok_call.ttl
+  ttl:
+    filename: 0002_ok_call.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0002_ok_call.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0002_ok_call.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0003_ok_for.ttl
+  ttl:
+    filename: 0003_ok_for.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0003_ok_for.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0003_ok_for.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0004_ok_while.ttl
+  ttl:
+    filename: 0004_ok_while.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0004_ok_while.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0004_ok_while.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0005_ok_untile.ttl
+  ttl:
+    filename: 0005_ok_untile.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0005_ok_untile.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0005_ok_untile.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0006_ok_do.ttl
+  ttl:
+    filename: 0006_ok_do.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0006_ok_do.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0006_ok_do.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0007_ok_str.ttl
+  ttl:
+    filename: 0007_ok_str.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0007_ok_str.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0007_ok_str.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0008_ng_statement.ttl
+  ttl:
+    filename: 0008_ng_statement.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0008_ng_statement.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0008_ng_statement.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0009_ok_pause.ttl
+  ttl:
+    filename: 0009_ok_pause.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0009_ok_pause.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0009_ok_pause.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0010_ok_connect.ttl
+  ttl:
+    filename: 0010_ok_connect.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0010_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0010_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0011_ok_sendln.ttl
+  ttl:
+    filename: 0011_ok_sendln.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0011_ok_sendln.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0011_ok_sendln.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0012_ng_unspport_command.ttl
+  ttl:
+    filename: 0012_ng_unspport_command.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0012_ng_unspport_command.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0012_ng_unspport_command.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0013_ok_cmd_sendln.ttl
+  ttl:
+    filename: 0013_ok_cmd_sendln.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0013_ok_cmd_sendln.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0013_ok_cmd_sendln.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0014_ok_exec.ttl
+  ttl:
+    filename: 0014_ok_exec.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0014_ok_exec.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0014_ok_exec.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0015_ng_zerodev.ttl
+  ttl:
+    filename: 0015_ng_zerodev.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0015_ng_zerodev.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0015_ng_zerodev.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0016_ok_getdate.ttl
+  ttl:
+    filename: 0016_ok_getdate.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0016_ok_getdate.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0016_ok_getdate.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0017_ok_env.ttl
+  ttl:
+    filename: 0017_ok_env.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0017_ok_env.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0017_ok_env.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0018_ok_getdir.ttl
+  ttl:
+    filename: 0018_ok_getdir.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0018_ok_getdir.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0018_ok_getdir.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0019_ok_execcomand.ttl
+  ttl:
+    filename: 0019_ok_execcomand.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0019_ok_execcomand.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0019_ok_execcomand.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0020_ok_box.ttl
+  ttl:
+    filename: 0020_ok_box.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0020_ok_box.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0020_ok_box.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0021_ok_n.ttl
+  ttl:
+    filename: 0021_ok_n.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0021_ok_n.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0021_ok_n.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0022_ok_passwd.ttl
+  ttl:
+    filename: 0022_ok_passwd.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0022_ok_passwd.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0022_ok_passwd.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0023_ok_file_etc.ttl
+  ttl:
+    filename: 0023_ok_file_etc.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0023_ok_file_etc.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0023_ok_file_etc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0024_ok_ipv4.ttl
+  ttl:
+    filename: 0024_ok_ipv4.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0024_ok_ipv4.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0024_ok_ipv4.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0025_ok_getver.ttl
+  ttl:
+    filename: 0025_ok_getver.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0025_ok_getver.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0025_ok_getver.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0026_ok_ifdefind.ttl
+  ttl:
+    filename: 0026_ok_ifdefind.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0026_ok_ifdefind.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0026_ok_ifdefind.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0027_ok_intetc.ttl
+  ttl:
+    filename: 0027_ok_intetc.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0027_ok_intetc.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0027_ok_intetc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0028_ok_logetc.ttl
+  ttl:
+    filename: 0028_ok_logetc.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0028_ok_logetc.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0028_ok_logetc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0029_ok_connect.ttl
+  ttl:
+    filename: 0029_ok_connect.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0029_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0029_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0030_ok_connect.ttl
+  ttl:
+    filename: 0030_ok_connect.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0030_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0030_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0031_ok_connect.ttl
+  ttl:
+    filename: 0031_ok_connect.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0031_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0031_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0032_ok_connect.ttl
+  ttl:
+    filename: 0032_ok_connect.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0032_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0032_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0033_ok_connect_esxcli.ttl
+  ttl:
+    filename: 0033_ok_connect_esxcli.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0033_ok_connect_esxcli.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0033_ok_connect_esxcli.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0034_ng_password.ttl
+  ttl:
+    filename: 0034_ng_password.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0034_ng_password.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0034_ng_password.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0035_ok_label.ttl
+  ttl:
+    filename: 0035_ok_label.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0035_ok_label.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0035_ok_label.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0036_ng_label.ttl
+  ttl:
+    filename: 0036_ng_label.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0036_ng_label.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0036_ng_label.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0037_ng_label_none.ttl
+  ttl:
+    filename: 0037_ng_label_none.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0037_ng_label_none.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0037_ng_label_none.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0038_ng_label_vale.ttl
+  ttl:
+    filename: 0038_ng_label_vale.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0038_ng_label_vale.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0038_ng_label_vale.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0039_ok_param.ttl
+  ttl:
+    filename: 0039_ok_param.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0039_ok_param.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0039_ok_param.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0040_ok_qx_undo_shutdown.ttl
+  ttl:
+    filename: 0040_ok_qx_undo_shutdown.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0040_ok_qx_undo_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0040_ok_qx_undo_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0041_ok_qx_shutdown.ttl
+  ttl:
+    filename: 0041_ok_qx_shutdown.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0041_ok_qx_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0041_ok_qx_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0042_ok_qx_polcing.ttl
+  ttl:
+    filename: 0042_ok_qx_polcing.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0042_ok_qx_polcing.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0042_ok_qx_polcing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0043_ok_qx_undo_polcing.ttl
+  ttl:
+    filename: 0043_ok_qx_undo_polcing.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0043_ok_qx_undo_polcing.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0043_ok_qx_undo_polcing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0044_ok_cisco_no_shutdown.ttl
+  ttl:
+    filename: 0044_ok_cisco_no_shutdown.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0044_ok_cisco_no_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0044_ok_cisco_no_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0045_ok_cisco_shutdown.ttl
+  ttl:
+    filename: 0045_ok_cisco_shutdown.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0045_ok_cisco_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0045_ok_cisco_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0046_ok_cisco_policing.ttl
+  ttl:
+    filename: 0046_ok_cisco_policing.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0046_ok_cisco_policing.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0046_ok_cisco_policing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0047_ok_cisco_no_policing.ttl
+  ttl:
+    filename: 0047_ok_cisco_no_policing.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0047_ok_cisco_no_policing.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0047_ok_cisco_no_policing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0048_ok_scp.ttl
+  ttl:
+    filename: 0048_ok_scp.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0048_ok_scp.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0048_ok_scp.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0049_ok_crc_checksum.ttl
+  ttl:
+    filename: 0049_ok_crc_checksum.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0049_ok_crc_checksum.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0049_ok_crc_checksum.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0050_ok_etc.ttl
+  ttl:
+    filename: 0050_ok_etc.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0050_ok_etc.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0050_ok_etc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0051_ok_setexitcode.ttl
+  ttl:
+    filename: 0051_ok_setexitcode.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0051_ok_setexitcode.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0051_ok_setexitcode.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0052_ng_setexitcode.ttl
+  ttl:
+    filename: 0052_ng_setexitcode.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0052_ng_setexitcode.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: debug 0052_ng_setexitcode.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0053_ok_findfirst.ttl
+  ttl:
+    filename: 0053_ok_findfirst.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0053_ok_findfirst.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0053_ok_findfirst.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0054_ok_filetrancate.ttl
+  ttl:
+    filename: 0054_ok_filetrancate.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0054_ok_filetrancate.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0054_ok_filetrancate.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0055_ok_sudo_test.ttl
+  ttl:
+    filename: 0055_ok_sudo_test.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0055_ok_sudo_test.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0055_ok_sudo_test.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0056_ok_sum.ttl
+  ttl:
+    filename: 0056_ok_sum.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0056_ok_sum.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0056_ok_sum.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 0057_ok_expandenv.ttl
+  ttl:
+    filename: 0057_ok_expandenv.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0057_ok_expandenv.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 0057_ok_expandenv.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  ttl:
+    filename: 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  ttl:
+    filename: 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1010_ok_localhost-2200_show.ttl
+  ttl:
+    filename: 1010_ok_localhost-2200_show.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1010_ok_localhost-2200_show.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1010_ok_localhost-2200_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1011_ok_cisco1_ping_127-0-0-1.ttl
+  ttl:
+    filename: 1011_ok_cisco1_ping_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1011_ok_cisco1_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1011_ok_cisco1_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1012_ok_cisco1_trace_127-0-0-1.ttl
+  ttl:
+    filename: 1012_ok_cisco1_trace_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1012_ok_cisco1_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1012_ok_cisco1_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1013_ok_cisco1_show.ttl
+  ttl:
+    filename: 1013_ok_cisco1_show.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1013_ok_cisco1_show.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1013_ok_cisco1_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1014_ok_cisco2_ping_127-0-0-1.ttl
+  ttl:
+    filename: 1014_ok_cisco2_ping_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1014_ok_cisco2_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1014_ok_cisco2_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1015_ok_cisco2_trace_127-0-0-1.ttl
+  ttl:
+    filename: 1015_ok_cisco2_trace_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1015_ok_cisco2_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1015_ok_cisco2_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1016_ok_cisco2_show.ttl
+  ttl:
+    filename: 1016_ok_cisco2_show.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1016_ok_cisco2_show.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1016_ok_cisco2_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1017_ok_qx_ping_127-0-0-1.ttl
+  ttl:
+    filename: 1017_ok_qx_ping_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1017_ok_qx_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1017_ok_qx_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1018_ok_qx_trace_127-0-0-1.ttl
+  ttl:
+    filename: 1018_ok_qx_trace_127-0-0-1.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1018_ok_qx_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1018_ok_qx_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1019_ok_qx_show.ttl
+  ttl:
+    filename: 1019_ok_qx_show.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1019_ok_qx_show.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1019_ok_qx_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: ttl 1020_ok_vmware_show.ttl
+  ttl:
+    filename: 1020_ok_vmware_show.ttl
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1020_ok_vmware_show.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug 1020_ok_vmware_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0000_ok_test.ttl
+  ttl:
+    cmd: | 
+      assert 1 'abc'
+      x=    123
+      x=    -11
+      x = 'Hello, world'
+      y = "I can't do that"
+      z = "漢字も可能"
+      assert 1 x
+      assert 1 y
+      assert 1 z
+      x=    #65  ;   文字 "A"
+      y=    #$41  ;  文字 "A"
+      z=    #13    ; CR 文字
+      assert 1 x
+      assert 1 y
+      assert 1 z
+      e1=    'cat readme.txt'#13#10
+      assert 1 e1
+      e2=    'abc'#$0d#$0a'def'#$0d#$0a'ghi'
+      assert 1 e2
+      d = 1
+      d = 1 + 1
+      d = 1 || 1
+      a = 1 + 1
+      a = a + 1
+      a = 2 + 1 + a
+      b = 3+ 1
+      c = (2 + 1)
+      result=0
+      assert result==0 "xyz..."
+      result = 1
+      assert result!=0 'error' result
+      assert result==1 'error' result
+      ; 10回繰り返す。
+      i = 10
+      while i>0
+      i = i - 1
+      assert 1 i
+      endwhile
+      assert 1 "end"
+      assert 1 "end"
+      assert 1 "end"
+      assert 1 "end"
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0000_ok_test.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0000_ok_test.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0001_ng_test.ttl
+  ttl:
+    cmd: | 
+      ; 結果に 0 を返すとエラー系になる
+      result = 0
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0001_ng_test.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0001_ng_test.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0002_ok_call.ttl
+  ttl:
+    cmd: | 
+      call labelAAA
+      i = 11
+      assert i == 11 "i=11" i
+      result = 1
+      assert result == 1 "result == 1" i
+      i = 5
+      assert i == 5 "i == 5" i
+      result = 1
+      exit
+      :labelAAA
+      i = 10
+      return
+      i = 12
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0002_ok_call.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0002_ok_call.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0003_ok_for.ttl
+  ttl:
+    cmd: | 
+      ; 10回繰り返す。
+      for i 1 10
+      assert 1 i
+      next
+      assert i == 11 "for loop ++" i
+      ; 5回繰り返す。
+      for i 5 1
+      assert 1 i
+      next
+      assert i == 0 "for loop --" i
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0003_ok_for.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0003_ok_for.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0004_ok_while.ttl
+  ttl:
+    cmd: | 
+      j = 0
+      i = 10
+      while i>0
+      assert 1  "while1 loop " i j
+      i = i - 1
+      if i == 5 break
+      j = j + 1
+      endwhile
+      assert j == 4   "while1 error" j
+      j = 0
+      i = 0
+      while i < 10
+      assert 1  "while2 loop " i j
+      i = i + 1
+      if i < 5 continue
+      j = j + 1
+      endwhile
+      assert j == 6  "while2 error" j
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0004_ok_while.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0004_ok_while.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0005_ok_untile.ttl
+  ttl:
+    cmd: | 
+      j = 0
+      i = 10
+      until i<0
+      assert 1  "while1 loop " i j
+      i = i - 1
+      if i == 5 break
+      j = j + 1
+      enduntil
+      assert j == 4 "j == 4" j
+      j = 0
+      i = 0
+      until i > 10
+      assert 1  "while2 loop " i j
+      i = i + 1
+      if i < 5 continue
+      j = j + 1
+      enduntil
+      assert j == 7   "j == 7" j
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0005_ok_untile.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0005_ok_untile.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0006_ok_do.ttl
+  ttl:
+    cmd: | 
+      i = 0
+      do i<10
+      i = i + 1
+      if i == 5 break
+      loop
+      ; 値チェック
+      assert i == 5  "do1 check" i
+      i = 0
+      do i<10
+      i = i + 1
+      loop
+      ; 値チェック
+      assert i == 10 "do2 check" i
+      i = 0
+      do
+      i = i + 1
+      loop i<10
+      ; 値チェック
+      assert i == 10  "do3 check" i
+      i = 0
+      do
+      i = i + 1
+      if i == 5 break
+      loop
+      ; 値チェック
+      assert i == 5  "do3 check" i
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0006_ok_do.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0006_ok_do.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0007_ok_str.ttl
+  ttl:
+    cmd: | 
+      ; 文字列の接続
+      x = "aaa"'bbb'
+      strcompare "aaabbb" x
+      assert result == 0  "OK" x result
+      ; この評価
+      str2int intvar "12"
+      ; 12が入っているか？
+      assert intvar == 12   "OK" intvar
+      ; この評価
+      strcompare "aa1" "aa1"
+      assert result == 0  "OK" result
+      ; この評価
+      strcompare "aa1" "aa2"
+      assert result == -1  "OK" result
+      ; この評価
+      strcompare "aa2" "aa1"
+      assert result == 1  "OK" result
+      ; この評価
+      strvar = "aa2"
+      strconcat strvar "aa1"
+      strcompare "aa2aa1" strvar
+      assert result == 0  "OK" strvar result
+      ; この評価
+      strlen "aa2"
+      assert result == 3   "OK" result
+      ; この評価
+      strscan "aa2" "b"
+      assert result == 0  "OK" result
+      ; この評価
+      strscan "ab2" "b"
+      assert result == 2   "OK" result
+      tolower aaa "AaA"
+      strcompare aaa "aaa"
+      assert result == 0 "OK" aaa result
+      toupper aaa "AaA"
+      strcompare aaa "AAA"
+      assert result == 0 "OK" aaa result
+      code2str aaa[0] $41
+      strcompare aaa[0] "A"
+      assert result == 0 "OK" aaa[0] result
+      code2str aaa $4142
+      strcompare aaa "AB"
+      assert result == 0 "OK" aaa result
+      code2str aaa $414243
+      strcompare aaa "ABC"
+      assert result == 0 "OK" aaa result
+      code2str aaa $41424344
+      strcompare aaa "ABCD"
+      assert result == 0 "OK" aaa result
+      code2str aaa 0
+      strcompare aaa ''
+      assert result == 0 "OK" aaa result
+      x=    #65  ;   文字 "A"
+      strcompare x "A"
+      assert result == 0 "OK" x result
+      y=    #$41  ;  文字 "A"
+      strcompare y "A"
+      assert result == 0 "OK" y result
+      z=    #13    ; CR 文字
+      strcompare z #13
+      assert result == 0 "Z OK" z result
+      strdim strmsg 4
+      strmsg[0] = 'バナナ'
+      strmsg[1] = 'りんご'
+      strmsg[2] = 'みかん'
+      assert 1 strmsg[0]
+      assert 1 strmsg[1]
+      assert 1 strmsg[2]
+      assert 1 strmsg[3]
+      strdim intmsg 2
+      intmsg[0] = 1
+      intmsg[1] = 2
+      assert 1 intmsg[0]
+      assert 1 intmsg[1]
+      ; valstrに '123' を代入
+      int2str valstr 123
+      messagebox valstr "str"     ; 123
+      strcompare valstr '123'
+      assert 0 == result "intstr" valstr
+      num = 123
+      sprintf2 valstr "%d" num
+      messagebox valstr "str"     ; 123
+      strcompare valstr '123'
+      assert 0 == result "sprintf2" valstr
+      str2code val 'A'
+      assert val==65 "(ASCII コード)" val  ; val=65 ("A" のASCII コード)
+      xxx = (65 * 256) + 66  ; val=65*256+66
+      assert (xxx == 16706) "(65*256)+66=" xxx
+      str2code val 'AB'
+      assert val==xxx "(ASCII コード)" val  ; val=65 ("A" のASCII コード)
+      strcopy 'terawaros tekitou' 6 4 substr
+      strcompare substr 'aros'
+      assert result == 0 "str copy test" substr
+      strcopy 'terawaros tekitou' 0 4 substr
+      strcompare substr 'tera'
+      assert result == 0 "str copy test" substr
+      s='abc'
+      strinsert s 3 'XYZ'  ; 'abXYZc'
+      messagebox s s
+      strcompare s 'abXYZc'
+      assert result == 0 "strinsert test" s
+      s='abc'
+      strinsert s 1 'XYZ'  ; 'XYZabc'
+      messagebox s s
+      strcompare s 'XYZabc'
+      assert result == 0 "strinsert test" s
+      s='abc'
+      strinsert s -1 'XYZ'  ; シンタックスエラー
+      messagebox s s
+      s='abc'
+      strinsert s 0 'XYZ'  ; シンタックスエラー
+      messagebox s s
+      s='abc'
+      strinsert s 4 'XYZ'  ; 'abcXYZ'
+      messagebox s s
+      strcompare s 'abcXYZ'
+      assert result == 0 "strinsert test" s
+      s='abc'
+      strinsert s 5 'XYZ'  ; シンタックスエラー
+      messagebox s s
+      groupmatchstr1="Jan"
+      groupmatchstr2="Feb"
+      groupmatchstr3="Mar"
+      groupmatchstr4="Apr"
+      groupmatchstr5="May"
+      groupmatchstr6="Jun"
+      groupmatchstr7="Jul"
+      groupmatchstr8="Aug"
+      groupmatchstr9="Sep"
+      strjoin strvar ","
+      messagebox strvar "strvar"   ; 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep'
+      strcompare strvar 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep'
+      assert result == 0 "strjoin test" strvar
+      groupmatchstr1="Jan"
+      groupmatchstr2="Feb"
+      groupmatchstr3="Mar"
+      groupmatchstr4="Apr"
+      groupmatchstr5="May"
+      groupmatchstr6="Jun"
+      groupmatchstr7="Jul"
+      groupmatchstr8="Aug"
+      groupmatchstr9="Sep"
+      strjoin strvar " and " 6
+      messagebox strvar "strvar"   ; 'Jan and Feb and Mar and Apr and May and Jun'
+      strcompare strvar 'Jan and Feb and Mar and Apr and May and Jun'
+      assert result == 0 "strjoin test" strvar
+      groupmatchstr1="Jan"
+      groupmatchstr2="Feb"
+      groupmatchstr3="Mar"
+      groupmatchstr4="Apr"
+      groupmatchstr5="May"
+      groupmatchstr6="Jun"
+      groupmatchstr7=""
+      groupmatchstr8=""
+      groupmatchstr9=""
+      strjoin strvar "," 9
+      messagebox strvar "strvar"   ; 'Jan,Feb,Mar,Apr,May,Jun,,,'
+      strcompare strvar 'Jan,Feb,Mar,Apr,May,Jun,,,'
+      assert result == 0 "strjoin test" strvar
+      s = '123abc456'
+      strremove s 4 3  ; '123456'
+      messagebox s s
+      strcompare s '123456'
+      assert result == 0 "strremove test" strvar
+      s = '123abc456'
+      strremove s 1 3  ; 'abc456'
+      messagebox s s
+      strcompare s 'abc456'
+      assert result == 0 "strremove test" strvar
+      s = '123abc456'
+      strremove s -1 3 ; シンタックスエラー
+      messagebox s s
+      s = '123abc456'
+      strremove s 0 3  ; シンタックスエラー
+      messagebox s s
+      s = '123abc456'
+      strremove s 9 1  ; '123abc45'
+      messagebox s s
+      strcompare s '123abc45'
+      assert result == 0 "strremove test" strvar
+      s = '123abc456'
+      strremove s 9 2  ; シンタックスエラー
+      messagebox s s
+      s = '123abc456'
+      strremove s 10 1 ; シンタックスエラー
+      messagebox s s
+      s = '123abc456'
+      strremove s 4 0  ; シンタックスエラー
+      messagebox s s
+      str = "AB\tCD\nEF\\nGH"
+      strspecial str
+      messagebox str "special"
+      str2 = "AB"#9"CD"#10"EF\nGH"
+      strcompare str str2
+      assert result = 0 "strspecial test" str str2
+      ; strspecial str "AB\tCD\nEF\\nGH"
+      messagebox str "special"
+      src=',,Sun,Mon,Tue,,Thu,Fri,Sat'
+      strsplit src ',' 7
+      assert result == 7 result
+      strcompare groupmatchstr1 ''
+      assert result == 0 groupmatchstr1 ; ''
+      strcompare groupmatchstr2 ''
+      assert result == 0 groupmatchstr2 ; ''
+      strcompare groupmatchstr3 'Sun'
+      assert result == 0 groupmatchstr3 ; 'Sun'
+      strcompare groupmatchstr4 'Mon'
+      assert result == 0 groupmatchstr4 ; 'Mon'
+      strcompare groupmatchstr5 'Tue'
+      assert result == 0 groupmatchstr5 ; 'Tue'
+      strcompare groupmatchstr6 ''
+      assert result == 0 groupmatchstr6 ; ''
+      strcompare groupmatchstr7 'Thu,Fri,Sat'
+      assert result == 0 groupmatchstr7 ; 'Thu,Fri,Sat'
+      src='Sun,Mon,Tue,Wed,Thu,Fri,Sat'
+      strsplit src ',' 7
+      assert result == 7 result
+      strcompare groupmatchstr1 'Sun'
+      assert result == 0 groupmatchstr1 "groupmatchstr1" ; 'Sun'
+      strcompare groupmatchstr2 'Mon'
+      assert result == 0 groupmatchstr2 "groupmatchstr2" ; 'Mon'
+      strcompare groupmatchstr3 'Tue'
+      assert result == 0 groupmatchstr3 "groupmatchstr3" ; 'Tue'
+      strcompare groupmatchstr4 'Wed'
+      assert result == 0 groupmatchstr4 "groupmatchstr4" ; 'Wed'
+      strcompare groupmatchstr5 'Thu'
+      assert result == 0 groupmatchstr5 "groupmatchstr5" ; 'Thu'
+      strcompare groupmatchstr6 'Fri'
+      assert result == 0 groupmatchstr6 "groupmatchstr6" ; 'Fri'
+      strcompare groupmatchstr7 'Sat'
+      assert result == 0 groupmatchstr7 "groupmatchstr7" ; 'Sat'
+      strcompare groupmatchstr8 ''
+      assert result == 0 groupmatchstr8 "groupmatchstr8" ; ''
+      strcompare groupmatchstr9 ''
+      assert result == 0 groupmatchstr9 "groupmatchstr9" ; ''
+      src='A string'#10'of ,,tokens'#10'and some  more tokens'
+      strsplit src #10 9
+      assert result == 3 result
+      strcompare groupmatchstr1 'A string'
+      assert result == 0 groupmatchstr1 "groupmatchstr1" ; 'A string'
+      strcompare groupmatchstr2 'of ,,tokens'
+      assert result == 0 groupmatchstr2 "groupmatchstr2" ; 'of ,,tokens'
+      strcompare groupmatchstr3 'and some  more tokens'
+      assert result == 0 groupmatchstr3 "groupmatchstr3" ; 'and some  more tokens'
+      src='1,2,3,4,5,6,7,8,9,0'
+      strsplit src ','
+      assert result == 10 result
+      strcompare groupmatchstr1 '1'
+      assert result == 0 groupmatchstr1 "groupmatchstr1" ; '1'
+      strcompare groupmatchstr2 '2'
+      assert result == 0 groupmatchstr2 "groupmatchstr2" ; '2'
+      strcompare groupmatchstr3 '3'
+      assert result == 0 groupmatchstr3 "groupmatchstr3" ; '3'
+      strcompare groupmatchstr4 '4'
+      assert result == 0 groupmatchstr4 "groupmatchstr4" ; '4'
+      strcompare groupmatchstr5 '5'
+      assert result == 0 groupmatchstr5 "groupmatchstr5" ; '5'
+      strcompare groupmatchstr6 '6'
+      assert result == 0 groupmatchstr6 "groupmatchstr6" ; '6'
+      strcompare groupmatchstr7 '7'
+      assert result == 0 groupmatchstr7 "groupmatchstr7" ; '7'
+      strcompare groupmatchstr8 '8'
+      assert result == 0 groupmatchstr8 "groupmatchstr8" ; '8'
+      strcompare groupmatchstr9 '9'
+      assert result == 0 groupmatchstr9 "groupmatchstr9" ; '9'
+      str1='#include <stdio.h>'
+      str2=str1
+      strcompare str1 str2
+      assert result == 0  str 'result'
+      str='   '#9' #include <stdio.h>      '#9' '
+      strtrim str ' \t'
+      strcompare str '#include <stdio.h>'
+      assert result == 0  str 'result'          ; '#include <stdio.h>'
+      str='         #include <stdio.h>         '
+      strtrim str ' '
+      strcompare str '#include <stdio.h>'
+      assert result == 0  str 'result'          ; '#include <stdio.h>'
+      str='*;|@123***456@|;'
+      strtrim str '*;|@'
+      strcompare str '123***456'
+      assert result == 0  str 'result'          ; '123***456'
+      str='*;|@123***456@|;'
+      strtrim str '*;|@123456'
+      strcompare str ''
+      assert result == 0  str 'result'          ; ''
+      str='#*;|@123***456@|;'
+      strtrim str '*;|@'
+      strcompare str '#*;|@123***456'
+      assert result == 0  str 'result'          ; '#*;|@123***456'
+      str='*;|@123***456@|;#'
+      strtrim str '*;|@'
+      strcompare str '123***456@|;#'
+      assert result == 0  str 'result'          ; '123***456@|;#'
+      src='linux.txt'
+      strreplace src 1 '\.txt' '.doc'
+      assert result != 0 src 'strreplace test'
+      strcompare src 'linux.doc'
+      assert result == 0 src           ; linux.doc
+      src='I can do it.'
+      strreplace src 1 'can\s' ''
+      strcompare src 'I do it.'
+      assert result == 0 src 'result'     ; 'I do it.'
+      src='Microsoft Windows XP [Version 5.1.2600]'
+      strmatch src '(Version \d+.\d+.)\d+'
+      assert result == 23 result src groupmatchstr1
+      int2str s result
+      pos=result                ; 23
+      strcompare pos "23"
+      assert result == 0 s pos groupmatchstr1
+      mstr=groupmatchstr1       ; Version 5.1.
+      strcompare groupmatchstr1 "Version 5.1."
+      assert result == 0 s pos groupmatchstr1 mstr
+      strreplace src pos mstr 'Build '
+      assert result != 0 src 'strreplace test'
+      strcompare src 'Microsoft Windows XP [Build 2600]'
+      assert result == 0 src  ; Microsoft Windows XP [Build 2600]
+      settitle "aaa"
+      gettitle titleStr
+      strcompare "aaa" titleStr
+      assert result == 0 "gettitle/gettitle test" titleStr
+      dispstr 'ABC'#13
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0007_ok_str.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0007_ok_str.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0008_ng_statement.ttl
+  ttl:
+    cmd: | 
+      ; ステートメントがおかしい系
+      if 1 then
+      endifaaaa ;; あー、うっかりif文の最後間違えっちゃったな―
+      ; もし上記がエラーにならない場合は正常が返る
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0008_ng_statement.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0008_ng_statement.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0009_ok_pause.ttl
+  ttl:
+    cmd: | 
+      pause 1
+      mpause 500
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0009_ok_pause.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0009_ok_pause.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0010_ok_connect.ttl
+  ttl:
+    cmd: | 
+      ; testlink
+      testlink
+      assert result == 0  "connect OK!"
+      ;この方法は、SSHバージョンを指定せずにSSH接続をします。
+      connect 'localhost:2200 /ssh /1'
+      assert result == 0  result ; SSH1 は未サポート
+      assert 1  "closettt start"
+      closett
+      assert 1  "closettt end"
+      ; /1 と /2 のオプションは、SSH1およびSSH2であることを指定します。
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      closett
+      ; /1 入っていたらエラー
+      connect 'localhost:2200 /ssh /1 /auth=password /user=username /passwd=password'
+      assert  result == 0   "connect OK!" result ; SSH1は未サポート
+      closett
+      ; 以下同様なのでスキップ
+      ;connect 'localhost:2200 /ssh /1 /auth=challeOKe /user=username /passwd=password'
+      ;connect 'localhost:2200 /ssh /1 /auth=publickey /user=username /passwd=password /keyfile=test_rsa.key'
+      ;connect 'localhost:2200 /ssh /1 /auth=pageant /user=username'
+      ; できるはず
+      getdir keyfile
+      assert 1 'keyfile_1' keyfile
+      strconcat keyfile '\..\test_rsa.key'
+      assert 1 'keyfile_2' keyfile
+      command = 'localhost:2200 /ssh /2 /auth=publickey /user=username /passwd=password /keyfile='
+      strconcat command keyfile
+      assert 1 command
+      connect command
+      assert  result == 2   "connect OK!" result ; SSH1は未サポート
+      closett
+      pause 1
+      connect 'myserve /ssh /auth=password /user=username /ask4passwd'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /1 /auth=password /user=username /ask4passwd'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /2 /auth=password /user=username /ask4passwd'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /1 /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /2 /auth=publickey /user=username /ask4passwd /keyfile=private-key-file'
+      connect 'myserve /ssh /auth=challeOKe /user=username /ask4passwd'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /1 /auth=challeOKe /user=username /ask4passwd'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      connect 'localhost:2200 /ssh /2 /auth=challeOKe /user=username /ask4passwd'
+      assert  result == 0   "connect OK!" result ;  ask4passwd が入っていたらエラー
+      closett
+      ; COMポート接続 はできません
+      connect '/C=x'
+      assert  result == 0   "COM port OK!" result ;  ask4passwd が入っていたらエラー
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0010_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0010_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0011_ok_sendln.ttl
+  ttl:
+    cmd: | 
+      ; なんかいたら消す
+      testlink
+      if result == 2 then
+      closett
+      endif
+      ; 接続する
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /user=aaa /passwd=bbb'
+      assert result ==2  "connect start" error result
+      result = 0
+      wait '$'
+      assert result ==1  "wait test" error result
+      ; text
+      sendln 'test'
+      wait 'test'
+      result = 0
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      sendln 'work'
+      result = 0
+      wait '#' '$'
+      assert result ==2  "wait test" error result
+      ; タイムアウトを発生させる
+      timeout = 1
+      wait 'xxxx'
+      assert result ==0  "timeout test" error result
+      gethostname hostname
+      assert 1 "gethostname test" hostname
+      sendbreak
+      ; exit
+      send 'exit'
+      sendln
+      pause 2
+      disconnect
+      testlink
+      assert result != 2  "exit test" error ; まだ接続できている
+      closett
+      assert 1 "gethostname test" hostname
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0011_ok_sendln.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0011_ok_sendln.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0012_ng_unspport_command.ttl
+  ttl:
+    cmd: | 
+      ; 未実装コマンドを入れてエラーになる例
+      kmtrecv
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0012_ng_unspport_command.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0012_ng_unspport_command.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0013_ok_cmd_sendln.ttl
+  ttl:
+    cmd: | 
+      ;
+      testlink
+      if result == 2 then
+      closett
+      endif
+      command = "%systemroot%"
+      expandenv str command
+      strcompare str "/root"
+      if 0==result then
+      assert 1 "this is linux"
+      result = 1
+      end
+      endif
+      ; connected
+      error=''
+      assert 1  "connect start"
+      connect '/cmd'
+      assert result == 2  "connect OK" error
+      ; text
+      result = 0
+      flushrecv
+      sendln 'echo hell-world'
+      wait '>' '#'
+      assert result == 1  "wait OK" error
+      ; text
+      command = 'dir'
+      sendln command
+      wait command
+      result = 0
+      wait '#' '>'
+      assert result == 2 "wait OK" result error
+      recvln
+      recvln
+      recvln
+      pause 1
+      ; text
+      command = 'dir'
+      sendln command
+      wait command
+      while 1
+      result = 0
+      wait '<DIR>' '>'
+      if result == 0 then
+      assert 0 "timeout wait OK" 'title'
+      end
+      elseif result == 1 then
+      continue
+      endif
+      break
+      endwhile
+      ; exit
+      send 'exit'
+      sendln
+      pause 2
+      disconnect
+      testlink
+      assert result != 2  "wait OK" error
+      ; closett
+      pause 1
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0013_ok_cmd_sendln.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0013_ok_cmd_sendln.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0014_ok_exec.ttl
+  ttl:
+    cmd: | 
+      assert 1  "aaa"
+      ; 「メモ帳」を起動
+      exec 'echo notepad readme.txt'
+      exec 'echo notepad readme.txt' 'HIDE'
+      exec 'echo notepad readme.txt' 'HIDE' 1
+      exec 'echo notepad readme.txt' 'HIDE' 1 'c:\'
+      ; 「メモ帳」を最大化表示で起動
+      exec 'echo notepad readme.txt' 'maximize'
+      ; 「メモ帳」をカレントディレクトリ指定で起動
+      exec 'echo notepad readme.txt' 'show' 0 '.'
+      assert 1  "bbb"
+      ; バッチファイルを起動する
+      username1 = "aaa"
+      userpass1 = "bbb"
+      address = "ccc"
+      tmp='echo cmd /c c:\echo.bat'
+      strconcat tmp username1
+      strconcat tmp ' '
+      strconcat tmp userpass1
+      strconcat tmp ' '
+      strconcat tmp address
+      ;messagebox tmp 'exec'
+      exec tmp
+      userprof = "c:/"
+      getdate logdir "log-%Y%m%d"
+      assert 1  logdir
+      sprintf2 cmd 'echo cmd /c mkdir "%s\My Documents\%s"' userprof logdir
+      exec cmd "HIDE"
+      ; OK
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0014_ok_exec.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0014_ok_exec.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0015_ng_zerodev.ttl
+  ttl:
+    cmd: | 
+      ; ゼロ除算エラー
+      a = 1 / 0
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0015_ng_zerodev.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0015_ng_zerodev.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0016_ok_getdate.ttl
+  ttl:
+    cmd: | 
+      ;現在の日付をdatestrに格納。形式はYYYY-MM-DD。
+      getdate datestr
+      assert 1  datestr
+      ;現在の日時を元にしてログファイル名を生成し、変数logfileに格納。
+      ;形式はlog-YYYYMMDD-HHMMSS.txt
+      getdate logfile "log-%Y%m%d-%H%M%S.txt"
+      assert 1  logfile
+      ;GMTで時刻を取得する。
+      tz="GMT"
+      getdate s "%Y/%m/%d %H:%M:%S" tz
+      assert 1  s tz
+      ;本日の日にちを取得する。
+      getdate s "|%d|%#d|"    ; |07|7| (Today is 7th).
+      assert 1  s
+      getdate s "|%d|%#d|"    ; |25|25| (Today is 25th).
+      assert 1  s
+      ;現在の時刻をtimestrに格納。形式はHH:MM:SS。
+      gettime timestr
+      ;現在の日時を元にしてログファイル名を生成し、変数logfileに格納。
+      ;形式はlog-YYYYMMDD-HHMMSS.txt
+      gettime logfile "log-%Y%m%d-%H%M%S.txt"
+      assert 1 logfile
+      ;GMTで時刻を取得する。
+      tz="GMT"
+      gettime s "%Y/%m/%d %H:%M:%S" tz
+      messagebox s tz
+      gettime s
+      assert 1 s
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0016_ok_getdate.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0016_ok_getdate.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0017_ok_env.ttl
+  ttl:
+    cmd: | 
+      ; ディレクトリを作る
+      userprof = 'user profiele'
+      setenv "USERPROFILE" userprof
+      assert 1 userprof
+      userprof = 'bbb'
+      getenv "USERPROFILE" userprof
+      assert 1 userprof
+      strcompare userprof 'user profiele'
+      assert result == 0  "user profiele OK" userprof result ; 接続失敗
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0017_ok_env.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0017_ok_env.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0018_ok_getdir.ttl
+  ttl:
+    cmd: | 
+      getdir xxx
+      assert 1  xxx
+      getttdir xxx
+      assert 1  xxx
+      setdir "build"
+      getdir xxx
+      assert 1  xxx
+      strscan xxx "build"
+      assert 0 < result "user profiele OK" result
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0018_ok_getdir.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0018_ok_getdir.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0019_ok_execcomand.ttl
+  ttl:
+    cmd: | 
+      execcmnd "a = 1 + 1"
+      assert a == 2 "1 + 1" a
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0019_ok_execcomand.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0019_ok_execcomand.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0020_ok_box.ttl
+  ttl:
+    cmd: | 
+      strdim msg 3
+      msg[0] = 'バナナ'
+      msg[1] = 'りんご'
+      msg[2] = 'みかん'
+      listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
+      strlen inputstr
+      assert 0 <= result "listbox len test" inputstr
+      yesnobox 'もう一回やりますか?' 'Tera Term'
+      assert result == 1 "yesnobox test" result
+      settitle "nextnextping test"
+      gettitle titletext
+      strcompare "nextnextping test" titletext
+      assert result = 0 "title test" titletext
+      inputstr = ""
+      passwordbox 'Enter password' 'Login'
+      strlen inputstr
+      if result <= 0 then
+      assert 0 "passwordbox len test" inputstr result
+      else
+      assert 1 "passwordbox len test" inputstr result
+      endif
+      bringupbox
+      closesbox
+      inputstr = "aaa"
+      dirnamebox 'select a directory'
+      if result<>0 then
+      messagebox inputstr 'selected directory'
+      endif
+      connect '/C=11'
+      filenamebox 'File selection' 0
+      if result<>0 then
+      messagebox inputstr 'title' 0
+      endif
+      assert 1
+      inputbox 'Message data' 'Title'
+      strlen inputstr
+      if result <= 0 then
+      assert 0 "inputbox len test" inputstr result
+      else
+      assert 1 "inputbox len test" inputstr result
+      endif
+      ; 表示位置を指定
+      setdlgpos 200 200
+      ; ダイアログボックスを表示
+      statusbox 'Message' 'Title'
+      ; pause 3
+      ; ダイアログボックスを移動
+      setdlgpos 0 0
+      ; pause 3
+      ; ダイアログボックスを閉じる
+      closesbox
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0020_ok_box.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0020_ok_box.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0021_ok_n.ttl
+  ttl:
+    cmd: | 
+      a = '/\n/'
+      b = '/'#10'/'
+      strcompare a b
+      assert result != 0 "a != b test"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0021_ok_n.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0021_ok_n.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0022_ok_passwd.ttl
+  ttl:
+    cmd: | 
+      filename1 = 'build/password1.key'
+      filename2 = 'build/password2.key'
+      password = 'password'
+      password_var = '' ; こちらに格納される
+      setpassword filename1 'foo' password
+      assert result != 0 'Password updated test' result filename1 password password_var
+      setpassword filename1 'bar' password
+      assert result != 0 'Password updated test' result filename1 password password_var
+      ; 新しいファイルで読めるか？
+      filerename filename1 filename2
+      getpassword filename2 'foo' password_var
+      assert result != 0 'Password get test' result filename2 password password_var
+      strcompare password_var password
+      assert result == 0 "setpassword/getpassword test" result filename2 password password_var
+      ispassword filename2 'foo'
+      assert result =! 0 "ispassword test"
+      ispassword filename2 'boo'
+      assert result == 0 "ispassword test"
+      delpassword filename2 'foo'
+      ispassword filename2 'foo'
+      assert result == 0 "delpassword/ispassword test"
+      ispassword filename2 'bar'
+      assert result != 0 "delpassword/ispassword test"
+      ; 全削除
+      setpassword filename1 'foo' password_var
+      assert result != 0 'Password updated test' password_var
+      setpassword filename1 'bar' password_var
+      assert result != 0 'Password updated test' password_var
+      delpassword filename1 ''  ; 全消しする
+      ispassword filename1 'bar'  ; 全消しされたかチェックする
+      assert result != 0 "all delpassword test"
+      setpassword filename1 'foo' password_var
+      assert result != 0 'Password updated test' password_var
+      setpassword filename1 'bar' password_var
+      assert result != 0 'Password updated test' password_var
+      ; 2系のチェック
+      encrypt_foo_str = 'anonymouse_foo'
+      encrypt_bar_str = 'anonymouse_bar'
+      password_foo = 'password_foo'
+      password_bar = 'password_bar'
+      setpassword2 filename1 'foo' password_foo encrypt_foo_str
+      assert result != 0 'Password updated test' password_var encrypt_foo_str
+      setpassword2 filename1 'bar' password_bar encrypt_bar_str
+      assert result != 0 'Password updated test' password_var encrypt_bar_str
+      getpassword2 filename1 'foo' password_var encrypt_foo_str
+      assert result != 0 "setpassword/getpassword2 test" result filename1 password_foo password_var encrypt_foo_str
+      strcompare password_var password_foo
+      assert result == 0 "setpassword/getpassword2 test" result filename1 password_foo password_var encrypt_foo_str
+      getpassword2 filename1 'foo' password_var encrypt_bar_str
+      assert result == 0 "setpassword/getpassword2 test" result filename1 password_foo password_var encrypt_foo_str
+      getpassword2 filename1 'bar' password_var encrypt_foo_str
+      assert result == 0 "setpassword/getpassword2 test" result filename1 password_bar password_var encrypt_foo_str
+      getpassword2 filename1 'bar' password_var encrypt_bar_str
+      assert result != 0 "setpassword/getpassword2 test" result filename1 password_bar password_var encrypt_bar_str
+      strcompare password_var password_bar
+      assert result == 0 "setpassword/getpassword2 test" result filename1 password_bar password_var encrypt_bar_str
+      ispassword2 filename1 'foo'
+      assert result =! 0 "ispassword test"
+      ispassword2 filename1 'boo'
+      assert result == 0 "ispassword test"
+      delpassword2 filename1 'foo'
+      ispassword2 filename1 'foo'
+      assert result == 0 "delpassword/ispassword test"
+      result = 1
+      end
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0022_ok_passwd.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0022_ok_passwd.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0023_ok_file_etc.ttl
+  ttl:
+    cmd: | 
+      basename fname 'c:\teraterm\test.txt'
+      strcompare fname "test.txt"
+      assert result == 0 "basename test" fname
+      dirname dir 'c:\teraterm\test.txt'
+      strcompare dir "c:\teraterm"
+      if result != 0 then
+      strcompare dir "/mnt/c/teraterm"
+      assert result == 0 "dirname test" dir
+      endif
+      dirname dir 'c:\teraterm\'
+      strcompare dir "c:\"
+      if result != 0 then
+      strcompare dir "/mnt/c"
+      assert result == 0 "dirname test" dir
+      endif
+      dirname dir 'c:\teraterm'
+      strcompare dir "c:\"
+      if result != 0 then
+      strcompare dir "/mnt/c"
+      assert result == 0 "dirname test" dir
+      endif
+      fileopen fhandle 'data.dat' 0
+      fileclose fhandle
+      fileopen fhandle 'data.dat' 1
+      fileclose fhandle
+      fileopen fhandle 'build/test.bat' 0
+      filewrite fhandle 'md .\v20080619_Test'
+      filewrite fhandle 'md .\v20080619_Test'
+      fileclose fhandle
+      fileopen fhandle2 'build/test2.bat' 0
+      filewriteln fhandle2 'ABC'
+      fileclose fhandle2
+      fileopen fhandle 'build/test.bat' 0
+      fileread fhandle 100 readdata
+      fileclose fhandle
+      strscan readdata 'v20080619_Test'
+      assert result != 0 "fileread" readdata
+      fileopen fhandle 'build/test.bat' 0
+      filereadln fhandle readdata
+      fileclose fhandle
+      strscan readdata 'v20080619_Test'
+      assert result != 0 "filereadln" readdata
+      fileconcat 'build/test2.bat' 'build/test.bat'
+      filecopy 'build/test2.bat' 'build/test3.bat'
+      filedelete 'build/test2.bat'
+      filerename 'build\test3.bat' 'build\test4.bat'
+      assert result == 0 result 'filerename test'
+      filesearch 'build/test3.bat'
+      assert result == 0 result 'filesearch test' ;; 存在しない
+      filesearch 'build/test4.bat'
+      assert result != 0 result 'filesearch test' ;; 存在する
+      filecreate fhandle 'build/test.bat'
+      filewriteln fhandle 'ABC'
+      fileclose fhandle
+      ; filestatの評価
+      filestat 'test.exe' size time drive
+      assert result = -1 'file open error test' ; 開けない
+      ; build/test4.bat
+      command = 'c:/'
+      filestat command size time drive
+      assert result != -1 'file open error test' command size time drive  ; 開ける
+      sprintf2 str 'Directory size=%d Time modified=%s Drive=%s' size time drive
+      messagebox str 'filestat'
+      ; ex. Directory size=0 Time modified=2014-03-04 22:44:47 Drive=C
+      assert 0 <= size size time drive
+      fileopen fhandleA 'build/test.bat' 0
+      ; filecloseせずに終わったときに、内部処理で終わらせることを確認する
+      filename = 'build/build'
+      folderdelete filename ;; 評価用にとりあえず消す
+      foldersearch filename
+      assert result == 0 filename 'ファイルは存在しない'
+      foldercreate filename
+      assert result != 0 filename 'ファイル作成が成功する'
+      foldersearch filename
+      assert result != 0 filename 'ファイルが存在する'
+      folderdelete filename
+      assert result != 0 filename 'ファイル削除が成功する'
+      foldersearch filename
+      assert result == 0 filename 'ファイルは存在しない'
+      makepath path 'c:\teraterm' 'test.txt'
+      strcompare path "c:\teraterm\test.txt"
+      if result != 0 then
+      strcompare path "/mnt/c/teraterm/test.txt"
+      assert result == 0 "dirname test" dir
+      endif
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0023_ok_file_etc.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0023_ok_file_etc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0024_ok_ipv4.ttl
+  ttl:
+    cmd: | 
+      getipv4addr stringarray ipaddr_size
+      for i 0  (ipaddr_size - 1)
+      assert 1 i ipaddr_size stringarray[ i ]
+      next
+      getipv6addr stringarray ipaddr_size
+      for i 0  (ipaddr_size - 1)
+      assert 1 i ipaddr_size stringarray[ i ]
+      next
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0024_ok_ipv4.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0024_ok_ipv4.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0025_ok_getver.ttl
+  ttl:
+    cmd: | 
+      getver ver
+      strlen ver
+      assert 3 <=result ver result "getver test"
+      getver ver "0.0"
+      assert 1==result ver result "getver test"
+      getver ver "100.0"
+      assert -1==result ver result "getver test"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0025_ok_getver.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0025_ok_getver.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0026_ok_ifdefind.ttl
+  ttl:
+    cmd: | 
+      ifdefined data
+      assert 0==result result "ifdefined test"
+      data = 3
+      ifdefined data
+      assert 1==result data result "ifdefined test"
+      ifdefined call_aa
+      assert 4==result call_aa result "ifdefined test"
+      data = "aaa"
+      ifdefined data
+      assert 3==result data result "ifdefined test"
+      assert 1 "array start!"
+      a = 0
+      xx[a] = 22
+      ifdefined xx
+      assert 5==result a xx[0] result "ifdefined array int test"
+      b = xx[0]
+      assert 22==b xx[0] b "ifdefined array int test"
+      c = 1
+      yy[c] = "xxx"
+      ifdefined yy
+      assert 6==result b yy[c] result "ifdefined array str test" result
+      result = 1
+      end
+      :call_aa
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0026_ok_ifdefind.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0026_ok_ifdefind.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0027_ok_intetc.ttl
+  ttl:
+    cmd: | 
+      for i 0 100
+      ; 0から10までの乱数を変数valへ格納する
+      random val 10
+      assert 0 <= val "random test" i val
+      assert val <= 10 "random test" i val
+      next
+      uptime intvar
+      assert 0<intvar "uptime test" intvar
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0027_ok_intetc.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0027_ok_intetc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0028_ok_logetc.ttl
+  ttl:
+    cmd: | 
+      assert 1 "log test"
+      filename = "build/log001.txt"
+      logopen filename 0 0
+      logwrite 'Log start'#13#10
+      logwrite '*****************************************************'#13#10
+      logclose
+      assert 1 "add log test"
+      logopen filename 0 1
+      logwrite 'next'#13#10
+      logwrite '*****************************************************'#13#10
+      logclose
+      ; とりあえず呼べるか？
+      logpause
+      ; とりあえず呼べるか？
+      logstart
+      ; 書き込めているかチェックする
+      fileopen handle filename 0
+      fileread handle 1024 strvar
+      assert 1 strvar  ; 書き込んだものを表示
+      strscan strvar "Log start"
+      assert 0 < result "logwrite test" result
+      strscan strvar "next"
+      assert 0 < result "logwrite append test" result
+      fileclose handle
+      ; local timeで書き込めるか？
+      assert 1 "timestamp test"
+      logopen filename 0 0 0 1
+      logwrite 'p1'#13#10
+      logwrite 'p2'#13#10
+      logclose
+      ; 書き込めているかチェックする
+      fileopen handle filename 0
+      fileread handle 1024 strvar
+      assert 1 strvar  ; 書き込んだものを表示
+      strscan strvar "]p1"
+      assert 0 < result "timestamp test" result
+      strscan strvar "]p2"
+      assert 0 < result "timestamp test" result
+      fileclose handle
+      ; UTC時間で書き込めるか？
+      assert 1 "timestamp test"
+      logopen filename 0 0 0 1 0 0 1
+      logwrite 'x1'#13#10
+      logwrite 'x2'#13#10
+      logclose
+      ; 書き込めているかチェックする
+      fileopen handle filename 0
+      fileread handle 1024 strvar
+      assert 1 strvar  ; 書き込んだものを表示
+      strscan strvar "]x1"
+      assert 0 < result "timestamp test" result
+      strscan strvar "]x2"
+      assert 0 < result "timestamp test" result
+      fileclose handle
+      ; 起動時間で書き込めるか？
+      assert 1 "timestamp test"
+      logopen filename 0 0 0 1 0 0 2
+      logwrite 'y1'#13#10
+      logwrite 'y2'#13#10
+      logclose
+      ; 書き込めているかチェックする
+      fileopen handle filename 0
+      fileread handle 1024 strvar
+      assert 1 strvar  ; 書き込んだものを表示
+      strscan strvar "]y1"
+      assert 0 < result "timestamp test" result
+      strscan strvar "]y2"
+      assert 0 < result "timestamp test" result
+      fileclose handle
+      ; connect timeで書き込めるか？
+      assert 1 "timestamp test"
+      logopen filename 0 0 0 1 0 0 3
+      logwrite 'z1'#13#10
+      logwrite 'z2'#13#10
+      logclose
+      ; 書き込めているかチェックする
+      fileopen handle filename 0
+      fileread handle 1024 strvar
+      assert 1 strvar  ; 書き込んだものを表示
+      strscan strvar "]z1"
+      assert 0 < result "timestamp test" result
+      strscan strvar "]z2"
+      assert 0 < result "timestamp test" result
+      fileclose handle
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0028_ok_logetc.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0028_ok_logetc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0029_ok_connect.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      ;file_name = "029c1_ok_connect.ttl"
+      ;target_display = "pingを打つ装置"
+      ;target_ip = "127.0.0.1"
+      ;target_type = 1  ; 1=ping, 2=traceroute, 3=show run
+      ;base_display = "SSH接続する装置"
+      ;base_ip = "localhost:2200"
+      ;base_account = "foo" ; アカウント情報
+      ;next_ssh = 2  ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
+      ;next_display = "SSHからさらに接続する装置"
+      ;next_ip  = "c1"  ; 踏み台SSHのIPアドレス
+      ;next_account = "bar"  ; 踏み台先のIPアドレス
+      ;INPUT_END
+      ifdefined file_name
+      if result == 0 then
+      file_name = "build/connect_test.ttl"
+      endif
+      ifdefined target_display
+      if result == 0 then
+      target_display = "pingを打つ装置"
+      endif
+      ifdefined target_ip
+      if result == 0 then
+      target_ip = "127.0.0.1"
+      endif
+      ifdefined target_type
+      if result == 0 then
+      target_type = 1  ; 1=ping, 2=traceroute, 3=show run
+      endif
+      ifdefined base_display
+      if result == 0 then
+      base_display = "SSH接続する装置"
+      endif
+      ifdefined base_ip
+      if result == 0 then
+      base_ip = "localhost:2200"
+      endif
+      ifdefined base_account
+      if result == 0 then
+      base_account = "foo"
+      endif
+      ifdefined next_ssh
+      if result == 0 then
+      next_ssh = 2
+      endif
+      ifdefined next_display
+      if result == 0 then
+      next_display = "SSHからさらに接続する装置"
+      endif
+      ifdefined next_ip
+      if result == 0 then
+      next_ip  = "c1"  ; 踏み台SSHのIPアドレス
+      endif
+      ifdefined next_account
+      if result == 0 then
+      next_account = "bar"  ; 踏み台先のIPアドレス
+      endif
+      ; ログファイルを設定する
+      log_file_name_work = file_name
+      strreplace log_file_name_work 1 'ttl' ''
+      strconcat log_file_name_work 'log'  ; 拡張子がttlでないときは replaceでlogできないので追加
+      ; ログファイルを絶対パスに変える
+      getdir log_file_name
+      strconcat log_file_name #92
+      strconcat log_file_name log_file_name_work
+      ; ログを開く
+      logopen log_file_name 0 0
+      ; すでに接続されていたらエラー
+      testlink
+      if result==2  then
+      messagebox "already connected" "title"
+      call call_ending
+      end
+      endif
+      ;; ベースとなるパスワードを取得する
+      call call_base_password
+      base_password = password
+      ; 接続する 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
+      command = base_ip
+      strconcat command " /ssh /auth=password /user="
+      strconcat command base_account
+      strconcat command " /passwd="
+      strconcat command base_password
+      connect command
+      if result <> 2 then
+      int2str strvar result
+      message = "connection failer "
+      strconcat message strvar
+      messagebox command message
+      call call_ending
+      end
+      endif
+      ; ttl本家側で入れないと動かないことがあった
+      pause 1
+      ;
+      prompt = '$'
+      timeout = 150
+      state_flag = 0  ; call_get_promptのために状態フラグを設定する
+      command = 'clear'
+      call call_get_prompt  ; プロンプトを決定する
+      if next_ssh == 2 then
+      state_flag = 1  ; call_get_promptのために状態フラグを設定する
+      ; ssh 接続 'ssh account@ip'
+      command = "ssh "
+      strconcat command next_account
+      strconcat command "@"
+      strconcat command next_ip
+      call call_get_prompt  ; プロンプトを決定する
+      endif
+      if server_type == 1 then  ; 1=cisco, 2=linux, 3=qx-s
+      ;; cisco のときはこれで -- More -- を出さないようにする
+      command = 'terminal length 0'
+      call call_one_command
+      elseif server_type == 3 then  ; 1=cisco, 2=linux, 3=qx-s
+      ;; qx-s のときはこれで -- More -- を出さないようにする
+      command = 'screen-length disable'
+      call call_one_command
+      command = 'terminal pager offscreen-length disable'
+      call call_one_command
+      command = 'set terminal pager disable'
+      call call_one_command
+      endif
+      ; 特殊コマンドを実行する
+      my_command_flag = 1
+      ifdefined my_command_int
+      if result<>1 then
+      my_command_flag = 0
+      endif
+      ifdefined my_command
+      if result<>6 then
+      my_command_flag = 0
+      endif
+      ;; 実コマンドの投入
+      if my_command_flag<>0 then
+      for i   0   (my_command_int - 1)
+      command = my_command[i]
+      strcompare command ""
+      if result<>0 then
+      call call_check_command
+      if result == 1 then
+      call call_get_prompt
+      elseif result == 2 then
+      call call_sudo_command
+      else
+      call call_one_command
+      endif
+      endif
+      next
+      elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
+      if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+      command = 'ping '
+      elseif server_type == 2 then
+      command = 'ping -c 1 '
+      else
+      command = 'ping '
+      endif
+      strconcat command target_ip
+      flushrecv
+      sendln command
+      wait command
+      wait prompt ' 0% packet loss' ' 0.0% packet loss' 'Success rate is 100 percent'
+      if result <= 1 then
+      call call_ending
+      end
+      endif
+      elseif target_type = 2 then
+      if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+      command = 'traceroute '
+      strconcat command target_ip
+      call call_one_command
+      elseif server_type == 2 then
+      strcompare "] " prompt
+      if result == 0 then
+      ; for vmware
+      command = 'traceroute '
+      strconcat command target_ip
+      call call_one_command
+      else
+      command = 'tracepath '
+      strconcat command target_ip
+      call call_one_command
+      endif
+      else
+      command = 'traceroute '
+      strconcat command target_ip
+      call call_one_command
+      endif
+      else
+      if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
+      ; for cisco
+      command = 'show running-config'
+      call call_one_command
+      command = 'show ip interface brief'
+      call call_one_command
+      elseif server_type == 2 then
+      strcompare "] " prompt
+      if result == 0 then
+      ; for vmware
+      command = 'esxcli network nic list'
+      call call_one_command
+      command = 'esxcli network vswitch standard list'
+      call call_one_command
+      command = 'esxcli network ip interface list'
+      call call_one_command
+      else
+      ; for linux
+      command = 'ifconfig -a'
+      call call_one_command
+      command = 'ip addr show'
+      call call_one_command
+      command = 'ip link show'
+      call call_one_command
+      command = 'ip route show'
+      call call_one_command
+      command = 'ss'
+      call call_one_command
+      endif
+      else
+      ; for qx-s
+      command = 'display current-configuration'
+      call call_one_command
+      endif
+      endif
+      ; 終了処理
+      call call_ending
+      ; 正常終了を通知
+      error=''
+      result = 1
+      end
+      ; SSHでログインするときに使うパスワード
+      :call_base_password
+      key_target = 'normal_'
+      strconcat key_target base_account
+      key_ip = base_ip
+      key_base_display = base_display
+      call call_pass_all
+      return
+      ; SSHからSSHにさらにログインするときのパスワード
+      :call_base_password_enable
+      key_target = 'enable_'
+      strconcat key_target base_account
+      key_ip = base_ip
+      key_base_display = base_display
+      call call_pass_all
+      return
+      ; 特権ユーザのパスワード
+      :call_next_password
+      key_target = 'normal_'
+      strconcat key_target next_account
+      key_ip = next_ip
+      key_base_display = next_display
+      call call_pass_all
+      return
+      ; 特権ユーザのパスワード
+      :call_next_enable_password
+      ; key_target = 'enable_'
+      strconcat key_target next_account
+      key_ip = next_ip
+      key_base_display = next_display
+      call call_pass_all
+      return
+      ; パスワード関連まとめ
+      :call_pass_all
+      key_ip_replace = key_ip
+      strreplace key_ip_replace 1 ':' '_' ; ipv6
+      strreplace key_ip_replace 1 #92'.' '_'  ; ipv4 正規表現なので単純に.を渡すと全部消える
+      getdir key_data
+      strconcat key_data #92
+      strconcat key_data "pass_" ; パスワード保存用
+      strconcat key_data key_ip_replace
+      strconcat key_data '.key'
+      ispassword key_data key_target  ; パスワードの有無確認
+      if result == 0 then  ; 設定されていない
+      message = key_target
+      strconcat message "("
+      strconcat message key_ip
+      strconcat message ")"
+      passwordbox message base_display
+      password = inputstr ; パスワードを入力
+      setpassword key_data key_target password  ; パスワードを設定
+      else
+      getpassword key_data key_target password  ; パスワードを取得
+      endif
+      return
+      :call_ending
+      testlink
+      if result==2  then
+      closett
+      ; logclose
+      endif
+      result = 0
+      return
+      :call_check_command
+      ; コマンドがプロンプトの変化を要求しているか確認する
+      strscan command "sudo "
+      if result<>0 then
+      result = 2
+      return
+      endif
+      strscan command "clear"
+      if result<>0 then
+      result = 1
+      return
+      endif
+      strscan command "ssh "
+      if result<>0 then
+      result = 1
+      return
+      endif
+      strscan command "quit"
+      if result<>0 then
+      result = 1
+      return
+      endif
+      strscan command "exit"
+      if result<>0 then
+      result = 1
+      return
+      endif
+      strscan command "system-view"
+      if result<>0 then
+      result = 1
+      return
+      endif
+      return
+      :call_one_command
+      ; １コマンド分の処理
+      flushrecv
+      sendln command
+      wait command
+      if result == 0 then
+      messagebox 'input command timeout failer' command
+      call call_ending
+      end
+      endif
+      ; プロントのチェックを行う
+      while 1
+      ;
+      wait prompt '-- More --'
+      if result = 0 then
+      messagebox 'command is time up!' command
+      call call_ending
+      end
+      elseif result = 2 then
+      flushrecv
+      sendln ''
+      continue
+      endif
+      ;
+      break
+      endwhile
+      return
+      :call_get_prompt
+      flushrecv
+      sendln command
+      wait command
+      if result == 0 then
+      messagebox 'input command timeout failer' command
+      call call_ending
+      end
+      endif
+      password_flag = 0
+      enable_flag = 0
+      while 1
+      ; プロンプトチェック
+      wait '>' '#' '$' ']' '(yes/no' 'assword:' '-- More --'
+      result_type = result
+      if result_type == 0 then
+      ; タイムアウトのとき
+      messagebox 'next prompt check fail!' 'title'
+      call call_ending
+      end
+      elseif result_type == 1 then
+      prompt = '>'
+      if enable_flag == 0 then
+      ; '>'が来たら一度だけenableを打ち、2度来たらqxモードと見なす
+      server_type = 1  ; 1=cisco, 2=linux, 3=qx-s
+      password_flag = 0
+      enable_flag = 1
+      command = 'enable'
+      flushrecv
+      sendln command
+      wait command
+      continue
+      else
+      server_type = 3  ; 1=cisco, 2=linux, 3=qx-s
+      endif
+      elseif result_type == 2 then
+      server_type = 1  ; 1=cisco, 2=linux, 3=qx-s
+      prompt = '#'
+      elseif result_type == 3 then
+      server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
+      prompt = '$'
+      elseif result_type == 4 then
+      server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
+      prompt = ']'  ; for vmware
+      elseif result_type == 5 then
+      command = 'yes'
+      flushrecv
+      sendln command
+      wait command
+      continue
+      elseif result_type == 6 then
+      if password_flag <> 0 then
+      message = 'passdword ng!'
+      messagebox message 'title'
+      call call_ending
+      end
+      endif
+      password_flag = 1
+      if state_flag == 0 then
+      if enable_flag<>0 then
+      call call_base_password_enable  ; 特権モード移行用
+      else
+      call call_base_password
+      endif
+      else
+      if enable_flag<>0 then
+      key_target = 'enable_'
+      call call_next_enable_password  ; 特権モード移行用
+      else
+      call call_next_password
+      endif
+      endif
+      flushrecv
+      sendln password
+      continue
+      elseif result_type == 7 then
+      flushrecv
+      sendln ''
+      continue
+      else
+      int2str strvar result_type
+      message = "next promot not found("
+      strconcat message strvar
+      strconcat message ")"
+      messagebox message 'title'
+      call call_ending
+      end
+      endif
+      ;
+      ; while を終わる
+      break
+      endwhile
+      return
+      :call_sudo_command
+      flushrecv
+      sendln command
+      wait command
+      if result == 0 then
+      messagebox 'input command timeout failer' command
+      call call_ending
+      end
+      endif
+      password_flag = 0
+      while 1
+      ; プロンプトチェック
+      wait prompt '[sudo] password for'
+      result_type = result
+      if result == 0 then
+      ; タイムアウトのとき
+      messagebox 'next prompt check fail!' 'title'
+      call call_ending
+      end
+      elseif result_type == 1 then
+      break
+      elseif result_type == 2 then
+      if password_flag <> 0 then
+      message = 'passdword ng!'
+      messagebox message 'title'
+      call call_ending
+      end
+      endif
+      wait ':'
+      if result == 0 then
+      messagebox 'sudo password timeout failer' command
+      call call_ending
+      end
+      endif
+      password_flag = 1
+      key_target = 'sudo_'
+      call call_next_enable_password  ; 特権モード移行用
+      flushrecv
+      sendln password
+      continue
+      else
+      int2str strvar result_type
+      message = "sudo promot not found("
+      strconcat message strvar
+      strconcat message ")"
+      messagebox message 'title'
+      call call_ending
+      end
+      endif
+      ;
+      ; while を終わる
+      break
+      endwhile
+      return
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0029_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0029_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0030_ok_connect.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      ;file_name = "029c1_ok_connect.ttl"
+      ;target_display = "pingを打つ装置"
+      ;target_ip = "127.0.0.1"
+      target_type = 2  ; 1=ping, 2=traceroute, 3=show run
+      ;base_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+      ;base_display = "SSH接続する装置"
+      ;base_ip = "localhost:2200"
+      base_account = "qx-s"
+      next_ssh = 0  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      ;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+      ;next_display = "SSHからさらに接続する装置"
+      ;next_ip  = "c1"  ; 踏み台SSHのIPアドレス
+      ;next_account = "bar"  ; 踏み台先のIPアドレス
+      ;INPUT_END
+      getdir include_dir
+      strconcat include_dir "/0029_ok_connect.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0030_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0030_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0031_ok_connect.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      ;file_name = "029c1_ok_connect.ttl"
+      ;target_display = "pingを打つ装置"
+      ;target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      ;base_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+      ;base_display = "SSH接続する装置"
+      ;base_ip = "localhost:2200"
+      base_account = "c1"
+      ;next_ssh = 1  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      ;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+      ;next_display = "SSHからさらに接続する装置"
+      next_ip  = "abc"  ; 踏み台SSHのIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
+      ;INPUT_END
+      getdir include_dir
+      strconcat include_dir "/0029_ok_connect.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0031_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0031_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0032_ok_connect.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      ;file_name = "029c1_ok_connect.ttl"
+      target_display = "pingを打つ装置"
+      target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "vmware"
+      next_ssh = 1  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      ;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+      ;next_display = "SSHからさらに接続する装置"
+      ;next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+      ;next_account = "bar"  ; 踏み台先のIPアドレス
+      ;INPUT_END
+      getdir include_dir
+      strconcat include_dir "/0029_ok_connect.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0032_ok_connect.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0032_ok_connect.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0033_ok_connect_esxcli.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "vmware"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "vmware"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      ;my_command_int = 4
+      ;my_command[0] = 'esxcli network nic list'
+      ;my_command[1] = 'esxcli network vswitch standard list'
+      ;my_command[2] = ''  ; ダミー
+      ;my_command[3] = 'esxcli network nic list'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/0029_ok_connect.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0033_ok_connect_esxcli.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0033_ok_connect_esxcli.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0034_ng_password.ttl
+  ttl:
+    cmd: | 
+      file_name = "029c1_ok_connect.ttl"
+      target_display = "pingを打つ装置"
+      target_ip = "127.0.0.1"
+      target_type = 1  ; 1=ping, 2=traceroute, 3=show run
+      base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "foo" ; アカウント情報
+      next_ssh = 2  ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
+      next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "c1_password_ng"  ; 踏み台SSHのIPアドレス
+      next_account = "bar"  ; 踏み台先のIPアドレス
+      getdir include_dir
+      strconcat include_dir "/0029_ok_connect.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0034_ng_password.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0034_ng_password.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0035_ok_label.ttl
+  ttl:
+    cmd: | 
+      a = 1
+      result = 1
+      call call_test
+      ifdefined  call_test
+      assert result == 4 "ifdefined" result
+      assert a == 10 "ifdefined" a result
+      result = 1
+      end
+      :call_test
+      assert 1 "hit1" "hit2"
+      a = 10
+      result = 0
+      return
+      a = 5
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0035_ok_label.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0035_ok_label.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0036_ng_label.ttl
+  ttl:
+    cmd: | 
+      ; ラベルに値を代入しようとした
+      call_test = 1
+      result = 1
+      end
+      :call_test
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0036_ng_label.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0036_ng_label.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0037_ng_label_none.ttl
+  ttl:
+    cmd: | 
+      ; そんなラベルはないエラーが出ればOK
+      call call_abc
+      result = 1
+      end
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0037_ng_label_none.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0037_ng_label_none.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0038_ng_label_vale.ttl
+  ttl:
+    cmd: | 
+      value = 1
+      ; 変数をコールしようとしたエラーが出ればOK
+      call value
+      result = 0
+      end
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0038_ng_label_vale.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0038_ng_label_vale.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0039_ok_param.ttl
+  ttl:
+    cmd: | 
+      basename fname param1
+      strcompare fname '0039_ok_param.ttl'
+      if result != 0 then
+      strcompare fname 'none.ttl'
+      assert result = 0 "param1 test" fname 'none.ttl'
+      endif
+      assert 1 'param1' param1
+      assert 1 'param2' param2
+      assert 1 'param3' param3
+      assert 1 'param4' param4
+      assert 1 'param5' param5
+      assert 1 'param6' param6
+      assert 1 'param7' param7
+      assert 1 'param8' param8
+      assert 1 'param9' param9
+      assert 1 'param1' param[1]
+      assert 1 'param2' param[2]
+      assert 1 'param3' param[3]
+      assert 1 'param4' param[4]
+      assert 1 'param5' param[5]
+      assert 1 'param6' param[6]
+      assert 1 'param7' param[7]
+      assert 1 'param8' param[8]
+      assert 1 'param9' param[9]
+      result = 1
+      end
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0039_ok_param.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0039_ok_param.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0040_ok_qx_undo_shutdown.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 5
+      my_command[ 0] = 'system-view'
+      my_command[ 1] = 'interface gigabitethernet 1/0/1'
+      my_command[ 2] = 'undo shutdown'
+      my_command[ 3] = 'quit'
+      my_command[ 4] = 'quit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0040_ok_qx_undo_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0040_ok_qx_undo_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0041_ok_qx_shutdown.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 5
+      my_command[ 0] = 'system-view'
+      my_command[ 1] = 'interface gigabitethernet 1/0/1'
+      my_command[ 2] = 'shutdown'
+      my_command[ 3] = 'quit'
+      my_command[ 4] = 'quit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0041_ok_qx_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0041_ok_qx_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0042_ok_qx_polcing.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 14
+      my_command[ 0] = 'system-view'
+      my_command[ 1] = 'traffic classifier classifier-nameA'
+      my_command[ 2] = 'if-match any'
+      my_command[ 3] = 'quit'
+      my_command[ 4] = 'traffic behavior behavior-nameA'
+      my_command[ 5] = 'car cir 100'  ; kbps
+      my_command[ 6] = 'quit'
+      my_command[ 7] = 'qos policy policy-nameA'
+      my_command[ 8] = 'classifier classifier-nameA behavior behavior-nameA'
+      my_command[ 9] = 'quit'
+      my_command[10] = 'interface gigabitethernet 1/0/1'
+      my_command[11] = 'traffic-policy policy-nameA inbound'
+      my_command[12] = 'traffic-policy policy-nameA outbound'
+      my_command[13] = 'quit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0042_ok_qx_polcing.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0042_ok_qx_polcing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0043_ok_qx_undo_polcing.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "qx"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 9
+      my_command[ 0] = 'system-view'
+      my_command[ 1] = 'interface gigabitethernet 1/0/1'
+      my_command[ 2] = 'undo traffic-policy policy-nameA inbound'
+      my_command[ 3] = 'undo traffic-policy policy-nameA outbound'
+      my_command[ 4] = 'quit'
+      my_command[ 5] = 'undo qos policy policy-nameA'
+      my_command[ 6] = 'undo traffic classifier classifier-nameA'
+      my_command[ 7] = 'undo traffic behavior behavior-nameA'
+      my_command[ 8] = 'quit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0043_ok_qx_undo_polcing.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0043_ok_qx_undo_polcing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0044_ok_cisco_no_shutdown.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "c2"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 5
+      my_command[ 0] = 'configure terminal'
+      my_command[ 1] = 'interface GigabitEthernet0/0'
+      my_command[ 2] = 'no shutdown'
+      my_command[ 3] = 'exit'
+      my_command[ 4] = 'exit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0044_ok_cisco_no_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0044_ok_cisco_no_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0045_ok_cisco_shutdown.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "c2"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 5
+      my_command[ 0] = 'configure terminal'
+      my_command[ 1] = 'interface GigabitEthernet0/0'
+      my_command[ 2] = 'shutdown'
+      my_command[ 3] = 'exit'
+      my_command[ 4] = 'exit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0045_ok_cisco_shutdown.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0045_ok_cisco_shutdown.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0046_ok_cisco_policing.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "c2"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 10
+      my_command[ 0] = 'configure terminal'
+      my_command[ 1] = 'policy-map policy-nameA'
+      my_command[ 2] = 'class class-default'
+      my_command[ 3] = 'police rate 10000000 pps'
+      my_command[ 4] = 'exit'
+      my_command[ 5] = 'exit'
+      my_command[ 6] = 'interface GigabitEthernet0/0'
+      my_command[ 7] = 'service-policy output policy-nameA'
+      my_command[ 8] = 'service-policy input policy-nameA'
+      my_command[ 9] = 'exit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0046_ok_cisco_policing.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0046_ok_cisco_policing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0047_ok_cisco_no_policing.ttl
+  ttl:
+    cmd: | 
+      ;INPUT_START
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      next_display = "SSHからさらに接続する装置"
+      next_ip  = "c2"  ; 踏み台SSHのIPアドレス
+      next_account = "xxx"  ; 踏み台先のIPアドレス
+      ; 特殊コマンドの開始
+      my_command_int = 7
+      my_command[ 0] = 'configure terminal'
+      my_command[ 1] = 'interface GigabitEthernet0/0'
+      my_command[ 2] = 'no service-policy output policy-nameA'
+      my_command[ 3] = 'no service-policy input policy-nameA'
+      my_command[ 4] = 'exit'
+      my_command[ 5] = 'no policy-map policy-nameA'
+      my_command[ 6] = 'exit'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0047_ok_cisco_no_policing.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0047_ok_cisco_no_policing.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0048_ok_scp.ttl
+  ttl:
+    cmd: | 
+      ; 接続する
+      connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
+      if result != 2 then
+      messagebox "connect fail" "title"
+      result = 0
+      end
+      endif
+      ; 書き込み
+      scpsend "base.ttl" "base2.key"
+      ; 受信
+      scprecv "base2.key" "base3.key"
+      ; ここまで到達したら成功
+      result = 1
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0048_ok_scp.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0048_ok_scp.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0049_ok_crc_checksum.ttl
+  ttl:
+    cmd: | 
+      str = #01#02
+      checksum8 x str
+      assert x == 3 "test" x
+      sprintf '0x%08X' x
+      assert 1 inputstr x
+      str = 'this is a test string to be checksum16ed'
+      fileopen fhandle 'base.key' 0
+      filewrite fhandle str
+      fileclose fhandle
+      checksum8file y 'base.key'
+      assert result = 0 "file check" ;; ファイルが読めた
+      sprintf '0x%08X' y
+      strcompare '0x00000009' inputstr
+      assert result = 0 inputstr y
+      ; ファイルが読めない場合
+      checksum8file x 'note_file'
+      assert result = -1 "file foget" x
+      checksum16 x str
+      sprintf '0x%08X' x
+      assert 1 inputstr x
+      strcompare '0x00000059' inputstr
+      assert result = 0 inputstr y
+      checksum16file y 'base.key'
+      assert result = 0 "file check" ;; ファイルが読めた
+      sprintf '0x%08X' y
+      strcompare '0x00000059' inputstr
+      assert result = 0 inputstr y
+      ; ファイルが読めない場合
+      checksum16file x 'note_file'
+      assert result = -1 "file foget" x
+      checksum32 x str
+      sprintf '0x%08X' x
+      assert 1 inputstr x
+      strcompare '0x00000E59' inputstr
+      assert result = 0 inputstr y
+      checksum32file y 'base.key'
+      assert result = 0 "file check" ;; ファイルが読めた
+      sprintf '0x%08X' y
+      assert 1 inputstr y
+      strcompare '0x00000E59' inputstr
+      assert result = 0 inputstr y
+      ; ファイルが読めない場合
+      checksum32file x 'note_file'
+      assert result = -1 "file foget" x
+      crc16 crc str
+      sprintf '0x%08X' crc
+      strcompare inputstr '0x0000D798' ;; CRC-16/IBM-SDLC
+      assert result == 0 "crc16" inputstr crc
+      crc16file crc "base.key"
+      sprintf '0x%08X' crc
+      strcompare inputstr '0x0000D798' ;; CRC-16/IBM-SDLC
+      assert result == 0 "crc16file" inputstr crc
+      crc32 crc str
+      sprintf '0x%08X' crc
+      strcompare inputstr '0xE65AFC5D' ;; CRC-32/ISO-HDLC
+      assert result == 0 "crc32" inputstr crc
+      crc32file crc "base.key"
+      sprintf '0x%08X' crc
+      strcompare inputstr '0xE65AFC5D' ;; CRC-32/ISO-HDLC
+      assert result == 0 "crc32file" inputstr crc
+      ; 正常ならここまで到達して終了
+      result = 1
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0049_ok_crc_checksum.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0049_ok_crc_checksum.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0050_ok_etc.ttl
+  ttl:
+    cmd: | 
+      ; 実装していないが、エラーが出ないことを確認する
+      ; 呼べればOK
+      enablekeyb 0
+      ; 必ず失敗
+      getmodemstatus intvar
+      assert intvar == 0
+      assert result != 0
+      result = 1
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0050_ok_etc.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0050_ok_etc.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0051_ok_setexitcode.ttl
+  ttl:
+    cmd: | 
+      ; この場合成功になる
+      ; 失敗
+      result = 0
+      ; 成功
+      setexitcode 1
+      ; 失敗
+      result = 0
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0051_ok_setexitcode.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0051_ok_setexitcode.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0052_ng_setexitcode.ttl
+  ttl:
+    cmd: | 
+      ; この場合失敗になる
+      ; 成功
+      result = 1
+      ; 失敗
+      setexitcode 0
+      ; 成功
+      result = 1
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert False 0052_ng_setexitcode.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == False
+- name: debug 0052_ng_setexitcode.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0053_ok_findfirst.ttl
+  ttl:
+    cmd: | 
+      ; ファイル検索
+      extpat = '*.ttl'
+      findfirst dh extpat filename
+      i = 0
+      while result != 0
+      assert result != 0 i result filename extpat
+      findnext dh filename
+      i = i + 1
+      endwhile
+      assert 50 < i "ttl text" i
+      findclose dh
+      result = 1
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0053_ok_findfirst.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0053_ok_findfirst.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0054_ok_filetrancate.ttl
+  ttl:
+    cmd: | 
+      filename = "build/work.key"
+      ; 新規作成
+      filetruncate filename 20
+      filestat filename size mtime drive
+      assert size = 20 filename size mtime drive
+      ; 減らす
+      filetruncate filename 10
+      filestat filename size mtime drive
+      assert size = 10 filename size mtime drive
+      ; 追加
+      filetruncate filename 30
+      filestat filename size mtime drive
+      assert size = 30 filename size mtime drive
+      result = 1
+      end
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0054_ok_filetrancate.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0054_ok_filetrancate.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0055_ok_sudo_test.ttl
+  ttl:
+    cmd: | 
+      filename = "build/work.key"
+      basename file_name param1
+      target_display = "pingを打つ装置"
+      target_type = 3  ; 1=ping, 2=traceroute, 3=show run
+      base_display = "SSH接続する装置"
+      base_ip = "localhost:2200"
+      base_account = "boo"
+      next_ssh = 1  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
+      ; 特殊コマンドの開始
+      my_command_int = 4
+      my_command[ 0] = 'sudo ls'
+      my_command[ 1] = 'sudo pwd'
+      my_command[ 2] = 'sudo xxx'
+      my_command[ 3] = 'sudo echo xxx'
+      ; 特殊コマンドの終了
+      getdir include_dir
+      strconcat include_dir "/base.ttl"
+      include include_dir
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0055_ok_sudo_test.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0055_ok_sudo_test.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0056_ok_sum.ttl
+  ttl:
+    cmd: | 
+      a = not 1
+      assert a == 0 a
+      a = ~ 1
+      assert a == 0 a
+      a = +1
+      assert a == 1 a
+      a = -1
+      assert a == -1 a
+      a = 3 + -1
+      assert a == 2 a
+      a = 1 - 2 * 2
+      assert a == -3 a
+      a = (1 + 2) * 2
+      assert a == 6 a
+      a = 6 % 5
+      assert a == 1 a
+      a = 1 + 2 << 1
+      assert a == 6 a
+      a = (1 + 2) << 1
+      assert a == 6 a
+      a = 1 + (2 << 1)
+      assert a == 5 a
+      a = 1 + (4 >> 1)
+      assert a == 3 a
+      a = 1 + (4 >>> 1)
+      assert a == 3 a
+      a = 8 >>> 5 - 2 * 2
+      assert a == 4 a
+      b = 1
+      a = b and (8 >>> 5 - 2 * 2 == 4)
+      assert a a b
+      b = 0
+      a = b and (8 >>> 5 - 2 * 2 == 4)
+      assert a == 0 a b
+      a = $F00F
+      b = $F0F0
+      c = a and b
+      assert c == $F000 a b c
+      a = $F00F
+      b = $F0F0
+      c = a & b
+      assert c == $F000 a b c
+      a = $F00F
+      b = $F0F0
+      c = a xor b
+      assert c == $00FF a b c
+      a = $F00F
+      b = $F0F0
+      c = a ^ b
+      assert c == $00FF a b c
+      a = $F00F
+      b = $F0F0
+      c = a or b
+      assert c == $F0FF a b c
+      a = $F00F
+      b = $F0F0
+      c = a | b
+      assert c == $F0FF a b c
+      a = 0
+      b = 1
+      assert (a < b) != 0 a b
+      a = 1
+      b = 0
+      assert (a < b) == 0 a b
+      a = 1
+      b = 1
+      assert (a < b) == 0 a b
+      a = 0
+      b = 1
+      assert (a > b) == 0 a b
+      a = 1
+      b = 0
+      assert (a > b) != 0 a b
+      a = 1
+      b = 1
+      assert (a > b) == 0 a b
+      a = 0
+      b = 1
+      assert (a <= b) != 0 a b
+      a = 1
+      b = 0
+      assert (a <= b) == 0 a b
+      a = 1
+      b = 1
+      assert (a <= b) != 0 a b
+      a = 0
+      b = 1
+      assert (a >= b) == 0 a b
+      a = 1
+      b = 0
+      assert (a >= b) != 0 a b
+      a = 1
+      b = 1
+      assert (a >= b) != 0 a b
+      a = 0
+      b = 1
+      assert (a == b) == 0 a b
+      a = 1
+      b = 1
+      assert (a == b) != 0 a b
+      a = 0
+      b = 1
+      assert (a = b) == 0 a b
+      a = 1
+      b = 1
+      assert (a = b) != 0 a b
+      a = 0
+      b = 1
+      assert (a <> b) != 0 a b
+      a = 1
+      b = 1
+      assert (a <> b) == 0 a b
+      a = 0
+      b = 1
+      assert (a != b) != 0 a b
+      a = 1
+      b = 1
+      assert (a != b) == 0 a b
+      a = 0
+      b = 0
+      assert (a && b) == 0 a b
+      a = 1
+      b = 0
+      assert (a && b) == 0 a b
+      a = 0
+      b = 1
+      assert (a && b) == 0 a b
+      a = 1
+      b = 1
+      assert (a && b) != 0 a b
+      a = 0
+      b = 0
+      assert (a || b) == 0 a b
+      a = 0
+      b = 1
+      assert (a || b) != 0 a b
+      a = 1
+      b = 0
+      assert (a || b) != 0 a b
+      a = 1
+      b = 1
+      assert (a || b) != 0 a b
+      ; 最後までいったらOK
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0056_ok_sum.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0056_ok_sum.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 0057_ok_expandenv.ttl
+  ttl:
+    cmd: | 
+      str = "%WINDIR%\notepad.exe"
+      expandenv str
+      messagebox str "env"    ; C:\WINDOWS\notepad.exe
+      tolower str str
+      strscan str "windows"
+      assert 0 != result "expandenv" str result
+      expandenv str "%WINDIR%\notepad.exe"
+      messagebox str "env"    ; C:\WINDOWS\notepad.exe
+      tolower str str
+      strscan str "windows"
+      assert 0 != result "expandenv" str result
+      expandenv str "%test%\notepad.exe"
+      messagebox str "env"    ; %test%\notepad.exe
+      strscan str "%test%"
+      assert 0 != result "expandenv %test%" str result
+      str = "%WINDIR%\notepad.exe"
+      expandenv str
+      messagebox str "env"    ; C:\WINDOWS\notepad.exe
+      tolower str str
+      strscan str "windows"
+      assert 0 != result "expandenv" str result
+      expandenv str "%WINDIR%"
+      tolower str str
+      strcompare "c:\windows" str
+      assert 0 == result str result
+      command = "%systemroot%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%programfiles%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%programfiles(x86)%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%userprofile%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      result_text = str
+      command = "%Userprofile%"
+      expandenv str command
+      strcompare str result_text
+      assert 0 == result command str result
+      command = "%appdata%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%localappdata%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%temp%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%tmp%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%COMMONPROGRAMFILES%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%public%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%computername%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%username%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      command = "%path%"
+      expandenv str command
+      strcompare str command
+      assert 0 != result command str result  ; not same
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 0057_ok_expandenv.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 0057_ok_expandenv.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200) ping_SSH接続/ping(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH接続/ping"
+      target_ip = "127.0.0.1"
+      target_type = 1  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 1  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "c1"
+      next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "next_display"
+      next_ip = "dummy"
+      next_account = "admin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200) trace_SSH接続/trace(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH接続/trace"
+      target_ip = "127.0.0.1"
+      target_type = 2  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 1  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "next_display"
+      next_ip = "dummy"
+      next_account = "admin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1010_ok_localhost-2200_show.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200) show
+      ;
+      basename file_name param1
+      target_display = "SSH接続/show"
+      target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 1  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 3  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "qx"
+      next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "next_display"
+      next_ip = "dummy"
+      next_account = "admin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1010_ok_localhost-2200_show.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1010_ok_localhost-2200_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1011_ok_cisco1_ping_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) ping_SSH踏み台/ping(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/ping"
+      target_ip = "127.0.0.1"
+      target_type = 1  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay"
+      next_ip = "cisco1"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1011_ok_cisco1_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1011_ok_cisco1_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1012_ok_cisco1_trace_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台/trace(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/trace"
+      target_ip = "127.0.0.1"
+      target_type = 2  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay"
+      next_ip = "cisco1"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1012_ok_cisco1_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1012_ok_cisco1_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1013_ok_cisco1_show.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) show
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/show"
+      target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay"
+      next_ip = "cisco1"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1013_ok_cisco1_show.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1013_ok_cisco1_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1014_ok_cisco2_ping_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) ping_SSH踏み台/ping(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/ping"
+      target_ip = "127.0.0.1"
+      target_type = 1  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay"
+      next_ip = "cisco2"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1014_ok_cisco2_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1014_ok_cisco2_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1015_ok_cisco2_trace_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台/trace(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/trace"
+      target_ip = "127.0.0.1"
+      target_type = 2  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay"
+      next_ip = "cisco2"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1015_ok_cisco2_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1015_ok_cisco2_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1016_ok_cisco2_show.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) show
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/show"
+      target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay"
+      next_ip = "cisco2"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1016_ok_cisco2_show.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1016_ok_cisco2_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1017_ok_qx_ping_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) ping_SSH踏み台/ping(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/ping"
+      target_ip = "127.0.0.1"
+      target_type = 1  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay_qx"
+      next_ip = "qx"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1017_ok_qx_ping_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1017_ok_qx_ping_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1018_ok_qx_trace_127-0-0-1.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) trace_SSH踏み台/trace(127.0.0.1)
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/trace"
+      target_ip = "127.0.0.1"
+      target_type = 2  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay_qx"
+      next_ip = "qx"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1018_ok_qx_trace_127-0-0-1.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1018_ok_qx_trace_127-0-0-1.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1019_ok_qx_show.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) show
+      ;
+      basename file_name param1
+      target_display = "SSH踏み台/show"
+      target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "次のdisplay_qx"
+      next_ip = "qx"
+      next_account = "nextadmin"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1019_ok_qx_show.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1019_ok_qx_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+
+- name: cmd 1020_ok_vmware_show.ttl
+  ttl:
+    cmd: | 
+      ;
+      ; SSH接続先IP(localhost:2200)->vmwareテスト(vmware) show
+      ;
+      basename file_name param1
+      target_display = "vmwareのテスト"
+      target_ip = "127.0.0.1"
+      target_type = 3  ; 1=ping , 2=traceroute , 3=show run
+      next_ssh = 2  ; 0=Windows , 1=SSH login , 2=SSH->SSH login
+      base_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      base_display = "SSH接続先IP"
+      base_ip = "localhost:2200"
+      base_account = "admin"
+      next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
+      next_display = "vmwareテスト"
+      next_ip = "vmware"
+      next_account = "root"
+      include "base.ttl"
+    chdir: ../test
+    ignore_result: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert True 1020_ok_vmware_show.ttl
+  fail:
+  when: (not ansible_check_mode) and ttl_output.failed == True
+- name: debug 1020_ok_vmware_show.ttl
+  debug:
+    var: ttl_output.stdout_lines
+

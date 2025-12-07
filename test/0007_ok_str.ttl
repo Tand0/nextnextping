@@ -99,23 +99,6 @@ intmsg[1] = 2
 assert 1 intmsg[0]
 assert 1 intmsg[1]
 
-str = "%WINDIR%\notepad.exe"
-expandenv str
-messagebox str "env"    ; C:\WINDOWS\notepad.exe
-tolower str str
-strscan str "windows"
-assert 0 != result "expandenv" str result
-
-expandenv str "%WINDIR%\notepad.exe"
-messagebox str "env"    ; C:\WINDOWS\notepad.exe
-tolower str str
-strscan str "windows"
-assert 0 != result "expandenv" str result
-
-expandenv str "%test%\notepad.exe"
-messagebox str "env"    ; %test%\notepad.exe
-strscan str "%test%"
-assert 0 != result "expandenv %test%" str result
 
 
 ; valstrに '123' を代入

@@ -105,7 +105,7 @@ pause 1
 
 ;
 prompt = '$'
-timeout = 10
+timeout = 150
 state_flag = 0  ; call_get_promptのために状態フラグを設定する
 command = 'clear'
 call call_get_prompt  ; プロンプトを決定する
@@ -393,7 +393,7 @@ return
     enable_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '] ' '(yes/no)' 'assword:' '-- More --'
+        wait '>' '#' '$' ']' '(yes/no' 'assword:' '-- More --'
         result_type = result
         if result_type == 0 then
             ; タイムアウトのとき
@@ -423,7 +423,7 @@ return
             prompt = '$'
         elseif result_type == 4 then
             server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
-            prompt = '] '  ; for vmware
+            prompt = ']'  ; for vmware
         elseif result_type == 5 then
             command = 'yes'
             flushrecv

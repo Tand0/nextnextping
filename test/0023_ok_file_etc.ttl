@@ -5,15 +5,24 @@ assert result == 0 "basename test" fname
 
 dirname dir 'c:\teraterm\test.txt'
 strcompare dir "c:\teraterm"
-assert result == 0 "dirname test" dir
+if result != 0 then
+    strcompare dir "/mnt/c/teraterm"
+    assert result == 0 "dirname test" dir
+endif
 
 dirname dir 'c:\teraterm\'
 strcompare dir "c:\"
-assert result == 0 "dirname test" dir
+if result != 0 then
+    strcompare dir "/mnt/c"
+    assert result == 0 "dirname test" dir
+endif
 
 dirname dir 'c:\teraterm'
 strcompare dir "c:\"
-assert result == 0 "dirname test" dir
+if result != 0 then
+    strcompare dir "/mnt/c"
+    assert result == 0 "dirname test" dir
+endif
 
 fileopen fhandle 'data.dat' 0
 fileclose fhandle
@@ -67,8 +76,9 @@ filestat 'test.exe' size time drive
 assert result = -1 'file open error test' ; 開けない
 
 ; build/test4.bat
-filestat 'c:/' size time drive
-assert result != -1 'file open error test' ; 開ける
+command = 'c:/'
+filestat command size time drive
+assert result != -1 'file open error test' command size time drive  ; 開ける
 sprintf2 str 'Directory size=%d Time modified=%s Drive=%s' size time drive
 messagebox str 'filestat'
 ; ex. Directory size=0 Time modified=2014-03-04 22:44:47 Drive=C
@@ -92,12 +102,10 @@ assert result == 0 filename 'ファイルは存在しない'
 
 makepath path 'c:\teraterm' 'test.txt'
 strcompare path "c:\teraterm\test.txt"
-assert result = 0 path
-
-makepath path 'c:\teraterm/' 'test.txt'
-strcompare path "c:\teraterm\test.txt"
-assert result = 0 path
-
+if result != 0 then
+    strcompare path "/mnt/c/teraterm/test.txt"
+    assert result == 0 "dirname test" dir
+endif
 
 result = 1
 

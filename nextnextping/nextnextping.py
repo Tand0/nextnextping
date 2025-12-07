@@ -1,5 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-#
 # pyinstaller --noconsole --noconfirm nextnextping.py
 #
 import json
@@ -20,6 +21,7 @@ import csv
 from grammer.TtlParserWorker import TtlPaserWolker
 from grammer.version import VERSION
 import webbrowser
+import platform
 
 SAMPLE_TTL = '''
 
@@ -129,7 +131,7 @@ pause 1
 
 ;
 prompt = '$'
-timeout = 10
+timeout = 150
 state_flag = 0  ; call_get_promptのために状態フラグを設定する
 command = 'clear'
 call call_get_prompt  ; プロンプトを決定する
@@ -417,7 +419,7 @@ return
     enable_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '] ' '(yes/no)' 'assword:' '-- More --'
+        wait '>' '#' '$' ']' '(yes/no' 'assword:' '-- More --'
         result_type = result
         if result_type == 0 then
             ; タイムアウトのとき
@@ -447,7 +449,7 @@ return
             prompt = '$'
         elseif result_type == 4 then
             server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
-            prompt = '] '  ; for vmware
+            prompt = ']'  ; for vmware
         elseif result_type == 5 then
             command = 'yes'
             flushrecv
@@ -858,19 +860,21 @@ class MyThread():
             value = command_data.strip()
             command_next = command_next.replace(key, value)
         command_next_list = command_next.split(' ')
-        proc = None
+        process = None
         default_locale = locale.getencoding()
         try:
-            if os.name == 'nt':
+            if platform.system().lower() != "linux":
                 # 英語にしないと日本語で表示され、OK/NGが分からなくなる
-                subprocess.Popen(['chcp.com', '65001'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+                subprocess.Popen(['chcp.com', '65001'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
             #
             # print(f"f f={command_next_list}")
-            proc = subprocess.Popen(command_next_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+            process = subprocess.Popen(command_next_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
             # print(f"T2={type} C=/{command}/")
             while self.non_stop_flag and time.time() < seconds:
-                if proc.stdout.readable():
-                    buffer = proc.stdout.read(1)
+                # print(f"T4={type} C=/{command}/")
+                if process.stdout.readable():
+                    process.stdout.flush
+                    buffer = process.stdout.read(1)
                     if buffer is None:
                         break
                     if buffer == '':
@@ -887,26 +891,26 @@ class MyThread():
                     flag = True
             if 'returncode' in command_dict:
                 if command_dict['returncode']:
-                    if proc.returncode == 0:
+                    if process.returncode == 0:
                         flag = True
         except subprocess.TimeoutExpired:
             pass
         finally:
-            if os.name == 'nt':
+            if platform.system().lower() != "linux":
                 # localeをもとに戻す
-                subprocess.Popen(['chcp.com', default_locale], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+                subprocess.Popen(['chcp.com', default_locale], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
             #
-            if proc is not None:
+            if process is not None:
                 try:
-                    proc.stdout.close()
+                    process.stdout.close()
                 except Exception:
                     pass
                 try:
-                    proc.stderr.close()
+                    process.stderr.close()
                 except Exception:
                     pass
                 try:
-                    proc.close()
+                    process.terminate()
                 except Exception:
                     pass
         return flag
@@ -944,13 +948,13 @@ class NextNextPing():
 
     def next_json_load(self, file_name: str):
         # print(f"file={file_name}")
-        setting = {}
+        data = {}
         try:
             with open(file_name, 'r', encoding='utf-8') as f:
-                setting = json.load(f)
+                data = json.load(f)
         except (json.decoder.JSONDecodeError, FileNotFoundError):
-            setting = {}
-        return setting
+            data = {}
+        return data
 
     def next_json_save(self, file_name: str, data):
         with open(file_name, 'w', encoding='utf-8') as f:
@@ -992,9 +996,6 @@ class NextNextPing():
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         full_path = os.path.join(base_dir, NextNextPing.LOG_JSON)  # ファイル名を決定
-        base_dir = self.init["setting"]
-        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
-        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         file_path = filedialog.askopenfilename(
             defaultextension=".json",
             filetypes=[("json files", "*.json"), ("All files", "*.*")],
@@ -1052,12 +1053,21 @@ class NextNextPing():
         # initにファイルを指定
         self.init['setting'] = file_path
         #
+        # ログをクリアする
+        self.log = {}
+        #
         setting = self.next_text_load(file_path)  # ファイルをロード
         self.setting_text.delete('1.0', 'end')  # 既存のテキストを削除
         self.setting_text.insert(1.0, setting)  # テキストを差し替える
         #
         # アップデートまで実行する
         self.update_setting()
+        #
+        # ステータスバーを更新する
+        self.command_status_threading(f"load f={file_path}")
+        #
+        # タイトルをファイル名にする
+        self.setTitle(file_path)
 
     def system_exit(self):
         self.stop()
@@ -1283,7 +1293,7 @@ class NextNextPing():
                 "ttl": False,
                 "command": "ipconfig /all",
                 "returncode": False,
-                "ok": "Windows IP Configuration",
+                "ok": "Windows",
                 "timeout": 10
             }
         ]

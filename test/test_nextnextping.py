@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import time
 import os
 import socket
@@ -9,7 +11,6 @@ import random
 import pathlib
 from paramiko import SFTPServerInterface, SFTPServer, SFTPAttributes, SFTPHandle, SFTP_OK
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../nextnextping")))
-# from grammer.TtlParserWorker import TtlPaserWolker
 from ttlmacro import ttlmacro
 
 
@@ -159,7 +160,7 @@ class StubServer(paramiko.ServerInterface):
 
     def check_auth_password(self, username, password):
         """ パスワードチェック """
-        # print(f"test username={username}  password={password}")
+        print(f"test username={username}  password=*****")
         self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
@@ -498,7 +499,10 @@ class ServerStarter():
         elif 'pass' == state:
             self.prompt = 'Password:'
         elif 'y/n' == state:
-            self.prompt = 'Are you sure you want to continue connecting (yes/no)?'
+            if random.randint(0, 1):
+                self.prompt = 'Are you sure you want to continue connecting (yes/no)?'
+            else:
+                self.prompt = "Are you sure you want to continue connecting (yes/no/[fingerprint])?"
         elif 'vm' == state:
             self.prompt = '[root@localhost:~] '
         else:
@@ -729,6 +733,12 @@ class ServerStarter():
                         # ランダムにy/nを聞く
                         self.push_state('y/n')
                     #
+                elif re.search("^\\s*allexit", message):
+                    #
+                    # 完全停止する
+                    self.close()  # 自分を停止
+                    os._exit(0)  # 他も強制停止
+                    #
                 elif re.search("^\\s*(exit|quit)", message):
                     if not self.pop_state():
                         self.cleint_close()
@@ -764,6 +774,11 @@ class TTLLoader():
 
     def __init__(self):
         """ ttl のテストをするためのフォルダ """
+        self.closeFlag = False
+
+    def close(self):
+        """ 終了する """
+        self.closeFlag = True
 
     def start(self, files=None):
         """ 実処理をする """
@@ -789,13 +804,19 @@ class TTLLoader():
         try:
             if files is None:
                 # ファイルがいなかったらリストを取ってくる
-                files = os.listdir('.')
+                files_old = os.listdir('.')
+                files = []
+                for file in files_old:
+                    if '.ttl' not in file:
+                        continue
+                    if 'base.ttl' in file:
+                        continue
+                    files.append(file)
+            #
             for file in files:
                 #
-                if '.ttl' not in file:
-                    continue
-                if 'base.ttl' in file:
-                    continue
+                if self.closeFlag:
+                    assert 1, "test NG get close event!"
                 #
                 #
                 ok_flag = False
@@ -845,7 +866,7 @@ def test_load_ttl():
     #
 
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) <= 1:
         #
         # スレッドだけ立てる(teratermでの評価用)
@@ -887,5 +908,8 @@ if __name__ == "__main__":
         tTLLoader = TTLLoader()
         tTLLoader.start(files=[file_name])
         #
-    #
+
+
+if __name__ == "__main__":
+    main()
 #

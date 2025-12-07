@@ -1,0 +1,6 @@
+all:
+  hosts:
+    testserver:
+      ansible_host: 130.81.1.2
+
+

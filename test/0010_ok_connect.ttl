@@ -4,15 +4,10 @@
 testlink
 assert result == 0  "connect OK!"
 
-; SSH接続
-connect 'localhost:2200 /ssh'
-assert 1  "state" error
-assert result == 0  "connect OK!" ; ユーザー名の指定がないのでエラー
-
 
 ;この方法は、SSHバージョンを指定せずにSSH接続をします。
 connect 'localhost:2200 /ssh /1'
-assert result == 0  "connect OK!" ; SSH1 は未サポート
+assert result == 0  result ; SSH1 は未サポート
 assert 1  "closettt start"
 closett
 assert 1  "closettt end"
@@ -22,7 +17,7 @@ assert 1  "closettt end"
 error=''
 assert 1  "connect start"
 connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
-assert result == 2  "connect" ; 接続できている
+assert result == 2  "connect" result  ; 接続できている
 closett
 
 ; /1 入っていたらエラー

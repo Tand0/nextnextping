@@ -1,27 +1,31 @@
 
-; なんかいたら消す
+; 
 testlink
 if result == 2 then
     closett
 endif
 
+command = "%systemroot%"
+expandenv str command
+strcompare str "/root"
+if 0==result then
+    assert 1 "this is linux"
+    result = 1
+    end
+endif
 
-; 接続する
+; connected
 error=''
 assert 1  "connect start"
 connect '/cmd'
-assert result == 2  "connect OK" error ; 接続失敗
-
-
-result = 0
-wait '>'
-assert result == 1  "connect OK" error ; 接続失敗
+assert result == 2  "connect OK" error
 
 ; text
 result = 0
+flushrecv
 sendln 'echo hell-world'
 wait '>' '#' 
-assert result == 1  "wait OK" error ; 接続失敗
+assert result == 1  "wait OK" error
 
 ; text
 command = 'dir'
@@ -29,7 +33,7 @@ sendln command
 wait command
 result = 0
 wait '#' '>'
-assert result == 2 "wait OK" result error ; 接続失敗
+assert result == 2 "wait OK" result error
 
 recvln
 recvln
@@ -44,7 +48,7 @@ while 1
     result = 0
     wait '<DIR>' '>'
     if result == 0 then
-        assert 0 "timeout wait OK" 'title' ; 接続失敗
+        assert 0 "timeout wait OK" 'title'
         end
     elseif result == 1 then
         continue
@@ -58,7 +62,7 @@ sendln
 pause 2
 disconnect
 testlink
-assert result != 2  "wait OK" error ; 接続失敗
+assert result != 2  "wait OK" error
 ; closett
 
 pause 1

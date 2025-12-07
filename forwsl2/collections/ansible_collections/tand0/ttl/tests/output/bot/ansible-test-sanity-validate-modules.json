@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test validate-modules` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html)] failed with 1 error:", 
+            "output": "plugins/modules/ttl.py:0:0: import-error: Exception attempting to import module for argument_spec introspection, ''"
+        }
+    ], 
+    "verified": false
+}
