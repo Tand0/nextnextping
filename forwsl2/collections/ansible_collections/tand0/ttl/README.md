@@ -1,90 +1,15 @@
 
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style type="text/css">
-code{
-  color: #000;
-  background-color:#F6F6CB;
-  font-family: Courier, monosce;
-  font-size: 13px;
-}
-pre{
-  border-top:#FFCC66 1px solid;
-  border-bottom:#888899 1px solid;
-  border-left:#FFCC66 1px solid;
-  border-right:#888899 1px solid;
-  background-color:#F6F6CB;
-  padding: 0.5em 0.8em;
-  color: #000;
- *width: 100%;
- _width: 100%;
-  overflow: auto;
-}
-h1 {
-  padding: 4px 4px 4px 6px;
-  border: 1px solid #999;
-  color: #000;
-  background-color: #ddd;
-  font-weight:900;
-  font-size: xx-large;
-}
-h2 {
-  padding: 4px 4px 4px 6px;
-  border: 1px solid #999;
-  color: #900;
-  background-color: #eee;
-  font-weight:800;
-  font-size: x-large;
-}
-h3 {
-  padding: 4px 4px 4px 6px;
-  border: 1px solid #aaa;
-  color: #900;
-  background-color: #eee;
-  font-weight: normal;
-  font-size: large;
-}
-h4 {
-  padding: 4px 4px 4px 6px;
-  border: 1px solid #bbb;
-  color: #900;
-  background-color: #fff;
-  font-weight: normal;
-  font-size: large;
-}
-h5 {
-  padding: 4px 4px 4px 6px;
-  color: #900;
-  font-size: normal;
-}
-#navcolumn h5 {
-  font-size: smaller;
-  border-bottom: 1px solid #aaaaaa;
-  padding-top: 2px;
-  color: #000;
-}
-  </style>
-</head>
-<body>
-
 
 # Ansible TTL macro like collection
 ## Overview
 - You can ping and see if the result is OK or not.
 - You can connect via SSH using a language called Terawaros Tekitou Language, which is similar to teraterm macro, and ping other servers as stepping stones.
 
-## Screen image
-
-- [Screen image](./docs/screen.md)
-
 ## MACRO for Terawaros Tekitou Lanugage
 
 - Usage
-    - [How to run](./docs/howtorun.md)
-    - [How to use tool](./docs/tool.md)
-- [the macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
-- [TTL command reference](./docs/command.md)
+    - [the macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
+    - [TTL command reference](./docs/command.md)
 
 ## module
 

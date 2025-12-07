@@ -6,7 +6,7 @@ import re
 import yaml
 
 
-VERSION = 1.18
+VERSION = 1.19
 
 INTERNAL = "nextnextping/dist/nextnextping/_internal/"
 ANSIBLE_README = "forwsl2/collections/ansible_collections/tand0/ttl/README.md"
@@ -261,23 +261,16 @@ def ansible_doc_to_html() -> str:
     doc = local_scope['DOCUMENTATION']
     example = local_scope['EXAMPLES']
     ret = local_scope['RETURN']
-    html = RESULT_MD_TEXT
-    html = html + "\n\n# Ansible TTL macro like collection\n"
+    html = "\n\n# Ansible TTL macro like collection\n"
     html = html + '''## Overview
 - You can ping and see if the result is OK or not.
 - You can connect via SSH using a language called Terawaros Tekitou Language, which is similar to teraterm macro, and ping other servers as stepping stones.
 
-## Screen image
-
-- [Screen image](./docs/screen.md)
-
 ## MACRO for Terawaros Tekitou Lanugage
 
 - Usage
-    - [How to run](./docs/howtorun.md)
-    - [How to use tool](./docs/tool.md)
-- [the macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
-- [TTL command reference](./docs/command.md)
+    - [the macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
+    - [TTL command reference](./docs/command.md)
 '''
 
     data_dict = yaml.safe_load(doc)
