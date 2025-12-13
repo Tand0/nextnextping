@@ -64,20 +64,3 @@
         dest: "../dist/tand0-ttl-{{version.version}}.1.zip"
         format: zip
 
-    - name: create python package
-      shell:
-        cmd: "python3 -m build"
-        chdir: ..
-      register: python3_build
-    - name: create python package stdout
-      debug:
-         var: python3_build.stdout_lines
-
-    - name: install package
-      shell:
-        cmd: "pip3 install -e . --break-system-packages"
-        chdir: ..
-      register: python3_build
-    - name: create python package stdout
-      debug:
-         var: python3_build.stdout_lines

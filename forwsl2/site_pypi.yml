@@ -15,6 +15,24 @@
         regexp: '^version'
         line: 'version = "{{ version.version }}.1"'
 
+    - name: create python package (packageを作成する)
+      shell:
+        cmd: "python3 -m build"
+        chdir: ..
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+
+    - name: install package (package登録する)
+      shell:
+        cmd: "pip3 install -e . --break-system-packages"
+        chdir: ..
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+
     - name: copy to .pypi (HOMEに置かないと認識しないとかクソ仕様すぎる)
       copy:
         src: ../.pypirc

@@ -129,16 +129,14 @@ $ nextnextping
         - `sudo apt install fonts-noto-cjk` で font を入れること
       - `pyttl ./test/0000_ok_test.ttl` を実行して動作に問題ないことを確認する
       - 2つのコマンドプロンプトを `wsl` を `exit` で抜ける
-  - `./dest` 配下に公開に必要なファイル群ができあがる
+      - `wsl` の中で `ansible-playbook site_pypi.yml` を実行して PyPi にアップロードする 
+      - `./dest` 配下に公開に必要なファイル群ができあがる
+  - ansible-galaxy に登録する
+    - [ansible-galaxy](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
   - githubに登録する
     - `git add .`
     - `git commit . -m "DOCUMENT"`
     - `git push`
-  - ansible-galaxy に登録する
-    - [ansible-galaxy](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
-  - `wsl` を起動する
-      - `cd .\forwsl2` に移動する
-      - `wsl` の中で `ansible-palybook site_pypi.yml` を実行して PyPi にアップロードする 
   - エラーが出た時は、指示に従って見直す
     - pyinstall, tkinter, pytest など必要なパッケージが入ってないとエラーになります
     - フォルダ名は環境に合わせて修正が必要です
