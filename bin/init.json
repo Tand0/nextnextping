@@ -1,5 +1,6 @@
 {
-    "title": "nextnextping",
+    "setting": "/mnt/d/gitwork/nextnextping/bin/sample02_sshping/setting.txt",
+    "title": "/mnt/d/gitwork/nextnextping/bin/sample02_sshping/setting.txt",
     "wait_time": 1,
     "loop": false,
     "debug": false,
@@ -11,29 +12,33 @@
         {
             "name": "ping",
             "ttl": false,
-            "command": "ping -n 1 %1",
-            "ok": "(0%",
-            "returncode": false,
+            "command_linux": "ping -c 1 %1",
+            "command_windo": "ping -n 1 %1",
+            "ok": [
+                "(0%",
+                " 0% packet loss"
+            ],
             "timeout": 10
         },
         {
             "name": "trace",
             "ttl": false,
-            "command": "tracert %1",
-            "ok": "Trace complete.",
-            "returncode": false,
+            "command_linux": "traceroute %1",
+            "command_windo": "tracert %1",
+            "ok": [
+                "Trace complete."
+            ],
             "timeout": 10
         },
         {
             "name": "show",
             "ttl": false,
-            "command": "ipconfig /all",
-            "returncode": false,
-            "ok": "Windows IP Configuration",
-            "timeout": 10
+            "command_linux": "ip address",
+            "command_windo": "ipconfig /all",
+            "ok": [],
+            "timeout": 30
         }
     ],
     "ignore_messagebox": true,
-    "ignore_log": false,
-    "setting": "/mnt/d/gitwork/nextnextping/bin/sample01_winping/setting.txt"
+    "ignore_log": true
 }

@@ -185,14 +185,24 @@ elseif target_type = 2 then
         strconcat command target_ip
         call call_one_command
     elseif server_type == 2 then
-        strcompare "] " prompt
+        strcompare ']' prompt
         if result == 0 then
             ; for vmware
-            command = 'traceroute '
+            strscan target_ip ':' ;; for ip v6
+            if result == 0 then
+                command = 'traceroute '
+            else
+                command = 'traceroute6 '
+            endif
             strconcat command target_ip
             call call_one_command
         else
-            command = 'tracepath '
+            strscan target_ip ':' ;; for ip v6
+            if result == 0 then
+                command = 'tracepath '
+            else
+                command = 'tracepath6 '
+            endif
             strconcat command target_ip
             call call_one_command
         endif
@@ -209,7 +219,7 @@ else
         command = 'show ip interface brief'
         call call_one_command
     elseif server_type == 2 then
-        strcompare "] " prompt
+        strcompare "]" prompt
         if result == 0 then
             ; for vmware
             command = 'esxcli network nic list'
@@ -224,9 +234,15 @@ else
             call call_one_command
             command = 'ip addr show'
             call call_one_command
+            command = 'ip -6 addr show'
+            call call_one_command
             command = 'ip link show'
             call call_one_command
+            command = 'ip -6 link show'
+            call call_one_command
             command = 'ip route show'
+            call call_one_command
+            command = 'ip -6 route show'
             call call_one_command
             command = 'ss'
             call call_one_command

@@ -1,118 +1,119 @@
 
-# マクロ言語 "Terawaros Tkekitou Language (TTL)"
+# The MACRO Language Terawaros Tekitou Language (TTL)
 
-- [Antlr 文法で頑張って書きました](../src/grammer/TtlParser.g4) 
-- 間違っていたら指摘ください。
 
-- [マクロ言語 "Terawaros Tkekitou Language (TTL)"](#マクロ言語-terawaros-tkekitou-language-ttl)
-  - [Terawaros Tkekitou Language ファイル](#terawaros-tkekitou-language-ファイル)
-  - [データ型](#データ型)
-  - [定数の形式](#定数の形式)
-    - [int型](#int型)
-    - [str型](#str型)
-    - [int配列型](#int配列型)
-    - [str配列型](#str配列型)
-  - [変数](#変数)
-  - [名前の形式](#名前の形式)
-    - [変数の名前](#変数の名前)
-    - [ラベルの名前](#ラベルの名前)
-    - [式と演算子](#式と演算子)
-  - [行の形式](#行の形式)
-    - [改行](#改行)
-    - [ホワイトスペース](#ホワイトスペース)
-    - [コマンド行](#コマンド行)
-    - [代入行](#代入行)
-    - [ラベル行](#ラベル行)
-    - [if](#if)
-      - [if文その2](#if文その2)
-      - [if文その2](#if文その2-1)
-    - [while](#while)
+- [The MACRO Language Terawaros Tekitou Language (TTL)](#the-macro-language-terawaros-tekitou-language-ttl)
+  - [Encoding](#encoding)
+  - [Data Types](#data-types)
+  - [Formats of constants](#formats-of-constants)
+    - [Integer-type constants](#integer-type-constants)
+    - [String-type constants](#string-type-constants)
+    - [Integer Array](#integer-array)
+    - [String Array](#string-array)
+  - [Variables](#variables)
+  - [System variables](#system-variables)
+    - [User variables](#user-variables)
+    - [Label](#label)
+    - [Expressions and operators](#expressions-and-operators)
+  - [Line formats](#line-formats)
+    - [Line breaks](#line-breaks)
+    - [White space](#white-space)
+    - [Command line](#command-line)
+    - [Assignment line](#assignment-line)
+    - [Label line](#label-line)
+    - [if, then, elseif, else, endif](#if-then-elseif-else-endif)
+      - [if: Format 1](#if-format-1)
+      - [if: Format 2](#if-format-2)
+    - [for, next](#for-next)
+    - [while, endwhile](#while-endwhile)
     - [until](#until)
     - [do](#do)
     - [break](#break)
     - [continue](#continue)
     - [call](#call)
     - [end/exit](#endexit)
+    - [include](#include)
+    - [exit](#exit)
 
 
-## Terawaros Tkekitou Language ファイル
+## Encoding
 
-- UTF-8しか保証しません。
+- Only UTF-8 is supported.
 
-## データ型
+## Data Types
 
-- int型: 仕様はPythonのintに基づきます。
-- str型: 仕様はPythonのstrに基づきます。
-- int配列型: 内部的には `a[0]` といった`[` や `]`まで含んだ文字の変数として１つのデータ型になっています。
-- str配列型: 内部的には `a[0]` といった`[` や `]`まで含んだ文字の変数として１つのデータ型になっています。
+- Integer: The specification is based on Python `int`.
+- Integer: The specification is based on Python `str`.
+- Integer Array: Internally, it is treated as a `int` like `a[XXX]`, where `XXX` is a number in the range `[0-9]+`.
+- String Array: Internally, it is treated as a `string` like `a[XXX]`, where `XXX` is a number in the range `[0-9]+`.
 
-## 定数の形式
+## Formats of constants
 
-### int型
+### Integer-type constants
 
-10進数または "$" で始まる16進数で表現する。 浮動小数点は未サポート。
+A integer-type constant is expressed as a decimal number or a hexadecimal number which begins with a "$" character. Floating point operation is not supported.
 
 ```
-例:
+Example:
     123
     -11
     $3a
     $10F
 ```
 
-### str型
+### String-type constants
 
-   文字列型定数を表現する方法は2つ。
+   There are two ways of expressing a string-type constant.
 
-  - a) 値となる文字列の両端を ' か " で囲む(両端とも同じ文字で)。文字列値を構成する文字は表示可能で囲み文字と異なる文字ならば何でもよい。
+  - a) A character string quoted by ' or " (both sides must be same).
 
 ```
-例:
+Example:
     'Hello, world'
     "I can't do that"
     "漢字も可能"
 ```
 
-  - b) 1文字を ASCII (または JIS ローマ字、Shift-JIS) コード(10進数または$で始まる16進数)で表現し、先頭に "#" をつける。 ASCII コード 0 の文字 (NUL) は文字列定数に含めることができない。
+  - b) A single character expressed as a "#" followed by an ASCII code (decimal or hexadecimal number). Note: Strings can not contain NUL (ASCII code 0) characters.
 
 ```
-例:
-    #65     文字 "A"
-    #$41    文字 "A"
-    #13     CR 文字
+Example:
+    #65     The character "A".
+    #$41    The character "A".
+    #13     The CR character.
 ```
 
-  - a) と b) は組み合わせることが可能。
+  - Format a) and b) can be combined in one expression.
 
 ```
-例:
+Example:
     'cat readme.txt'#13#10
     'abc'#$0d#$0a'def'#$0d#$0a'ghi'
 ```
 
-  - Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 STRING1: ('\'' ~[']* '\'' | '"' ~["]* '"' | '#' '$'? [a-fA-F0-9]+)+;
 strContext: STRING1;
 ```
 
-### int配列型
+### Integer Array
 
-- `a[0]` までを文字列化して、変数型として扱われます
+- The string up to `a[0]` is converted and treated as a variable type.
 
 ```
 a[0] = 1
 a[1] = 2
 ```
 
-- `a[b]` を `a[0]` に変換して文字列化して、変数型として扱われます
+- `a[b]` is converted to `a[0]`, stringified, and treated as a variable type
 
 ```
 b = 0
 a[b] = 1
 ```
 
-### str配列型
+### String Array
 
 ```
 b = 0
@@ -121,17 +122,21 @@ a[b] = "aaa"
 
 
 
-## 変数
+## Variables
 
-- param0, param2 ... param9 は予約語です。
-- resultは予約語です。
-  - 実施後にresultが0でないとき、実施は成功したとみなされ OK 表示がされます。
+## System variables
+- result
+    - If the result is not 0 after execution, the execution is considered successful.
+- param0, param1 ... param9
+- param[0], param[1] ... param9
+- inputstr, matchstr, groupmatchstr1 ... groupmatchstr9, paramcnt, timeout, mtimeout
+- error
 
-## 名前の形式
 
-### 変数の名前
 
-  Antlr 文法では以下の通り。
+### User variables
+
+  - In Antlr it would look like following:
 ```
 KEYWORD: [_a-zA-Z][_a-zA-Z0-9]*;
 keyword: KEYWORD (LEFT_KAKKO (intExpression| strExpression) RIGHT_KAKKO)?;
@@ -139,59 +144,56 @@ LEFT_KAKKO: '[';
 RIGHT_KAKKO: ']';
 ```
 
-### ラベルの名前
+### Label
 
-  Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 label: ':' KEYWORD ;
 ```
-### 式と演算子
+### Expressions and operators
 
-- たいていの四則演算は使えます。
-- たいていの四則演算はint型で計算されます。加算も文字加算はできません。
+- Most of the four arithmetic operations can be used.
+- Arithmetic operations are performed using the int type. Arithmetic operations cannot be performed using the str type.
 
 ```
-例:
+Example:
     1 + 1
-    4 - 2 * 3      この式の値は-2
-    15 % 10        この式の値は5
-    3 * (A + 2)    A は整数型の変数
+    4 - 2 * 3      ; resut = -2
+    15 % 10        ; result = 5
+    3 * (A + 2)    ; A is user variable
     A and not B
-    A <= B         A, B は整数型の変数。
-                   結果の値は真のとき1、偽のとき0
+    A <= B         ; if true = 1, false = 0
 ```
 
-## 行の形式
+## Line formats
 
-- 行の形式は以下に分類できる。どの行も ";" 文字で始まるコメントを含むことができる。
-  また、C言語風コメント（/* 〜 */）も使用可能。
-- コメントは MACRO の実行に影響を与えない。
+- There are four kinds of line formats for macro files. Any line can contain a comment which begins with a ";" character. Also, a user can use the C language style comment(/* - */).
+- Comments give no effect on the execution of MACRO.
 
-### 改行
+### Line breaks
 
-  Antlr 文法では以下の通り。改行と見なされる。
+  - In Antlr it would look like following:
 ```
 RN: '\r'? '\n'
     | ';' ~[\n]* '\n'
     ;
 ```
-### ホワイトスペース
+### White space
 
-  Antlr 文法では以下の通り。ホワイトスペースとして文字区切りに使われる。
-
+  - In Antlr it would look like following:
 ```
 WS1 : [ \t]+ -> skip ;
 WS2 : '/*' ~[/]* '*/' -> skip ;
 ```
 
-### コマンド行
+### Command line
 
-  1つのコマンド名と0個以上のパラメータ。
+- Lines containing a single command with parameters.
 ```
-書式:
-    <コマンド> <パラメータ> ...
+Format:
+    <command> <parameter> ...
 
-例:
+Example:
     connect 'myhost'
     wait 'OK' 'ERROR'
     if result=2 goto error
@@ -200,85 +202,85 @@ WS2 : '/*' ~[/]* '*/' -> skip ;
     end
 ```
 
-### 代入行
+### Assignment line
 
-  変数に値を代入する。
+Lines which contain an assignment statement.
 ```
-例:
-    A = 33               数値の代入
-    B = C                C はすでに値が代入されてなければならない。
+Format:
+    <Variable> = <Value (constant, variable, expression)>
+
+Example:
+    A = 33
+    B = C            C must already have a value.
     VAL = I*(I+1)	
-    A=B=C                B=C の結果 (真:1、偽:0) が A に代入される。
+    A=B=C            The value of B=C (0 for false, 1 for true) is assigned to A.
     Error=0<J	
-    Username='MYNAME'    文字列の代入
+    Username='MYNAME'
 ```
 
-  Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 input: KEYWORD '=' p11Expression ;
 ```
 
 
-### ラベル行
+### Label line
 
-":" とその直後に続くラベル名からなる。
+Lines which begin with a ':' character followed by a label identifier.
 
 ```
-書式:
+Format:
     :<Label>
 
-例:
+Example:
     :dial
 ```
 
-  Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 label: ':' KEYWORD ;
 ```
 
-### if
+### if, then, elseif, else, endif
 
-#### if文その2
-- 1行で定義せれたif文。
+Conditional branching
+
+#### if: Format 1
+
 ```
-; もし A>1 ならば、':label' へ飛ぶ。
-if A>1 goto label
-
-; もし result<>0 ならば、A に0を代入。
 if result A=0
 ```
 
-- Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 if1
     : 'if' p11Expression line;
 ```
 
-#### if文その2
+#### if: Format 2
 
-- 複数行で定義されたif文。
 
 ```
 if <expression 1> then
   ...
-  (<expression 1> が真(0以外)の場合に実行されるコマンド)
+  (Statements for the case:  <expression 1> is true (non-zero).)
   ...
 [elseif <expression 2> then]
   ...
-  (<expression 1> が偽(0)で、<expression 2>が真の場合に実行されるコマンド)
+  (Statements for the case:  <expression 1> is false (zero) and <expression 2> is true.)
   ...
 [elseif <expression N> then]
   ...
-  (<expression 1>, <expression 2>,.., <expression N-1> がすべて偽で、<expression N> が真の場合に実行されるコマンド)
+  (Statements for the case:  <expression 1>, <expression 2>,... and <expression N-1> are all false, and <expression N> is true.)
   ...
 [else]
   ...
-  (上の条件すべてが偽の場合に実行されるコマンド)
+  (Statements for the case:  all the conditions above are false (zero).)
   ...
 endif
 ```
 
-- Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 if2
     : 'if' p11Expression 'then' RN line+ (elseif)* (else)? 'endif';
@@ -288,8 +290,8 @@ elseif:'elseif' p11Expression 'then' RN line+;
 else: 'else' RN line+;
 ```
 
-### for
-- 繰り返す。
+### for, next
+- Repeats.
 ```
 for <intvar> <first> <last>
 
@@ -300,49 +302,48 @@ for <intvar> <first> <last>
 next
 ```
 
-`for` と `next` の間のコマンドを、整数変数 `intvar` の値が `last` と等しくなるまで、繰りかえす。
-`intvar` の初期値は `first` 。もし `last` が `first` より大きい場合、`intvar` は `next` 行に来るたびに 1 足される。もし `last` が `fast` より小さい場合、`intvar` は "next" 行に来るたびに 1 引かれる。
-
+- The commands between `for` and `next` are repeated until the value of the integer variable `intvar` is equal to `last`.
+- The initial value of `intvar` is `first`.
+- If `last` is greater than `first`, `intvar` is incremented by 1 each time the `next` line is reached.
+- If `last` is less than `fast`, `intvar` is decremented by 1 each time the "next" line is reached.
 
 ```
-; 10回繰り返す。
 for i 1 10
   sendln 'abc'
 next
 
-; 5回繰り返す。
 for i 5 1
   sendln 'abc'
 next
 ```
 
-- Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 forNext
     : 'for' keyword p11Expression p11Expression RN commandline+ 'next';
 ```
 
-### while
+### while, endwhile
 
-- 繰り返す。
+- Repeats.
 
 ```
-; 10回繰り返す。
 i = 10
 while i>0
   i = i - 1
 endwhile
 ```
 
-- Antlr 文法では以下の通り。
+  - In Antlr it would look like following:
 ```
 whileEndwhile
     : 'while' p11Expression RN line+ 'endwhile';
 ```
 
 ### until
-- 繰り返す。
-- Antlr 文法では以下の通り。
+
+  - Repeats.
+  - In Antlr it would look like following:
 ```
 untilEnduntil
     : 'until' p11Expression RN commandline+ 'enduntil';
@@ -350,45 +351,49 @@ untilEnduntil
 
 
 ### do
-- 繰り返す。
-- Antlr 文法では以下の通り。
+
+  - Repeats.
+  - In Antlr it would look like following:
 ```
 doLoop
     : 'do' p11Expression? RN commandline+ 'loop' p11Expression?;
 ```
 
 ### break
-- 繰り返しを中断する。
+- Quit from "for" and "while" loop.
 
 ### continue
-- 繰り返しを途中で止め、次の繰り返しに進む。
+- Continue from "for" and "while" loop.
 
 ### call
 
-- サブルーチンをコールする。`return` で戻る。
+- Calls a subroutine.
+- Use `return` to return.
+
 ```
 messagebox "I'm in main." "test"
-; ":sub" へ飛ぶ。
+;
 call sub
 messagebox "Now I'm in main" "test"
 end
 
-; サブルーチンの始まり。
+;
 :sub
 messagebox "Now I'm in sub" "test"
-; メインルーチンへもどる。
+; Back to the mail
 return
 ```
 
 ### end/exit
 
-- 終了するのに使います。
-
+- Quit from ttl.
 
 ### include
 
-- インクルードファイルに移る。
-- `exit` でメインファイルに戻ります。
+- Include a file.
+
+### exit
+- Quit from "include".
 
 
 

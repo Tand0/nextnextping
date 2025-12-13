@@ -1,0 +1,52 @@
+- hosts: localhost
+  become: False
+  collections:
+    - tand0.ttl
+  vars:
+    pythoninterpreter: /mnt/d/gitwork/ansibletest/ansible/venv/bin/python3.12
+    wsl2homework: /home/t-ando/work/collections/ansible_collections/tand0/ttl/
+  tasks:
+    - name: file copy (ansible tand0.ttl)
+      copy:
+        src: ../nextnextping/grammer/
+        dest: collections/ansible_collections/tand0/ttl/plugins/module_utils
+
+    - name: get version
+      version:
+      register: version
+    - debug:
+        msg: "version: {{ version.version }}.1"
+
+    - lineinfile:
+        path: collections/ansible_collections/tand0/ttl/galaxy.yml
+        regexp: '^version:'
+        line: 'version: "{{ version.version }}.1"'
+
+    - name: file copy (local environment)
+      copy:
+        src: collections
+        dest: /home/t-ando/work/
+
+    - name: Execute ansible-test sanity
+      command: ansible-test sanity --requirements --python-interpreter {{pythoninterpreter}} --skip-test import
+      args:
+        chdir: "{{wsl2homework}}"
+      register: sanity_result
+      ignore_errors: True
+    - name: Execute ansible-test sanity debug
+      debug:
+        var: sanity_result.stdout_lines
+    - name: Check ansible-test sanity
+      fail:
+      when: (not ansible_check_mode) and (sanity_result.failed == True)
+
+    - name: Ceate tar gz file
+      command: ansible-galaxy collection build . --force
+      args:
+        chdir: "{{wsl2homework}}"
+
+    - name: file copy (local environment)
+      copy:
+        src: "{{wsl2homework}}tand0-ttl-{{version.version}}.1.tar.gz"
+        dest: ../nextnextping/dist/
+

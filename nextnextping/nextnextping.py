@@ -22,6 +22,7 @@ from grammer.ttl_parser_worker import TtlPaserWolker
 from grammer.version import VERSION
 import webbrowser
 import platform
+import pexpect
 
 SAMPLE_TTL = '''
 
@@ -211,14 +212,24 @@ elseif target_type = 2 then
         strconcat command target_ip
         call call_one_command
     elseif server_type == 2 then
-        strcompare "] " prompt
+        strcompare ']' prompt
         if result == 0 then
             ; for vmware
-            command = 'traceroute '
+            strscan target_ip ':' ;; for ip v6
+            if result == 0 then
+                command = 'traceroute '
+            else
+                command = 'traceroute6 '
+            endif
             strconcat command target_ip
             call call_one_command
         else
-            command = 'tracepath '
+            strscan target_ip ':' ;; for ip v6
+            if result == 0 then
+                command = 'tracepath '
+            else
+                command = 'tracepath6 '
+            endif
             strconcat command target_ip
             call call_one_command
         endif
@@ -235,7 +246,7 @@ else
         command = 'show ip interface brief'
         call call_one_command
     elseif server_type == 2 then
-        strcompare "] " prompt
+        strcompare "]" prompt
         if result == 0 then
             ; for vmware
             command = 'esxcli network nic list'
@@ -250,9 +261,15 @@ else
             call call_one_command
             command = 'ip addr show'
             call call_one_command
+            command = 'ip -6 addr show'
+            call call_one_command
             command = 'ip link show'
             call call_one_command
+            command = 'ip -6 link show'
+            call call_one_command
             command = 'ip route show'
+            call call_one_command
+            command = 'ip -6 route show'
             call call_one_command
             command = 'ss'
             call call_one_command
@@ -743,6 +760,91 @@ class MyTtlPaserWolker(TtlPaserWolker):
         return title  # self.next_next_ping.title
 
 
+class MyWindowsProcess():
+    def __init__(self, command_next_list: str):
+        self.default_locale = locale.getencoding()
+        self.process = subprocess.Popen(command_next_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        #
+        # 英語にしないと日本語で表示され、OK/NGが分からなくなる
+        subprocess.Popen(['chcp.com', '65001'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+
+    def readable(self) -> bool:
+        return self.process.stdout.readable()
+
+    def read(self, length: int) -> str:
+        self.process.stdout.flush
+        return self.process.stdout.read(1)
+
+    def close(self):
+        # localeをもとに戻す
+        subprocess.Popen(['chcp.com', self.default_locale], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+        #
+        process = self.process
+        self.process = None
+        if process is not None:
+            try:
+                process.stdout.close()
+            except Exception:
+                pass
+            try:
+                process.stderr.close()
+            except Exception:
+                pass
+            try:
+                process.terminate()
+            except Exception:
+                pass
+
+
+class MyLinuxProcess():
+    def __init__(self, shell_name: str):
+        self.child = pexpect.spawn(shell_name, timeout=0, encoding='utf-8')
+        self.result = None
+
+    def readable(self) -> bool:
+        child = self.child
+        if child is None:
+            return False
+        if self.result is not None:
+            return True
+        index = child.expect([r".", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0:
+            self.result = child.before + child.after
+            if 0 < len(self.result):
+                return True
+            else:
+                return False
+        elif index == 1:  # EOF
+            self.close()
+            return False
+        return False  # Timeout
+
+    def read(self, length: int) -> str:
+        if self.child is None:
+            return None
+        work = ''
+        if self.result is not None:
+            if len(self.result) <= length:
+                work = self.result
+                self.result = None
+            else:
+                work = self.result[:self.result]
+                self.result = self.result[self.result + 1:]
+        elif self.recv_ready():
+            work = self.recv(length)
+        if self.child is None:
+            return None
+        return work
+
+    def close(self):
+        child = self.child.close()
+        self.child = None
+        try:
+            child.close()
+        except Exception:
+            pass
+
+
 class MyThread():
     def __init__(self):
         self.non_stop_flag = True
@@ -842,8 +944,22 @@ class MyThread():
 
     def subprocess_result(self, type, command_dict, command):
         flag = False
-        command_next = command_dict['command']
-        seconds = command_dict['timeout'] + time.time()
+        command_next = None
+        if platform.system().lower() == "linux":
+            if 'command_linux' in command_dict:
+                command_next = command_dict['command_linux']
+        else:
+            if 'command_windo' in command_dict:
+                command_next = command_dict['command_windo']
+        if command_next is None:
+            for data_one in NextNextPing.INIT_DATA['data']:
+                if data_one['name'] == type:
+                    if platform.system().lower() == "linux":
+                        command_next = data_one['command_linux']
+                    else:
+                        command_next = data_one['command_windo']
+                    break
+
         command_list = command.split(',')
         if type not in self.next_next_ping.log:
             self.next_next_ping.log[type] = {}
@@ -861,20 +977,18 @@ class MyThread():
             command_next = command_next.replace(key, value)
         command_next_list = command_next.split(' ')
         process = None
-        default_locale = locale.getencoding()
         try:
-            if platform.system().lower() != "linux":
-                # 英語にしないと日本語で表示され、OK/NGが分からなくなる
-                subprocess.Popen(['chcp.com', '65001'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
             #
-            # print(f"f f={command_next_list}")
-            process = subprocess.Popen(command_next_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-            # print(f"T2={type} C=/{command}/")
+            if platform.system().lower() != "linux":
+                process = MyWindowsProcess(command_next_list)
+            else:
+                process = MyLinuxProcess(command_next)
+            #
+            seconds = command_dict['timeout'] + time.time()
             while self.non_stop_flag and time.time() < seconds:
                 # print(f"T4={type} C=/{command}/")
-                if process.stdout.readable():
-                    process.stdout.flush
-                    buffer = process.stdout.read(1)
+                if process.readable():
+                    buffer = process.read(1)
                     if buffer is None:
                         break
                     if buffer == '':
@@ -887,30 +1001,22 @@ class MyThread():
             # print(f"T3={type} C=/{command}/")
             #
             if 'ok' in command_dict:
-                if command_dict['ok'] in log_type_coomand['stdout']:
+                if isinstance(command_dict['ok'], str):
+                    command_dict['ok'] = [command_dict['ok']]
+                if 0 == len(command_dict['ok']):
                     flag = True
-            if 'returncode' in command_dict:
-                if command_dict['returncode']:
-                    if process.returncode == 0:
-                        flag = True
-        except subprocess.TimeoutExpired:
-            pass
+                else:
+                    for ok in command_dict['ok']:
+                        if ok in log_type_coomand['stdout']:
+                            flag = True
+                            break
+        except Exception as e:
+            log_type_coomand['stdout'] = log_type_coomand['stdout'] + f"## Exception {str(e)}"
+            flag = False
         finally:
-            if platform.system().lower() != "linux":
-                # localeをもとに戻す
-                subprocess.Popen(['chcp.com', default_locale], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
-            #
             if process is not None:
                 try:
-                    process.stdout.close()
-                except Exception:
-                    pass
-                try:
-                    process.stderr.close()
-                except Exception:
-                    pass
-                try:
-                    process.terminate()
+                    process.close()
                 except Exception:
                     pass
         return flag
@@ -1262,39 +1368,39 @@ class NextNextPing():
         self.notebook.select(2)
 
     INIT_DATA = {
-        "setting": 'setting.txt',  # 設定ファイル
-        "title": "nextnextping",
-        "wait_time": 1,
-        "loop": False,
-        "debug": False,
-        "data": [
+        'setting': 'setting.txt',  # 設定ファイル
+        'title': 'nextnextping',
+        'wait_time': 1,
+        'loop': False,
+        'debug': False,
+        'data': [
             {
-                "name": "ttl",
-                "ttl": True
+                'name': 'ttl',
+                'ttl': True
             },
             {
-                "name": "ping",
-                "ttl": False,
-                "command": "ping -n 1 %1",
-                "ok": "(0%",
-                "returncode": False,
-                "timeout": 10
+                'name': 'ping',
+                'ttl': False,
+                'command_linux': 'ping -c 1 %1',
+                'command_windo': 'ping -n 1 %1',
+                'ok': ['(0%', ' 0% packet loss'],
+                'timeout': 10
             },
             {
-                "name": "trace",
-                "ttl": False,
-                "command": "tracert %1",
-                "ok": "Trace complete.",
-                "returncode": False,
-                "timeout": 10
+                'name': 'trace',
+                'ttl': False,
+                'command_linux': 'traceroute %1',
+                'command_windo': 'tracert %1',
+                'ok': ['Trace complete.'],
+                'timeout': 10
             },
             {
-                "name": "show",
-                "ttl": False,
-                "command": "ipconfig /all",
-                "returncode": False,
-                "ok": "Windows",
-                "timeout": 10
+                'name': 'show',
+                'ttl': False,
+                'command_linux': 'ip address',
+                'command_windo': 'ipconfig /all',
+                'ok': [],
+                'timeout': 30
             }
         ]
     }
@@ -1802,9 +1908,9 @@ class NextNextPing():
         file_path = os.path.abspath(file_path)  # 絶対パスに変換
         self.init["setting"] = os.path.splitext(file_path)[0] + ".txt"  # 設定ファイルを指定
         #
-        current_encoding = ""
+        current_encoding = ''
         if self.get_japanese_flag():
-            current_encoding = "cp932"
+            current_encoding = 'cp932'
         else:
             current_encoding = locale.getpreferredencoding(False)
         #
@@ -1815,7 +1921,11 @@ class NextNextPing():
                 reader = csv.reader(f)
                 values = [row for row in reader]
         except UnicodeDecodeError:
-            with open(file_path, newline='', encoding='utf-8') as f:
+            if current_encoding.lower() == 'utf-8':
+                current_encoding = 'cp932'
+            else:
+                current_encoding = 'utf-8'
+            with open(file_path, newline='', encoding=current_encoding) as f:
                 reader = csv.reader(f)
                 values = [row for row in reader]
         #
@@ -1827,7 +1937,7 @@ class NextNextPing():
             # 表への詰み込み
             while len(value) < len(NextNextPing.TARGET_PARAM):
                 value.append('')
-            if value[0].strip() == "":  # 先頭が空行なら無視する
+            if value[0].strip() == '':  # 先頭が空行なら無視する
                 continue
             target_values = []
             for value_one in value:

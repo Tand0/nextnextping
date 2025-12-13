@@ -6,7 +6,7 @@ import re
 import yaml
 
 
-VERSION = 1.19
+VERSION = 1.21
 
 INTERNAL = "nextnextping/dist/nextnextping/_internal/"
 ANSIBLE_README = "forwsl2/collections/ansible_collections/tand0/ttl/README.md"
@@ -91,10 +91,12 @@ RESULT_MD_TEXT_END = """
 
 
 def main():
-    """ メイン処理 """
+    """ main """
     print("hello build version {str(VERSION)}")
     installer()
-    file_copy("bin/", 'nextnextping/dist/nextnextping/')
+    sample_dir_copy("bin/", 'nextnextping/dist/nextnextping/')
+    file_copy("docs/syntax.md", 'forwsl2/collections/ansible_collections/tand0/ttl/docs/syntax.md')
+    file_copy("docs/command.md", 'forwsl2/collections/ansible_collections/tand0/ttl/docs/command.md')
     my_markdown()
     make_version()
     ansible_doc_to_html()
@@ -110,7 +112,7 @@ def make_version():
 
 
 def installer():
-    """ pyinstaller を実行する """
+    """ invoke pyinstaller """
     os.chdir("nextnextping")
     #
     command = "pyinstaller --noconsole --noconfirm nextnextping.py --hidden-import=."
@@ -126,24 +128,28 @@ def installer():
     os.chdir("..")
 
 
-def file_copy(base: str, dest: str):
-    """ ファイルをコピーする """
-    for filename in os.listdir(base):
-        if not os.path.isdir(base + filename):
-            continue  # フォルダでなかった無視
-        if os.path.isdir(base + dest + filename):
-            continue  # 移動先のフォルダが存在したら無視
-        if 'sample' not in filename:
+def file_copy(src: str, dest: str):
+    print("cp ", src, dest)
+    result = file_load(src)
+    file_save(dest, result)
+
+
+def sample_dir_copy(base: str, dest: str):
+    """ copy to file """
+    for foldername in os.listdir(base):
+        if not os.path.isdir(base + foldername):
+            continue  # 移動元がフォルダでなかった無視
+        if 'sample' not in foldername:
             continue  # サンプルでないなら無視
         #
-        print("cp -r ", base + filename, dest + filename)
-        shutil.copytree(base + filename, dest + filename)
+        print("cp -r ", base + foldername, dest + foldername)
+        shutil.copytree(base + foldername, dest + foldername, dirs_exist_ok=True)
 
 
 def my_markdown():
-    """ markdownをhtmlに変換する """
-    filename = "README_en.md"
-    filename_html = filename.replace("_en.md", ".html")
+    """ Change markdown to html """
+    filename = "README.md"
+    filename_html = filename.replace(".md", ".html")
     md_text = file_load(filename)
     md_text = md_text.replace("\"./docs/", "\"")
     md_text = md_text.replace("(./docs/", "(")
@@ -263,31 +269,29 @@ def ansible_doc_to_html() -> str:
     ret = local_scope['RETURN']
     html = "\n\n# Ansible TTL macro like collection\n"
     html = html + '''## Overview
-- You can ping and see if the result is OK or not.
 - You can connect via SSH using a language called Terawaros Tekitou Language, which is similar to teraterm macro, and ping other servers as stepping stones.
 
 ## MACRO for Terawaros Tekitou Lanugage
 
 - Usage
-    - [the macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
+    - [The macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
     - [TTL command reference](./docs/command.md)
 '''
 
     data_dict = yaml.safe_load(doc)
     for k, v in data_dict.items():
         html = html + f"\n## {k}\n"
-        html = html + "\n" + dict_to_md(0, v)
+        html = html + dict_to_md(0, v)
     #
     html = html + "\n\n# Examples\n"
-    html = html + "``` yaml\n" + example + "\n```\n"
+    html = html + "``` yaml\n" + example.strip() + "\n```\n"
     #
     html = html + "\n\n# Result\n"
     data_dict = yaml.safe_load(ret)
     for k, v in data_dict.items():
         html = html + f"\n## {k}\n"
-        html = html + "\n" + dict_to_md(0, v)
+        html = html + dict_to_md(0, v)
     #
-    html = html + RESULT_MD_TEXT_END
     file_save(ANSIBLE_README, html)
 
 
@@ -296,22 +300,20 @@ def dict_to_md(level, v) -> str:
     # print(f"{v}")
     if isinstance(v, dict):
         for kk, vv in v.items():
-            html = html + "\n"
-            html = html + (" " * (level * 4))
             if isinstance(vv, dict) or isinstance(vv, list):
-                html = html + f"- {kk}: \n"
-                html = html + dict_to_md(level + 1, vv)
+                html = html + (" " * (level))
+                html = html + f"- **{kk}**: \n"
+                html = html + dict_to_md(level + 4, vv)
             else:
-                html = html + f"- {kk}: {str(vv)}"
+                html = html + (" " * (level))
+                html = html + f"- **{kk}**: {str(vv)}\n"
     elif isinstance(v, list):
         for vv in v:
-            html = html + "\n"
-            html = html + (" " * (level * 4 + 1))
             if isinstance(vv, dict) or isinstance(vv, list):
-                html = html + "- :\n"
-                html = html + dict_to_md(level + 1, vv)
+                html = html + dict_to_md(level, vv)
             else:
-                html = html + f"- : {str(vv)}"
+                html = html + (" " * (level))
+                html = html + f"- {str(vv)}\n"
     else:
         html = str(v)
     return html
@@ -326,45 +328,45 @@ def site_import():
             continue
         files.append(file)
     text = ""
+    text = text + "- hosts: localhost\n"
+    text = text + "  become: False\n"
+    text = text + "  collections:\n"
+    text = text + "    - tand0.ttl\n"
+    text = text + "  tasks:\n"
+    j = 0
     for file in files:
-        ok_flag = True
-        if '_ok_' in file:
+        for i in [0, 1, 2, 3]:
+            j = j + 1
             ok_flag = True
-        else:
-            ok_flag = False
-        text = text + f"- name: ttl {file}\n"
-        text = text + "  ttl:\n"
-        text = text + "    filename: " + file + "\n"
-        text = text + "    chdir: ../test\n"
-        text = text + "    ignore_result: False\n"
-        text = text + "  register: ttl_output\n"
-        text = text + "  ignore_errors: " + str(not ok_flag) + "\n"
-        text = text + f"- name: assert {str(ok_flag)} {file}\n"
-        text = text + "  fail:\n"
-        text = text + "  when: (not ansible_check_mode) and (ttl_output.failed == " + str(ok_flag) + ")\n"
-        text = text + f"- name: debug {file}\n"
-        text = text + "  debug:\n"
-        text = text + "    var: ttl_output.stdout_lines\n\n"
-    for file in files:
-        ok_flag = True
-        if '_ok_' in file:
-            ok_flag = True
-        else:
-            ok_flag = False
-        text = text + f"- name: cmd {file}\n"
-        text = text + "  ttl:\n"
-        text = text + "    cmd: | \n"
-        text = text + print_cmd("      ", file)
-        text = text + "    chdir: ../test\n"
-        text = text + "    ignore_result: False\n"
-        text = text + "  register: ttl_output\n"
-        text = text + "  ignore_errors: " + str(not ok_flag) + "\n"
-        text = text + f"- name: assert {str(ok_flag)} {file}\n"
-        text = text + "  fail:\n"
-        text = text + "  when: (not ansible_check_mode) and ttl_output.failed == " + str(ok_flag) + "\n"
-        text = text + f"- name: debug {file}\n"
-        text = text + "  debug:\n"
-        text = text + "    var: ttl_output.stdout_lines\n\n"
+            if '_ok_' in file:
+                ok_flag = True
+            else:
+                ok_flag = False
+            text = text + f"    - name: test-{j} {file}\n"
+            text = text + "      ttl:\n"
+            if i == 0 or i == 2:
+                text = text + "        filename: " + file + "\n"
+            else:
+                text = text + "        cmd: |\n"
+                text = text + print_cmd("          ", file)
+            text = text + "        chdir: ../test\n"
+            text = text + "        ignore_result: False\n"
+            text = text + f"      check_mode: {2 <= i}\n"
+            text = text + "      register: ttl_output\n"
+            text = text + "      ignore_errors: " + str(not ok_flag) + "\n"
+            if i < 2:
+                text = text + f"    - name: assert-failed-{j} {str(ok_flag)} {file}\n"
+                text = text + "      fail:\n"
+                text = text + "      when: (not ansible_check_mode) and (ttl_output.failed == " + str(ok_flag) + ")\n"
+            else:
+                if ok_flag:
+                    text = text + f"    - name: assert-changed-{j} {str(ok_flag)} {file}\n"
+                    text = text + "      fail:\n"
+                    text = text + "      when: ttl_output.changed == True\n"
+            if ok_flag:
+                text = text + f"    - name: debug-stdout {file}\n"
+                text = text + "      debug:\n"
+                text = text + "         var: ttl_output.stdout_lines\n\n"
     # print(f"{text}", end="")
     file_save(SITE_IMPORT, text)
 

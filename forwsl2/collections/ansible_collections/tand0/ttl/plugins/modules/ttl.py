@@ -12,7 +12,7 @@ short_description: TTL macro-like module
 description:
   - This implementation imitates the TTL used in teraterm.
   - Ansible allows you to control the macro language "TTL"
-     - realize functions such as auto-dial and auto-login.
+  - realize functions such as auto-dial and auto-login.
 author: Ando (@ando)
 
 attributes:
@@ -29,13 +29,21 @@ options:
       - TTL macro file name
     required: false
     default:
-    type: str
+    type: path
   cmd:
     description:
       - TTL macro text
     required: false
     type: str
     default:
+  creates:
+    type: path
+    description:
+      - A filename, when it already exists, this step will B(not) be run.
+  removes:
+    type: path
+    description:
+      - A filename, when it does not exist, this step will B(not) be run.
   ignore_result:
     description:
       - If result is 0, it fails.
@@ -48,11 +56,12 @@ options:
     required: false
     type: list
     elements: str
+    default: []
   chdir:
     description:
-      - Specify the folder in which the TTL macro will be executed..
+      - Change into this directory before running the command.
     required: false
-    type: str
+    type: path
 
 seealso:
   - name: nextnextping
@@ -62,23 +71,38 @@ seealso:
 '''
 
 EXAMPLES = r'''
+# call ttl from file
 ---
 - name: ../test/0000_ok_test.ttl
   ttl:
     filename: 0000_ok_test.ttl
     chdir: ../test
-    result_check: true
+    ignore_result: false
   register: ttl_output
 - debug:
-    msg: "{{ ttl_output.stdout_lines }}"
+    var: ttl_output.stdout_lines
 
-- name: assert OK
+
+# call ttl from command
+- name: "test: connect /cmd"
   ttl:
     cmd: |
-      result = 1
+      connect '/cmd'
+      ;
+      flushrecv
+      sendln 'pwd'
+      wait 'pwd'
+      wait '$'
+      ;
+      flushrecv
+      sendln 'ls'
+      wait 'ls'
+      wait '$'
   register: ttl_output
-- debug:
-  msg: "{{ ttl_output }}"
+- name: "test: connect /cmd"
+  debug:
+    var: ttl_output.stdout_lines
+
 '''
 
 RETURN = r'''
@@ -88,6 +112,20 @@ changed:
   type: bool
   returned: always
   sample: true
+
+cmd:
+  description:
+    -  TTL macro text
+  type: str
+  returned: always
+  sample: return = 1
+
+filename:
+  description:
+    - TTL macro file name
+  type: str
+  returned: always
+  sample: sample.ttl
 
 stdout:
   description: stdout
@@ -108,9 +146,16 @@ values:
   sample: {"result": 1}
 '''
 
+import datetime
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import TtlPaserWolker
-from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import Label
+IMP_ERR = None
+try:
+    from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import TtlPaserWolker
+    from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import Label
+except (ImportError, ModuleNotFoundError, NameError) as ex:
+    class TtlPaserWolker():
+        pass
+    IMP_ERR = ex
 import os
 
 
@@ -118,26 +163,59 @@ def main():
     """ main """
     module = AnsibleModule(
         argument_spec=dict(
-            filename=dict(type=str, required=False, default=None),
+            filename=dict(type='path', required=False, default=None),
             cmd=dict(type='str', required=False, default=None),
+            creates=dict(type='path', required=False, default=None),
+            removes=dict(type='path', required=False, default=None),
             ignore_result=dict(type='bool', required=False, default=True),
-            param=dict(type=list, required=False, default=[], elements="str"),
-            chdir=dict(type='str', required=False, default=None)
+            param=dict(type='list', required=False, default=[], elements='str'),
+            chdir=dict(type='path', required=False, default=None)
         ),
         supports_check_mode=True
     )
+    #
+    if IMP_ERR is not None:
+        module.fail_json(msg="missing_required_lib", exception=IMP_ERR)
     #
     current_directory = os.getcwd()
     chdir = module.params['chdir']
     checkmode = module.check_mode
     changed = not checkmode
     ignore_result = module.params['ignore_result']
-    result = {'stdout': '', 'stdout_lines': [], 'value': {}}
     filename = module.params['filename']
+    cmd = module.params['cmd']
+    result = {
+        'stdout': '',
+        'filename': filename,
+        'cmd': cmd,
+        'stdout_lines': [],
+        'value': {}}
+    creates = module.params['creates']
+    removes = module.params['removes']
     #
     #
-    if filename is None and module.params['cmd'] is None:
+    if filename is None and cmd is None:
         module.fail_json(msg='Either the cmd or filename parameter must be given.', **result)
+    #
+    if creates:
+        if os.path.exists(creates):
+            module.exit_json(
+                cmd=cmd,
+                stdout="skipped, since %s exists" % creates,
+                changed=False,
+                rc=0
+            )
+
+    if removes:
+        if not os.path.exists(removes):
+            module.exit_json(
+                cmd=cmd,
+                stdout="skipped, since %s does not exist" % removes,
+                changed=False,
+                rc=0
+            )
+    #
+    result['start'] = datetime.datetime.now()
     #
     param_list = []
     if filename is None:
@@ -150,8 +228,8 @@ def main():
         if chdir is not None:
             os.chdir(chdir)
         myTtlPaserWolker = MyTtlPaserWolker(module)
-        if module.params['cmd'] is not None:
-            data = module.params['cmd'] + "\n"
+        if cmd is not None:
+            data = cmd + "\n"
             if not checkmode:
                 # this is not check mode
                 myTtlPaserWolker.execute('cmd', param_list, data=data)
@@ -170,12 +248,16 @@ def main():
             if result is None:
                 ignore_result_value = 0
             if ignore_result_value == 0:
-                module.fail_json(msg=f"result_check failer v={str(ignore_result_value)}", **result)
+                module.fail_json(msg=f"ignore_result failer v={str(ignore_result_value)}", **result)
     except Exception as e:
         module.fail_json(msg=f"Exception execute {str(e)}", **result)
     finally:
         os.chdir(current_directory)
         if myTtlPaserWolker is not None:
+            result['end'] = datetime.datetime.now()
+            result['delta'] = str(result['end'] - result['start'])
+            result['start'] = str(result['start'])
+            result['end'] = str(result['end'])
             result['stdout'] = myTtlPaserWolker.my_stdout
             result['stdout_lines'] = result['stdout'].splitlines()
             result['value'] = replace_param(myTtlPaserWolker.value_list)

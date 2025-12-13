@@ -1,16 +1,15 @@
 
+
 ;INPUT_START
 
 ;file_name = "029c1_ok_connect.ttl"
 ;target_display = "pingを打つ装置"
 ;target_ip = "127.0.0.1"
 ;target_type = 1  ; 1=ping, 2=traceroute, 3=show run
-;base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
 ;base_display = "SSH接続する装置"
 ;base_ip = "localhost:2200"
 ;base_account = "foo" ; アカウント情報
 ;next_ssh = 2  ; "0=Windows", "1=SSHログイン", "2=SSH踏み台"
-;next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 ;next_display = "SSHからさらに接続する装置"
 ;next_ip  = "c1"  ; 踏み台SSHのIPアドレス
 ;next_account = "bar"  ; 踏み台先のIPアドレス
@@ -33,10 +32,6 @@ ifdefined target_type
 if result == 0 then
     target_type = 1  ; 1=ping, 2=traceroute, 3=show run
 endif
-ifdefined base_type
-if result == 0 then
-    base_type = 2 ; 1=cisco, 2=linux, 3=qx-s
-endif
 ifdefined base_display
 if result == 0 then
     base_display = "SSH接続する装置"
@@ -52,10 +47,6 @@ endif
 ifdefined next_ssh
 if result == 0 then
     next_ssh = 2
-endif
-ifdefined next_type
-if result == 0 then
-    next_type = 1 ; 1=cisco, 2=linux, 3=qx-s
 endif
 ifdefined next_display
 if result == 0 then
@@ -115,7 +106,7 @@ pause 1
 
 ;
 prompt = '$'
-timeout = 10
+timeout = 150
 state_flag = 0  ; call_get_promptのために状態フラグを設定する
 command = 'clear'
 call call_get_prompt  ; プロンプトを決定する
@@ -163,8 +154,10 @@ if my_command_flag<>0 then
         strcompare command ""
         if result<>0 then
             call call_check_command
-            if result <> 0 then
+            if result == 1 then
                 call call_get_prompt
+            elseif result == 2 then
+                call call_sudo_command
             else
                 call call_one_command
             endif
@@ -179,6 +172,7 @@ elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
         command = 'ping '
     endif
     strconcat command target_ip
+    flushrecv
     sendln command
     wait command
     wait prompt ' 0% packet loss' ' 0.0% packet loss' 'Success rate is 100 percent'
@@ -186,20 +180,30 @@ elseif target_type = 1 then  ; 1=ping, 2=traceroute, 3=show run
         call call_ending
         end
     endif
-elseif target_type = 2 then 
+elseif target_type = 2 then
     if server_type == 1 then ; 1=cisco, 2=linux, 3=qx-s
         command = 'traceroute '
         strconcat command target_ip
         call call_one_command
     elseif server_type == 2 then
-        strcompare "] " prompt
+        strcompare ']' prompt
         if result == 0 then
             ; for vmware
-            command = 'traceroute '
+            strscan target_ip ':' ;; for ip v6
+            if result == 0 then
+                command = 'traceroute '
+            else
+                command = 'traceroute6 '
+            endif
             strconcat command target_ip
             call call_one_command
         else
-            command = 'tracepath '
+            strscan target_ip ':' ;; for ip v6
+            if result == 0 then
+                command = 'tracepath '
+            else
+                command = 'tracepath6 '
+            endif
             strconcat command target_ip
             call call_one_command
         endif
@@ -216,7 +220,7 @@ else
         command = 'show ip interface brief'
         call call_one_command
     elseif server_type == 2 then
-        strcompare "] " prompt
+        strcompare "]" prompt
         if result == 0 then
             ; for vmware
             command = 'esxcli network nic list'
@@ -231,9 +235,15 @@ else
             call call_one_command
             command = 'ip addr show'
             call call_one_command
+            command = 'ip -6 addr show'
+            call call_one_command
             command = 'ip link show'
             call call_one_command
+            command = 'ip -6 link show'
+            call call_one_command
             command = 'ip route show'
+            call call_one_command
+            command = 'ip -6 route show'
             call call_one_command
             command = 'ss'
             call call_one_command
@@ -283,7 +293,7 @@ return
 
 ; 特権ユーザのパスワード
 :call_next_enable_password
-    key_target = 'enable_'
+    ; key_target = 'enable_'
     strconcat key_target next_account
     key_ip = next_ip
     key_base_display = next_display
@@ -326,28 +336,42 @@ return
 
 :call_check_command
     ; コマンドがプロンプトの変化を要求しているか確認する
+    strscan command "sudo "
+    if result<>0 then
+        result = 2
+        return
+    endif
     strscan command "clear"
     if result<>0 then
+        result = 1
         return
     endif
     strscan command "ssh "
     if result<>0 then
+        result = 1
         return
     endif
     strscan command "quit"
     if result<>0 then
+        result = 1
         return
     endif
     strscan command "exit"
     if result<>0 then
+        result = 1
         return
     endif
     strscan command "system-view"
+    if result<>0 then
+        result = 1
+        return
+    endif
 return
 
 
 :call_one_command
     ; １コマンド分の処理
+    flushrecv
     sendln command
     wait command
     if result == 0 then
@@ -364,6 +388,7 @@ return
             call call_ending
             end
         elseif result = 2 then
+            flushrecv
             sendln ''
             continue
         endif
@@ -372,7 +397,8 @@ return
     endwhile
 return
 
- :call_get_prompt
+:call_get_prompt
+    flushrecv
     sendln command
     wait command
     if result == 0 then
@@ -384,7 +410,7 @@ return
     enable_flag = 0
     while 1
         ; プロンプトチェック
-        wait '>' '#' '$' '] ' '(yes/no)' 'assword:' '-- More --'
+        wait '>' '#' '$' ']' '(yes/no' 'assword:' '-- More --'
         result_type = result
         if result_type == 0 then
             ; タイムアウトのとき
@@ -399,6 +425,7 @@ return
                 password_flag = 0
                 enable_flag = 1
                 command = 'enable'
+                flushrecv
                 sendln command
                 wait command
                 continue
@@ -413,9 +440,10 @@ return
             prompt = '$'
         elseif result_type == 4 then
             server_type = 2  ; 1=cisco, 2=linux, 3=qx-s
-            prompt = '] '  ; for vmware
+            prompt = ']'  ; for vmware
         elseif result_type == 5 then
             command = 'yes'
+            flushrecv
             sendln command
             wait command
             continue
@@ -435,14 +463,17 @@ return
                 endif
             else
                 if enable_flag<>0 then
+                    key_target = 'enable_'
                     call call_next_enable_password  ; 特権モード移行用
                 else
                     call call_next_password
                 endif
             endif
+            flushrecv
             sendln password
             continue
         elseif result_type == 7 then
+            flushrecv
             sendln ''
             continue
         else
@@ -459,3 +490,60 @@ return
         break
     endwhile
 return
+
+
+:call_sudo_command
+    flushrecv
+    sendln command
+    wait command
+    if result == 0 then
+        messagebox 'input command timeout failer' command
+        call call_ending
+        end
+    endif
+    password_flag = 0
+    while 1
+        ; プロンプトチェック
+        wait prompt '[sudo] password for'
+        result_type = result
+        if result == 0 then
+            ; タイムアウトのとき
+            messagebox 'next prompt check fail!' 'title'
+            call call_ending
+            end
+        elseif result_type == 1 then
+            break
+        elseif result_type == 2 then
+            if password_flag <> 0 then
+                message = 'passdword ng!'
+                messagebox message 'title'
+                call call_ending
+                end
+            endif
+            wait ':'
+            if result == 0 then
+                messagebox 'sudo password timeout failer' command
+                call call_ending
+                end
+            endif
+            password_flag = 1
+            key_target = 'sudo_'
+            call call_next_enable_password  ; 特権モード移行用
+            flushrecv
+            sendln password
+            continue
+        else
+            int2str strvar result_type
+            message = "sudo promot not found("
+            strconcat message strvar
+            strconcat message ")"
+            messagebox message 'title'
+            call call_ending
+            end
+        endif
+        ;
+        ; while を終わる
+        break
+    endwhile
+return
+

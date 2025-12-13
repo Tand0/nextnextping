@@ -3,7 +3,7 @@
     "results": [
         {
             "message": "The test `ansible-test sanity --test pylint` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/pylint.html)] failed with 1 error:", 
-            "output": "plugins/module_utils/TtlParserWorker.py:2057:8: ansible-bad-function: Call module.log or module.debug instead of builtins.print"
+            "output": "plugins/modules/ttl.py:150:4: unused-import: Unused import antlr4"
         }
     ], 
     "verified": false

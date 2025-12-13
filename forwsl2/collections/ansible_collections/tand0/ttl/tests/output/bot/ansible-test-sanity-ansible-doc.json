@@ -3,7 +3,7 @@
     "results": [
         {
             "message": "The test `ansible-test sanity --test ansible-doc` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/ansible-doc.html)] failed with the error:", 
-            "output": "Command \"ansible-doc -t module tand0.ttl.ttl tand0.ttl.version\" returned exit status 1.\n>>> Standard Error\n[ERROR]: module tand0.ttl.version Missing documentation (or could not parse documentation): No documentation available for module plugin 'tand0.ttl.version' in '/mnt/d/gitwork/nextnextping/forwsl2/collections/ansible_collections/tand0/ttl/plugins/modules/version.py'."
+            "output": "Command \"ansible-doc -t module tand0.ttl.ttl tand0.ttl.version\" returned exit status 1.\n>>> Standard Error\n[ERROR]: Unable to retrieve documentation from 'tand0.ttl.ttl': Incorrect value for 'Required', a boolean is needed.: always"
         }
     ], 
     "verified": false

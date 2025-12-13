@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
-from .ttl_parser_lexer import TtlParserLexer
-from .ttl_parser_parser import TtlParserParser
-from antlr4.InputStream import InputStream
-from antlr4.CommonTokenStream import CommonTokenStream
-from antlr4.tree.Tree import ParseTreeVisitor
-from antlr4.error.ErrorListener import ErrorListener
 import time
-import paramiko
 import socket
 import re
 import subprocess
@@ -16,14 +9,30 @@ from datetime import datetime, timezone
 import pathlib
 import json
 import random
-import uptime
 import threading
-from cryptography.fernet import Fernet
-from cryptography.fernet import InvalidToken
 import base64
-from .version import VERSION
 import platform
 import getpass
+from abc import ABC, abstractmethod
+
+IMP_ERR = None
+try:
+    from cryptography.fernet import Fernet
+    from cryptography.fernet import InvalidToken
+    import paramiko
+    from antlr4.InputStream import InputStream
+    from antlr4.CommonTokenStream import CommonTokenStream
+    from antlr4.tree.Tree import ParseTreeVisitor
+    from antlr4.error.ErrorListener import ErrorListener
+    import pexpect
+    import uptime
+    from .ttl_parser_lexer import TtlParserLexer
+    from .ttl_parser_parser import TtlParserParser
+    from .version import VERSION
+except ImportError as ex:
+    class ParseTreeVisitor():
+        pass
+    IMP_ERR = ex
 
 
 class MyFindfirst:
@@ -63,14 +72,44 @@ class MyFindfirst:
         return ans
 
 
-class MyShell:
-
+class MyAbstractShell(ABC):
+    @abstractmethod
     def __init__(self):
+        pass
+
+    @abstractmethod
+    def send_ready(self) -> bool:
+        pass
+
+    @abstractmethod
+    def send(self, message):
+        pass
+
+    @abstractmethod
+    def recv_ready(self) -> bool:
+        pass
+
+    @abstractmethod
+    def recv(self, length: int) -> str:
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractmethod
+    def isActive(self) -> int:
+        pass
+
+
+class MyShell(MyAbstractShell):
+    def __init__(self, command=None):
+        if command is None:
+            command = ['cmd']
         # print("MyShell __init__ start")
         self.data = ""
         self.lock = threading.Lock()
         self.active = 1
-        command = ["cmd"]
         self.process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -81,11 +120,9 @@ class MyShell:
         )
         thread = MyThread(self, "stdout", self.process.stdout)
         thread.start()
-        thread = MyThread(self, "stderr", self.process.stderr)
-        thread.start()
         # print("MyShell __init__ end")
 
-    def send_ready(self):
+    def send_ready(self) -> bool:
         # print("send_ready")
         if self.active == 0:
             return 0
@@ -127,11 +164,76 @@ class MyShell:
             try:
                 local_process.terminate()
             except Exception:
-                # どんなエラーがでようと必ず殺す
+                # anything delete
                 pass
 
     def isActive(self) -> int:
         return self.active
+
+
+class MyPexpect(MyAbstractShell):
+    def __init__(self):
+        shell_name = os.getenv("SHELL", "/bin/sh")
+        self.child = pexpect.spawn(shell_name, timeout=0, encoding='utf-8')
+        self.result = None
+
+    def send_ready(self) -> bool:
+        return True
+
+    def send(self, message):
+        child = self.child
+        if child is None:
+            return
+        child.send(message)
+
+    def recv_ready(self) -> bool:
+        child = self.child
+        if child is None:
+            return False
+        if self.result is not None:
+            return True
+        index = child.expect([r".", pexpect.EOF, pexpect.TIMEOUT])
+        if index == 0:
+            # child.after でマッチした文字列全体を取得
+            self.result = child.before + child.after
+            if 0 < len(self.result):
+                return True
+            else:
+                return False
+        elif index == 1:  # EOF
+            self.close()
+            return False
+        return False  # Timeout
+
+    def recv(self, length: int) -> str:
+        if self.child is None:
+            return None
+        work = ''
+        if self.result is not None:
+            if len(self.result) <= length:
+                work = self.result
+                self.result = None
+            else:
+                work = self.result[:self.result]
+                self.result = self.result[self.result + 1:]
+        elif self.recv_ready():
+            work = self.recv(length)
+        if self.child is None:
+            return None
+        return work.encode("utf-8")
+
+    def close(self):
+        child = self.child.close()
+        self.child = None
+        try:
+            child.close()
+        except Exception:
+            pass
+
+    def isActive(self) -> int:
+        if self.child is not None:
+            return 1
+        return 0
 
 
 class MyThread(threading.Thread):
@@ -254,11 +356,13 @@ class ThrowingErrorListener(ErrorListener):
         raise TypeError(f"### l={line}:{column} Token recognition error - {msg}")
 
 
-class TtlPaserWolker:
+class TtlPaserWolker(ABC):
     """tera tekitou lang の実装部分(GUI除く)"""
 
     def __init__(self):
-        """ " init"""
+        """ init """
+        if IMP_ERR:
+            raise ImportError(IMP_ERR)
         self.value_list = {}
         self.result_file_json = {}
         self.end_flag = False
@@ -1736,9 +1840,11 @@ class TtlPaserWolker:
                 self.closeClient()
         else:
             if platform.system().lower() == "linux":
-                raise TypeError(f"### l={line} CMD is windows only!")
-            # ここからcmd起動
-            self.shell = MyShell()
+                # ここから expect 起動
+                self.shell = MyPexpect()
+            else:
+                # ここから cmd 起動
+                self.shell = MyShell()
             #
             # 接続成功
             self.setValue("result", 2)
@@ -2051,6 +2157,7 @@ class TtlPaserWolker:
         if self.log_start:
             self.doLogwrite(strvar)
 
+    @abstractmethod
     def setLog(self, strvar: str):
         """ Please Override! """
         pass

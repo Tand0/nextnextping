@@ -2,8 +2,8 @@
 
 このソフトウェアはwindowsで多数の装置にpingを打つためのExPingのようなツールです。
 
-- [For Eingish](./README_en.md)
-- [For Ansible](./forwsl2/collections/ansible_collections/tand0/ttl/README.md)
+- [For Ansible](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
+- [For Github](https://github.com/Tand0/nextnextping)
 
 ## Introduction
 
