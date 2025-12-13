@@ -1,0 +1,49 @@
+- hosts: localhost
+  become: False
+  collections:
+    - tand0.ttl
+  vars:
+  tasks:
+    - name: get version
+      version:
+      register: version
+    - debug:
+        msg: "version: {{ version.version }}.1"
+
+    - lineinfile:
+        path: ../pyproject.toml
+        regexp: '^version'
+        line: 'version = "{{ version.version }}.1"'
+
+    - name: copy to .pypi (HOMEに置かないと認識しないとかクソ仕様すぎる)
+      copy:
+        src: ../.pypirc
+        dest: "{{ lookup('env', 'HOME') }}"
+
+    - name: test package
+      shell:
+        cmd: "pyttl ./test/0000_ok_test.ttl"
+        chdir: ..
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+
+#    - name: test twine upload
+#      shell:
+#        cmd: "twine upload --repository testpypi dist/nextnextping-{{ version.version }}.1*"
+#        chdir: ..
+#      register: python3_build
+#    - name: create python package stdout
+#      debug:
+#         var: python3_build.stdout_lines
+
+    - name: twine upload
+      shell:
+        cmd: "twine upload --repository pypi dist/nextnextping-{{ version.version }}.1*"
+        chdir: ..
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+

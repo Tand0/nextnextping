@@ -18,8 +18,8 @@ import subprocess
 import re
 import locale
 import csv
-from grammer.ttl_parser_worker import TtlPaserWolker
-from grammer.version import VERSION
+from nextnextping.grammer.ttl_parser_worker import TtlPaserWolker
+from nextnextping.grammer.version import VERSION
 import webbrowser
 import platform
 import pexpect
@@ -2232,10 +2232,12 @@ class ListboxDialog(simpledialog.Dialog):
             # print(f"選択されている {self.selection}")
 
 
-if __name__ == "__main__":
-    #
+def main():
     next_next_ping = NextNextPing()
     next_next_ping.next_next_ping()
-    #
+
+
+if __name__ == "__main__":
+    main()
 
 #

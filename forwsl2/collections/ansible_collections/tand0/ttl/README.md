@@ -2,7 +2,7 @@
 
 # Ansible TTL macro like collection
 ## Overview
-- You can connect via SSH using a language called Terawaros Tekitou Language, which is similar to teraterm macro, and ping other servers as stepping stones.
+- You can connect via SSH using a language called TTL(Terawaros Tekitou Language), which is similar to teraterm macro, and ping other servers as stepping stones.
 
 ## MACRO for Terawaros Tekitou Lanugage
 

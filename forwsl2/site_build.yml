@@ -6,6 +6,14 @@
     pythoninterpreter: /mnt/d/gitwork/ansibletest/ansible/venv/bin/python3.12
     wsl2homework: /home/t-ando/work/collections/ansible_collections/tand0/ttl/
   tasks:
+    - name: copy to document
+      shell:
+        cmd: "python3 site_build.py"
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+
     - name: file copy (ansible tand0.ttl)
       copy:
         src: ../nextnextping/grammer/
@@ -48,5 +56,28 @@
     - name: file copy (local environment)
       copy:
         src: "{{wsl2homework}}tand0-ttl-{{version.version}}.1.tar.gz"
-        dest: ../nextnextping/dist/
+        dest: ../dist
 
+    - name: create zip file for windows
+      community.general.archive:
+        path: "../nextnextping/dist/nextnextping"
+        dest: "../dist/tand0-ttl-{{version.version}}.1.zip"
+        format: zip
+
+    - name: create python package
+      shell:
+        cmd: "python3 -m build"
+        chdir: ..
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+
+    - name: install package
+      shell:
+        cmd: "pip3 install -e . --break-system-packages"
+        chdir: ..
+      register: python3_build
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines

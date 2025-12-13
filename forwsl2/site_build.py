@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-import subprocess
 import shutil
 import re
 import yaml
 
-
-VERSION = 1.21
-
-INTERNAL = "nextnextping/dist/nextnextping/_internal/"
-ANSIBLE_README = "forwsl2/collections/ansible_collections/tand0/ttl/README.md"
-ANSIBLE_TARGET = "forwsl2/collections/ansible_collections/tand0/ttl/plugins/modules/ttl.py"
-SITE_IMPORT = "forwsl2/site_import.yml"
 
 RESULT_MD_TEXT = """
 <html>
@@ -89,43 +81,22 @@ RESULT_MD_TEXT_END = """
 </html>
 """
 
+INTERNAL = "../nextnextping/dist/nextnextping/_internal/"
+ANSIBLE_README = "collections/ansible_collections/tand0/ttl/README.md"
+ANSIBLE_TARGET = "collections/ansible_collections/tand0/ttl/plugins/modules/ttl.py"
+
 
 def main():
     """ main """
-    print("hello build version {str(VERSION)}")
-    installer()
-    sample_dir_copy("bin/", 'nextnextping/dist/nextnextping/')
-    file_copy("docs/syntax.md", 'forwsl2/collections/ansible_collections/tand0/ttl/docs/syntax.md')
-    file_copy("docs/command.md", 'forwsl2/collections/ansible_collections/tand0/ttl/docs/command.md')
-    my_markdown()
-    make_version()
+    print("hello build")
+    sample_dir_copy("../bin/", '../nextnextping/dist/nextnextping/')
+    # ansibleのcopyを使わないのは改行コードをCRCLにさせないため
+    file_copy("../docs/syntax.md", 'collections/ansible_collections/tand0/ttl/docs/syntax.md')
+    file_copy("../docs/command.md", 'collections/ansible_collections/tand0/ttl/docs/command.md')
+    my_markdown("../README.md")
+    my_markdown_docs("../docs")
     ansible_doc_to_html()
-    site_import()
-    shutil.make_archive(f'nextnextping/dist/nextnextping-{VERSION}.1', 'zip', 'nextnextping/dist/nextnextping')
-
-
-def make_version():
-    print(f"make version v={str(VERSION)}")
-    text = "# -*- coding: utf-8 -*-\n"
-    text = f"\nVERSION = {str(VERSION)}\n"
-    file_save("nextnextping/grammer/version.py", text)
-
-
-def installer():
-    """ invoke pyinstaller """
-    os.chdir("nextnextping")
-    #
-    command = "pyinstaller --noconsole --noconfirm nextnextping.py --hidden-import=."
-    command = command.split()
-    print(f"{command}")
-    result = subprocess.run(command, capture_output=True, text=True)
-    #
-    print("stdout:")
-    print(result.stdout)
-    print("stderr:")
-    print(result.stderr)
-    #
-    os.chdir("..")
+    site_import('../test/', "site_import.yml")
 
 
 def file_copy(src: str, dest: str):
@@ -142,34 +113,44 @@ def sample_dir_copy(base: str, dest: str):
         if 'sample' not in foldername:
             continue  # サンプルでないなら無視
         #
-        print("cp -r ", base + foldername, dest + foldername)
-        shutil.copytree(base + foldername, dest + foldername, dirs_exist_ok=True)
+        src = os.path.join(base, foldername)
+        dest = os.path.join(dest, foldername)
+        print("cp -r ", src, dest)
+        shutil.copytree(src, dest, dirs_exist_ok=True)
 
 
-def my_markdown():
+def my_markdown(src):
     """ Change markdown to html """
-    filename = "README.md"
-    filename_html = filename.replace(".md", ".html")
-    md_text = file_load(filename)
+    dest = src.replace(".md", ".html")
+    dest = os.path.join(INTERNAL, os.path.basename(dest))
+    md_text = file_load(src)
     md_text = md_text.replace("\"./docs/", "\"")
     md_text = md_text.replace("(./docs/", "(")
     md_text = md_text.replace(".md", ".html")
     html = markdown_to_html(md_text)
-    file_save(INTERNAL + filename_html, html)
-    #
-    base = "./docs/"
+    print("save ", src, "to", dest)
+    file_save(dest, html)
+
+
+def my_markdown_docs(base):
     for filename in os.listdir(base):
         if '.md' in filename:
             filename_html = filename.replace(".md", ".html")
-            md_text = file_load(base + filename)
-            html = markdown_to_html(md_text)
-            file_save(INTERNAL + filename_html, html)
+            src = os.path.join(base, filename)
+            md_text = file_load(src)
+            html_text = markdown_to_html(md_text)
+            dest = os.path.join(INTERNAL, filename_html)
+            print("save ", src, "to", dest)
+            file_save(dest, html_text)
         elif ".png" in filename:
-            print("cp -r ", base + filename, INTERNAL + filename)
-            shutil.copy2(base + filename, INTERNAL + filename)
+            src = os.path.join(base, filename)
+            dest = os.path.join(INTERNAL, filename)
+            print("cp ", src, dest)
+            shutil.copy2(src, dest)
 
 
 def file_load(filename: str) -> str:
+    print("load", filename)
     md_text = ''
     with open(filename, "r", encoding="utf-8") as f:
         md_text = f.read()
@@ -177,7 +158,7 @@ def file_load(filename: str) -> str:
 
 
 def file_save(filename: str, text: str):
-    print("save", filename)
+    print("save ", filename)
     with open(filename, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
 
@@ -235,6 +216,7 @@ def markdown_to_html(md_text: str) -> str:
                 continue
             break
         line = re.sub(r'`([^`]+)`', r"<code>\1</code>", line)
+        line = re.sub(r'\*\*([^\*]+)\*\*', r"<strong>\1</strong>", line)
         line = re.sub(r'\[([^\]]+)\]\(([^\)]+)\)', "<a href=\"\\2\">\\1</a>", line)
         result_md_text = result_md_text + "\n" + line
     while 0 < len(index_level):
@@ -269,7 +251,7 @@ def ansible_doc_to_html() -> str:
     ret = local_scope['RETURN']
     html = "\n\n# Ansible TTL macro like collection\n"
     html = html + '''## Overview
-- You can connect via SSH using a language called Terawaros Tekitou Language, which is similar to teraterm macro, and ping other servers as stepping stones.
+- You can connect via SSH using a language called TTL(Terawaros Tekitou Language), which is similar to teraterm macro, and ping other servers as stepping stones.
 
 ## MACRO for Terawaros Tekitou Lanugage
 
@@ -319,20 +301,15 @@ def dict_to_md(level, v) -> str:
     return html
 
 
-def site_import():
+def site_import(src: str, site_import: str):
     files = []
-    for file in os.listdir('test'):
+    for file in os.listdir(src):
         if '.ttl' not in file:
             continue
         if 'base.ttl' in file:
             continue
         files.append(file)
     text = ""
-    text = text + "- hosts: localhost\n"
-    text = text + "  become: False\n"
-    text = text + "  collections:\n"
-    text = text + "    - tand0.ttl\n"
-    text = text + "  tasks:\n"
     j = 0
     for file in files:
         for i in [0, 1, 2, 3]:
@@ -342,37 +319,38 @@ def site_import():
                 ok_flag = True
             else:
                 ok_flag = False
-            text = text + f"    - name: test-{j} {file}\n"
-            text = text + "      ttl:\n"
+            text = text + f"- name: test-{j} {file}\n"
+            text = text + "  ttl:\n"
             if i == 0 or i == 2:
-                text = text + "        filename: " + file + "\n"
+                text = text + "    filename: " + file + "\n"
             else:
-                text = text + "        cmd: |\n"
-                text = text + print_cmd("          ", file)
-            text = text + "        chdir: ../test\n"
-            text = text + "        ignore_result: False\n"
-            text = text + f"      check_mode: {2 <= i}\n"
-            text = text + "      register: ttl_output\n"
-            text = text + "      ignore_errors: " + str(not ok_flag) + "\n"
+                text = text + "    cmd: |\n"
+                text = text + print_cmd(src, "      ", file)
+            text = text + "    chdir: ../test\n"
+            text = text + "    ignore_result: False\n"
+            text = text + f"  check_mode: {2 <= i}\n"
+            text = text + "  register: ttl_output\n"
+            text = text + "  ignore_errors: " + str(not ok_flag) + "\n"
             if i < 2:
-                text = text + f"    - name: assert-failed-{j} {str(ok_flag)} {file}\n"
-                text = text + "      fail:\n"
-                text = text + "      when: (not ansible_check_mode) and (ttl_output.failed == " + str(ok_flag) + ")\n"
+                text = text + f"- name: assert-failed-{j} {str(ok_flag)} {file}\n"
+                text = text + "  fail:\n"
+                text = text + "  when: (not ansible_check_mode) and (ttl_output.failed == " + str(ok_flag) + ")\n"
             else:
                 if ok_flag:
-                    text = text + f"    - name: assert-changed-{j} {str(ok_flag)} {file}\n"
-                    text = text + "      fail:\n"
-                    text = text + "      when: ttl_output.changed == True\n"
+                    text = text + f"- name: assert-changed-{j} {str(ok_flag)} {file}\n"
+                    text = text + "  fail:\n"
+                    text = text + "  when: ttl_output.changed == True\n"
             if ok_flag:
-                text = text + f"    - name: debug-stdout {file}\n"
-                text = text + "      debug:\n"
-                text = text + "         var: ttl_output.stdout_lines\n\n"
+                text = text + f"- name: debug-stdout {file}\n"
+                text = text + "  debug:\n"
+                text = text + "     var: ttl_output.stdout_lines\n\n"
     # print(f"{text}", end="")
-    file_save(SITE_IMPORT, text)
+    file_save(site_import, text)
 
 
-def print_cmd(base: str, file: str) -> str:
-    with open("test/" + file, "r", encoding="utf-8") as f:
+def print_cmd(src: str, base: str, file: str) -> str:
+    src = os.path.join(src, file)
+    with open(src, "r", encoding="utf-8") as f:
         md_text = f.read()
     buffer = ''
     for text in md_text.splitlines():

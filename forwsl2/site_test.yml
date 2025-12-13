@@ -82,3 +82,7 @@
     - name: "test: delta"
       debug:
         msg: "{{ttl_output.delta}}"
+
+    - name: include tasks
+      include_tasks: site_import.yml
+

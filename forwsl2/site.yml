@@ -2,6 +2,3 @@
 - import_playbook: site_build.yml
 
 - import_playbook: site_test.yml
-
-- import_playbook: site_import.yml
-

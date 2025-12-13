@@ -10,9 +10,11 @@ import re
 import random
 import pathlib
 from paramiko import SFTPServerInterface, SFTPServer, SFTPAttributes, SFTPHandle, SFTP_OK
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../nextnextping")))
-from ttlmacro import ttlmacro
-
+try:
+    from nextnextping.pyttl import pyttl
+except ModuleNotFoundError:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+    from nextnextping.pyttl import pyttl
 
 PING = """PING localhost (127.0.0.1) 56(84) bytes of data.
 64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.070 ms
@@ -833,7 +835,7 @@ class TTLLoader():
                 #
                 dummy_argv = ["python", file, 'param1', 'param2', 'param3']
                 try:
-                    ttlPaserWolker = ttlmacro(dummy_argv)
+                    ttlPaserWolker = pyttl(dummy_argv)
                 except Exception as e:
                     if not ok_flag:
                         continue  # OKフラグがFalseなら正常

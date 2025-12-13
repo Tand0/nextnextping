@@ -1,49 +1,62 @@
 # NextNextPing
 
-このソフトウェアはwindowsで多数の装置にpingを打つためのExPingのようなツールです。
+- This software is a tool similar to ExPing for pinging multiple devices in Windows.
+- You can connect via SSH using a language called TTL(Terawaros Tekitou Language), which is similar to teraterm macro, and ping other servers as stepping stones.
 
-- [For Ansible](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
-- [For Github](https://github.com/Tand0/nextnextping)
 
-## Introduction
+# How to run a macro
 
-- EXPing は実に素晴らしい。周期的にpingを発行してネットワーク上で止まったところをNG表示してくれるのだ。
-- しかしながら問題がある。
-- pingしか対応していないのだ。
-- ネットワークを確認したいのであれば、ping以外にもtracerouteをしてほしいし、なんならsshで接続してサーバを踏み台としたpingを打ちたいのだ。
-- そこで用意したのは新しい GUIの pingを打つツールだ。
-- ついでにtracerouteを打てるようにした。
-- そして踏み台サーバを用いたpingも用意しようとした。
-- しかし、ここでpingをするには中継のコマンドプロンプトが分からないという問題があった。
-- そう、teraterm マクロのような機能が簡単に作れないのだ。
-- ならば作ればよいのだ。
-- そこで、pingを打つために必要な機能だけ teraterm マクロの機能から持ってきたのがこのソフトウェアになります。
+## For Linux or Python 
+### (1) install
 
-## Overview
-- pythonで作ったので多分Linuxでも動きます。
-- pingを打ってその結果でOKまたはNGが分かります。
-- teraterm macro に似せた Terawaros Tekitou Language (テラワロスてきとうランゲージ、通称ttl)と呼ばれる言語で SSH接続し、他のサーバを踏み台としてpingを打てます。
+```
+$ pip3 install nextnextping
+```
 
-## Screen image
+### (2) Invoke pyttl
+
+- You can connect via SSH using a language called TTL(Terawaros Tekitou Language), which is similar to teraterm macro, and ping other servers as stepping stones.
+
+```shell
+$ pyttl TTL_FILENAME
+
+Example:
+$ pyttl ./test/0000_ok_test.ttl
+```
+
+### (3) Invoke nextnextping
+
+```shell
+$ nextnextping
+```
+
+- This software is a tool similar to ExPing for pinging multiple devices in Windows.
+
+<img src="./docs/screen011.png" width="40%">
+
+
+## For Windows
+
+### (1) Download
+
+- [nextnextping/releases](https://github.com/Tand0/nextnextping/releases)
+
+### (2) Screen image
 
 - [Screen image](./docs/screen.md)
 
-# MACRO for Terawaros Tekitou Lanugage
+## For Linux and ansible
 
+- [For Ansible](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
 
-Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムです。マクロ言語 "Terawaros Tekitou Language (TTL)" によって、NextNextPing を制御し、オートダイアル、オートログインなどの機能を実現することができます。
+## Downlad Sourcecode
 
-- 使い方
-     - [マクロの実行方法](./docs/howtorun.md)
+- [For Github](https://github.com/Tand0/nextnextping)
+
+# For TTL macro
+
 - [The MACRO Language Terawaros Tekitou Language (TTL)](./docs/syntax.md)　
 - [TTL command reference](./docs/command.md)
-
-# Ping TTL macro creation support tool
-
-- ping を打つための TTLマクロを作成するのは面倒なので、指定をするとサンプルが出てきてそのまま使えるようにしました。
-
-- ツールの使い方
-    - [Ping TTL macro creation support tool](./docs/tool.md)
 
 
 # 基本的な使い方
@@ -89,28 +102,43 @@ Terawaros Tekitou Lanugage は NextNextPing 用マクロ実行プログラムで
 # 開発者に向けた README
 
 - 動作確認方法
-  - 以下、カレントフォルダを `.` とする
-  - 必要なパッケージが入ってなかったら入れる
-  - 別のPCにインストールしたときはフォルダ名等は見直す
-  - `python build.py` の中にあるバージョン情報を変更する 
-  - `python build.py` を実行する
-  - `cd .\bin` に移動する
-        - `python ..\nextnextping\nextnextping` を実行して動作に問題ないことを確認する
-  - `cd .` に戻る
-  - `pytest -s` を実行してすべての test にパスする
-        - 内部で Mock の ssh や scp サーバを起動します
-        - Layer4 port 2200 を占有します。必要あれば適当に変えてください
+- 以下、カレントフォルダを `.` とする
+  - 必要なパッケージが入ってなかったら入れる ※最初のみ
+  - 別のPCにインストールしたときはフォルダ名等は見直す ※最初のみ
+  - `.pypirc` を持ってきて置く。※ Python packageを改版する場合
+  - `python mybuild.py` の中にある `VERSION=` 情報を変更する。最後が0になるの数値は使わないこと
+  - `python mybuild.py` を実行する。※ pyinstaller が動きます
+  - `pytest -s` を実行する
+      - すべての test にパスすることを確認する
+      - 内部で Mock の ssh や scp サーバを起動します
+      - Layer4 port 2200 を占有します
   - `wsl` を起動する
-        - `wsl` の中で `pytest -s` を実行してすべての test にパスする
-        - `wsl` の中で `python3 test/test_nextnextping.py` を起動しっぱなにする
-        - `wsl` の中で実行しないと後続の `site.yml` が正常動作しません
-        - Mock の ssh や scp サーバを起動します
-        - Layer4 port 2200 を占有します。必要あれば適当に変えてください
+      - `wsl` の中で `pytest -s` を実行する
+      - すべての test にパスすることを確認する
+      - `wsl` の中で `python3 test/test_nextnextping.py` を起動しっぱなにする
+      - `wsl` の中で実行しないと後続の `site.yml` が正常動作しません
+      - Mock の ssh や scp サーバを起動します
+      - Layer4 port 2200 を占有します
   - もう一枚コマンドプロンプトを起動して `wsl` を起動する
-        - `cd .\forwsl2` に移動する
-        - `wsl` の中で `ansible-palybook site.yml` を実行してすべての test にパスする
-        - `wsl` を `exit` で抜ける
-  - `.\nextnextping\dist\` 配下に公開に必要な zip と tar.gz が出来上がる
+      - `cd ./forwsl2` に移動する
+      - `wsl` の中で `ansible-palybook site.yml` を実行する
+      - すべての test にパスすることを確認する
+      - `cd ../bin` に移動する
+      - `nextnextping` を実行して動作に問題ないことを確認する
+        - wsl の tkinterで文字化けするのは font が入ってないせい
+        - `sudo apt install fonts-noto-cjk` で font を入れること
+      - `pyttl ./test/0000_ok_test.ttl` を実行して動作に問題ないことを確認する
+      - 2つのコマンドプロンプトを `wsl` を `exit` で抜ける
+  - `./dest` 配下に公開に必要なファイル群ができあがる
+  - githubに登録する
+    - `git add .`
+    - `git commit . -m "DOCUMENT"`
+    - `git push`
+  - ansible-galaxy に登録する
+    - [ansible-galaxy](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
+  - `wsl` を起動する
+      - `cd .\forwsl2` に移動する
+      - `wsl` の中で `ansible-palybook site_pypi.yml` を実行して PyPi にアップロードする 
   - エラーが出た時は、指示に従って見直す
     - pyinstall, tkinter, pytest など必要なパッケージが入ってないとエラーになります
     - フォルダ名は環境に合わせて修正が必要です
