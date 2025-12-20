@@ -157,3 +157,21 @@ Ando (@ando)
 - **returned**: always
 - **sample**: 
     - **result**: 1
+
+## start
+- **description**: The command execution start time.
+- **returned**: always
+- **type**: str
+- **sample**: 2016-02-25 09:18:26.429568
+
+## end
+- **description**: The command execution end time.
+- **returned**: always
+- **type**: str
+- **sample**: 2016-02-25 09:18:26.755339
+
+## delta
+- **description**: The command execution delta time.
+- **returned**: always
+- **type**: str
+- **sample**: 0:00:00.325771

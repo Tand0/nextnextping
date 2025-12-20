@@ -151,6 +151,22 @@ values:
   type: dict
   returned: always
   sample: {"result": 1}
+
+start:
+    description: The command execution start time.
+    returned: always
+    type: str
+    sample: '2016-02-25 09:18:26.429568'
+end:
+    description: The command execution end time.
+    returned: always
+    type: str
+    sample: '2016-02-25 09:18:26.755339'
+delta:
+    description: The command execution delta time.
+    returned: always
+    type: str
+    sample: '0:00:00.325771'
 '''
 
 import datetime
@@ -186,55 +202,53 @@ def main():
     #
     current_directory = os.getcwd()
     chdir = module.params['chdir']
-    checkmode = module.check_mode
-    changed = not checkmode
     ignore_result = module.params['ignore_result']
     filename = module.params['filename']
     cmd = module.params['cmd']
+    creates = module.params['creates']
+    removes = module.params['removes']
+    checkmode = module.check_mode
+    changed = not checkmode
+    start_time = datetime.datetime.now()
     result = {
-        'stdout': '',
         'filename': filename,
         'cmd': cmd,
+        'checkmode': checkmode,
+        'start': str(start_time),
+        'stdout': "",
         'stdout_lines': [],
         'ignore_result': ignore_result,
         'value': {}}
-    creates = module.params['creates']
-    removes = module.params['removes']
     #
     #
-    if filename is None and cmd is None:
-        module.fail_json(msg='Either the cmd or filename parameter must be given.', **result)
-    #
-    if creates:
-        if os.path.exists(creates):
-            module.exit_json(
-                cmd=cmd,
-                stdout="skipped, since %s exists" % creates,
-                changed=False,
-                rc=0
-            )
-
-    if removes:
-        if not os.path.exists(removes):
-            module.exit_json(
-                cmd=cmd,
-                stdout="skipped, since %s does not exist" % removes,
-                changed=False,
-                rc=0
-            )
-    #
-    result['start'] = datetime.datetime.now()
-    #
-    param_list = []
-    if filename is None:
-        param_list.append('none.ttl')
-    else:
-        param_list.append(filename)
-    for param_list_list in module.params['param']:
-        param_list.append(param_list_list.strip())
+    myTtlPaserWolker = None
     try:
+        if filename is None and cmd is None:
+            module.fail_json(msg='Either the cmd or filename parameter must be given.', **result)
+        #
+        param_list = []
+        if filename is None:
+            param_list.append('none.ttl')
+        else:
+            param_list.append(filename)
+        for param_list_list in module.params['param']:
+            param_list.append(param_list_list.strip())
+
         if chdir is not None:
             os.chdir(chdir)
+        #
+        if creates:
+            if os.path.exists(creates):
+                result['stdout'] = f"skipped, since {creates} does exists"
+                module.exit_json(skipped=True, **result)
+                return
+        if removes:
+            if not os.path.exists(removes):
+                result['stdout'] = f"skipped, since {removes} does not exists"
+                module.exit_json(skipped=True, **result)
+                # module.exit_json(changed=False, skipped=True, rc=0, **result)
+                return
+        #
         myTtlPaserWolker = MyTtlPaserWolker(module)
         if cmd is not None:
             data = cmd + "\n"
@@ -262,16 +276,15 @@ def main():
     finally:
         os.chdir(current_directory)
         if myTtlPaserWolker is not None:
-            result['end'] = datetime.datetime.now()
-            result['delta'] = str(result['end'] - result['start'])
-            result['start'] = str(result['start'])
-            result['end'] = str(result['end'])
             result['stdout'] = myTtlPaserWolker.my_stdout
-            result['stdout_lines'] = result['stdout'].splitlines()
             result['value'] = replace_param(myTtlPaserWolker.value_list)
             myTtlPaserWolker.stop()
+        end_time = datetime.datetime.now()
+        result['delta'] = str(end_time - start_time)
+        result['end'] = str(end_time)
+        result['stdout_lines'] = result['stdout'].splitlines()
     #
-    module.exit_json(changed=changed, **result)
+    module.exit_json(changed=changed, skipped=False, **result)
 
 
 def replace_param(data):

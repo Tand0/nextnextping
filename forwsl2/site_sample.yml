@@ -1,0 +1,18 @@
+- hosts: localhost
+  become: False
+  collections:
+    - tand0.ttl
+  tasks:
+    - name: "test: connect SSH2"
+      ttl:
+        cmd: |
+          connect 'localhost:2200 /ssh /user=username /passwd=password'
+          pause 1
+          flushrecv
+          sendln 'ping localhost'
+          wait '$'
+      register: ttl_output
+    - name: "test: connect /cmd"
+      debug:
+        var: ttl_output.stdout_lines
+

@@ -3,7 +3,7 @@
     "results": [
         {
             "message": "The test `ansible-test sanity --test compile --python 3.12` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/compile.html)] failed with 1 error:", 
-            "output": "plugins/module_utils/TtlParserParser.py:11995:30: SyntaxError: __slots__ = [\"parser\"}"
+            "output": "plugins/modules/ttl.py:236:52: IndentationError: myTtlPaserWolker = MyTtlPaserWolker(module)"
         }
     ], 
     "verified": false

@@ -1,4 +1,6 @@
 
 - import_playbook: site_build.yml
 
+- import_playbook: site_sample.yml
+
 - import_playbook: site_test.yml

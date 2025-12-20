@@ -3,7 +3,7 @@
     "results": [
         {
             "message": "The test `ansible-test sanity --test pylint` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/pylint.html)] failed with 1 error:", 
-            "output": "plugins/modules/ttl.py:150:4: unused-import: Unused import antlr4"
+            "output": "plugins/modules/ttl.py:236:52: syntax-error: Parsing failed: 'unindent does not match any outer indentation level (ttl, line 236)'"
         }
     ], 
     "verified": false

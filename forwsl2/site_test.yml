@@ -2,9 +2,6 @@
   become: False
   collections:
     - tand0.ttl
-  vars:
-    pythoninterpreter: /mnt/d/gitwork/ansibletest/ansible/venv/bin/python3.12
-    wsl2homework: /home/t-ando/work/collections/ansible_collections/tand0/ttl/
   tasks:
     - name: assert OK
       ttl:
@@ -82,6 +79,91 @@
     - name: "test: delta"
       debug:
         msg: "{{ttl_output.delta}}"
+
+    - name: ttl creates test
+      ttl:
+        filename: 0000_ok_test.ttl
+        creates: 0000_ok_test.ttl
+        chdir: ../test
+        ignore_result: False
+      register: ttl_output
+    - name: "debug creates test"
+      debug:
+        msg: "{{ttl_output}}"
+    - name: file check
+      fail:
+      when: (not ansible_check_mode) and (ttl_output.skipped == False)
+  
+    - name: ttl creates test
+      ttl:
+        filename: 0000_ok_test.ttl
+        creates: xxxx.ttl
+        chdir: ../test
+        ignore_result: False
+      register: ttl_output
+    - name: "debug creates test"
+      debug:
+        msg: "{{ttl_output}}"
+    - name: file check
+      fail:
+      when: (not ansible_check_mode) and (ttl_output.skipped == True)
+
+
+    - name: ttl creates test
+      ttl:
+        filename: 0000_ok_test.ttl
+        creates: 0000_ok_test.ttl
+        chdir: ../test
+        ignore_result: False
+      register: ttl_output
+    - name: "debug creates test"
+      debug:
+        msg: "{{ttl_output}}"
+    - name: file check
+      fail:
+      when: (not ansible_check_mode) and (ttl_output.skipped == False)
+  
+    - name: ttl creates test
+      ttl:
+        filename: 0000_ok_test.ttl
+        creates: xxxx.ttl
+        chdir: ../test
+        ignore_result: False
+      register: ttl_output
+    - name: "debug creates test"
+      debug:
+        msg: "{{ttl_output}}"
+    - name: file check
+      fail:
+      when: (not ansible_check_mode) and (ttl_output.skipped == True)
+
+    - name: ttl removes test
+      ttl:
+        filename: 0000_ok_test.ttl
+        removes: 0000_ok_test.ttl
+        chdir: ../test
+        ignore_result: False
+      register: ttl_output
+    - name: "debug removes test"
+      debug:
+        msg: "{{ttl_output}}"
+    - name: file check
+      fail:
+      when: (not ansible_check_mode) and (ttl_output.skipped == True)
+  
+    - name: ttl removes test
+      ttl:
+        filename: 0000_ok_test.ttl
+        removes: xxxx.ttl
+        chdir: ../test
+        ignore_result: False
+      register: ttl_output
+    - name: "debug removes test"
+      debug:
+        msg: "{{ttl_output}}"
+    - name: file check
+      fail:
+      when: (not ansible_check_mode) and (ttl_output.skipped == False)
 
     - name: include tasks
       include_tasks: site_import.yml
