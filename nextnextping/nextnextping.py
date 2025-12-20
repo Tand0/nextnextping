@@ -1746,6 +1746,9 @@ class NextNextPing():
         for replace_target in [
                 '.',  # ipv4
                 ':',  # ipv6
+                '[',  # ipv6
+                ']',  # ipv6
+                '%',  # ipv6
                 '/',  # folder
                 '@']:  # account
             ans = ans.replace(replace_target, '-')

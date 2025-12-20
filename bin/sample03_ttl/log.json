@@ -1,49 +1,49 @@
 {
     "ttl": {
         "0040_ok_qx_undo_shutdown.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh xxx@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch] interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] undo shutdown\r\n[Switch-GigabitEthernet] quit\r\n[Switch] quit\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch]interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] undo shutdown\r\n[Switch-GigabitEthernet] quit\r\n[Switch]quit\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ",
             "result": "OK",
-            "date": "2025/11/22 16:12:10"
+            "date": "2025/12/20 12:56:36"
         },
         "0041_ok_qx_shutdown.ttl": {
-            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ssh xxx@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch] interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] shutdown\r\n[Switch-GigabitEthernet] quit\r\n[Switch] quit\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@qx\r\nAre you sure you want to continue connecting (yes/no/[fingerprint])?yes\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch]interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] shutdown\r\n[Switch-GigabitEthernet] quit\r\n[Switch]quit\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ",
             "result": "OK",
-            "date": "2025/11/22 16:12:23"
+            "date": "2025/12/20 12:56:40"
         },
         "0042_ok_qx_polcing.ttl": {
-            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ssh xxx@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch] traffic classifier classifier-nameA\r\n[Switch-classifier] if-match any\r\n[Switch-classifier] quit\r\n[Switch] traffic behavior behavior-nameA\r\n[Switch-behavior] car cir 100\r\n[Switch-behavior] quit\r\n[Switch] qos policy policy-nameA\r\n[Switch-qospolicy] classifier classifier-nameA behavior behavior-nameA\r\n[Switch-qospolicy] quit\r\n[Switch] interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] traffic-policy policy-nameA inbound\r\n[Switch-GigabitEthernet] traffic-policy policy-nameA outbound\r\n[Switch-GigabitEthernet] quit\r\n[Switch] ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch]traffic classifier classifier-nameA\r\n[Switch-classifier] if-match any\r\n[Switch-classifier] quit\r\n[Switch]traffic behavior behavior-nameA\r\n[Switch-behavior] car cir 100\r\n[Switch-behavior] quit\r\n[Switch]qos policy policy-nameA\r\n[Switch-qospolicy] classifier classifier-nameA behavior behavior-nameA\r\n[Switch-qospolicy] quit\r\n[Switch]interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] traffic-policy policy-nameA inbound\r\n[Switch-GigabitEthernet] traffic-policy policy-nameA outbound\r\n[Switch-GigabitEthernet] quit\r\n[Switch]",
             "result": "OK",
-            "date": "2025/11/22 16:12:42"
+            "date": "2025/12/20 12:56:46"
         },
         "0043_ok_qx_undo_polcing.ttl": {
-            "stdout": "[Switch] clear\r\n[Switch] ssh xxx@qx\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch] interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] undo traffic-policy policy-nameA inbound\r\n[Switch-GigabitEthernet] undo traffic-policy policy-nameA outbound\r\n[Switch-GigabitEthernet] quit\r\n[Switch] undo qos policy policy-nameA\r\n[Switch] undo traffic classifier classifier-nameA\r\n[Switch] undo traffic behavior behavior-nameA\r\n[Switch] quit\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@qx\r\nAre you sure you want to continue connecting (yes/no/[fingerprint])?yes\r\nPassword:\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> screen-length disable\r\n<Switch> terminal pager offscreen-length disable\r\n<Switch> set terminal pager disable\r\n<Switch> system-view\r\n[Switch]interface gigabitethernet 1/0/1\r\n[Switch-GigabitEthernet] undo traffic-policy policy-nameA inbound\r\n[Switch-GigabitEthernet] undo traffic-policy policy-nameA outbound\r\n[Switch-GigabitEthernet] quit\r\n[Switch]undo qos policy policy-nameA\r\n[Switch]undo traffic classifier classifier-nameA\r\n[Switch]undo traffic behavior behavior-nameA\r\n[Switch]quit\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ",
             "result": "OK",
-            "date": "2025/11/22 16:12:57"
+            "date": "2025/12/20 12:56:50"
         },
         "0044_ok_cisco_no_shutdown.ttl": {
-            "stdout": "<Switch> clear\r\n<Switch> enable\r\n% Uncrecognized Command\r\n<Switch> ssh xxx@c2\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# no shutdown\r\nRouter(config-if)# exit\r\nRouter(config)# exit\r\nRouter# ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@c2\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# no shutdown\r\nRouter(config-if)# exit\r\nRouter(config)# exit\r\nRouter# ",
             "result": "OK",
-            "date": "2025/11/22 16:13:10"
+            "date": "2025/12/20 12:56:54"
         },
         "0045_ok_cisco_shutdown.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh xxx@c2\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# shutdown\r\nRouter(config-if)# exit\r\nRouter(config)# exit\r\nRouter# ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@c2\r\nAre you sure you want to continue connecting (yes/no/[fingerprint])?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# shutdown\r\nRouter(config-if)# exit\r\nRouter(config)# exit\r\nRouter# ",
             "result": "OK",
-            "date": "2025/11/22 16:13:21"
+            "date": "2025/12/20 12:56:57"
         },
         "0046_ok_cisco_policing.ttl": {
-            "stdout": "Router# clear\r\nRouter# ssh xxx@c2\r\nAre you sure you want to continue connecting (yes/no)?yes\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# policy-map policy-nameA\r\nRouter(config-pmap)# class class-default\r\nRouter(config-pmap-c)# police rate 10000000 pps\r\nRouter(config-pmap-c)# exit\r\nRouter(config-pmap)# exit\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# service-policy output policy-nameA\r\nRouter(config-if)# service-policy input policy-nameA\r\nRouter(config-if)# exit\r\nRouter(config)# ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@c2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# policy-map policy-nameA\r\nRouter(config-pmap)# class class-default\r\nRouter(config-pmap-c)# police rate 10000000 pps\r\nRouter(config-pmap-c)# exit\r\nRouter(config-pmap)# exit\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# service-policy output policy-nameA\r\nRouter(config-if)# service-policy input policy-nameA\r\nRouter(config-if)# exit\r\nRouter(config)# ",
             "result": "OK",
-            "date": "2025/11/22 16:13:36"
+            "date": "2025/12/20 12:57:01"
         },
         "0047_ok_cisco_no_policing.ttl": {
-            "stdout": "Router(config)# clear\r\nRouter(config)# ssh xxx@c2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# no service-policy output policy-nameA\r\nRouter(config-if)# no service-policy input policy-nameA\r\nRouter(config-if)# exit\r\nRouter(config)# no policy-map policy-nameA\r\nRouter(config)# exit\r\nRouter# ",
+            "stdout": "root@localhost:~$ clear\r\nroot@localhost:~$ ssh xxx@c2\r\nPassword:\r\nRouter# terminal length 0\r\nRouter# configure terminal\r\nRouter(config)# interface GigabitEthernet0/0\r\nRouter(config-if)# no service-policy output policy-nameA\r\nRouter(config-if)# no service-policy input policy-nameA\r\nRouter(config-if)# exit\r\nRouter(config)# no policy-map policy-nameA\r\nRouter(config)# exit\r\nRouter# ",
             "result": "OK",
-            "date": "2025/11/22 16:13:49"
+            "date": "2025/12/20 12:57:05"
         },
         "0048_ok_scp.ttl": {
             "stdout": "",
             "result": "OK",
-            "date": "2025/11/22 16:13:52"
+            "date": "2025/12/20 12:57:06"
         }
     }
 }

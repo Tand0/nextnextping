@@ -4,7 +4,7 @@
 - You can connect via SSH using a language called TTL(Terawaros Tekitou Language), which is similar to teraterm macro, and ping other servers as stepping stones.
 
 
-# How to run a macro
+# How to run
 
 ## For Linux or Python 
 ### (1) install
@@ -105,7 +105,7 @@ $ nextnextping
 - 以下、カレントフォルダを `.` とする
   - 必要なパッケージが入ってなかったら入れる ※最初のみ
   - 別のPCにインストールしたときはフォルダ名等は見直す ※最初のみ
-  - `.pypirc` を持ってきて置く。※ Python packageを改版する場合
+  - `.pypirc` を持ってきて `.` に置く。※ Python packageを改版する場合
   - `python mybuild.py` の中にある `VERSION=` 情報を変更する。最後が0になるの数値は使わないこと
   - `python mybuild.py` を実行する。※ pyinstaller が動きます
   - `pytest -s` を実行する
@@ -116,21 +116,20 @@ $ nextnextping
       - `wsl` の中で `pytest -s` を実行する
       - すべての test にパスすることを確認する
       - `wsl` の中で `python3 test/test_nextnextping.py` を起動しっぱなにする
-      - `wsl` の中で実行しないと後続の `site.yml` が正常動作しません
-      - Mock の ssh や scp サーバを起動します
-      - Layer4 port 2200 を占有します
+          - `wsl` の中で実行しないと後続の `site.yml` が正常動作しません
+          - Mock の ssh や scp サーバを起動します
+          - Layer4 port 2200 を占有します
   - もう一枚コマンドプロンプトを起動して `wsl` を起動する
-      - `cd ./forwsl2` に移動する
-      - `wsl` の中で `ansible-palybook site.yml` を実行する
-      - すべての test にパスすることを確認する
       - `cd ../bin` に移動する
       - `nextnextping` を実行して動作に問題ないことを確認する
-        - wsl の tkinterで文字化けするのは font が入ってないせい
-        - `sudo apt install fonts-noto-cjk` で font を入れること
-      - `pyttl ./test/0000_ok_test.ttl` を実行して動作に問題ないことを確認する
-      - 2つのコマンドプロンプトを `wsl` を `exit` で抜ける
+          - wsl の tkinterで文字化けするのは font が入ってないせい
+          - `sudo apt install fonts-noto-cjk` で font を入れること
+      - `cd ./forwsl2` に移動する
+      - `wsl` の中で `ansible-playbook site.yml` を実行する
+      - すべての test にパスすることを確認する
       - `wsl` の中で `ansible-playbook site_pypi.yml` を実行して PyPi にアップロードする 
       - `./dest` 配下に公開に必要なファイル群ができあがる
+      - 2つのコマンドプロンプトを `wsl` を `exit` で抜ける
   - ansible-galaxy に登録する
     - [ansible-galaxy](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
   - githubに登録する

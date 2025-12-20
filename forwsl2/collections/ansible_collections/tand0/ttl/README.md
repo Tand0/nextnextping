@@ -125,6 +125,13 @@ Ando (@ando)
 - **returned**: always
 - **sample**: return = 1
 
+## ignore_result
+- **description**: 
+    - If result is 0, it fails.
+- **type**: bool
+- **returned**: always
+- **sample**: True
+
 ## filename
 - **description**: 
     - TTL macro file name

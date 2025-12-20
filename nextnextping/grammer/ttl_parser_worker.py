@@ -310,6 +310,14 @@ class TtlExitFlagException(Exception):
         super().__init__(message)
 
 
+class TtlResultException(Exception):
+    """exit 用の例外"""
+
+    def __init__(self, message):
+        """コンストラクタ"""
+        super().__init__(message)
+
+
 class TtlParseTreeVisitor(ParseTreeVisitor):
     def visit(self, tree):
         return tree.accept(self)
@@ -441,19 +449,24 @@ class TtlPaserWolker(ABC):
             self.setValue("param" + str(i + 1), param)
             self.setValue("param[" + str(i + 1) + "]", param)
 
-    def execute(self, filename: str, param_list: list, data=None):
+    def execute(self, filename: str, param_list: list, data=None, ignore_result=False):
         try:
             self.set_default_value(param_list)
             #
             # 一発目のinclude
             self.include(filename, data)
             #
+            if self.exitcode is not None:
+                self.setValue("result", self.exitcode)
+            if not ignore_result:
+                result = int(self.getValue('result'))
+                error_data = self.getValue('error')
+                if result == 0:
+                    raise TtlResultException(f"Exceptiont (result==0) f={filename} e=/{error_data}/")
+            #
         finally:
             # なにがあろうとセッションは必ず殺す
             self.closeClient()
-            #
-            if self.exitcode is not None:
-                self.setValue("result", self.exitcode)
 
     def include_only(self, filename: str, data=None):
         """読み込みここから"""

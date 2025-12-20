@@ -3,9 +3,9 @@
  * alias antlr4='java -jar /usr/local/lib/antlr-4.13.2-complete.jar'
  * alias grun='java org.antlr.v4.runtime.misc.TestRig'
  * cd /mnt/d/gitwork/nextnextping/nextnextping/grammer/
- * antlr4 -visitor -Dlanguage=Python3 TtlParser.g4
+ * antlr4 -visitor -Dlanguage=Python3 ttl_parser.g4
  */
-grammar TtlParser;
+grammar ttl_parser;
 
 
 NUMBER: [-+]? [0-9]+;

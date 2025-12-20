@@ -34,7 +34,7 @@
     - fail:
       when: (ttl_output.failed == False) and (not ansible_check_mode)
 
-    - name: result NG but ignore_result is True
+    - name: result NG but ignore_result is default(True)
       ttl:
         cmd: |
           result = 0
@@ -70,7 +70,7 @@
           wait 'ls'
           wait '$'
       register: ttl_output
-    - name: debug 0000_ok_test.ttl
+    - name: "test: connect /cmd"
       debug:
         var: ttl_output.stdout_lines
     - name: "test: start_date"

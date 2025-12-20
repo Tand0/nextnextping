@@ -120,6 +120,13 @@ cmd:
   returned: always
   sample: return = 1
 
+ignore_result:
+  description:
+    -  If result is 0, it fails.
+  type: bool
+  returned: always
+  sample: True
+
 filename:
   description:
     - TTL macro file name
@@ -189,6 +196,7 @@ def main():
         'filename': filename,
         'cmd': cmd,
         'stdout_lines': [],
+        'ignore_result': ignore_result,
         'value': {}}
     creates = module.params['creates']
     removes = module.params['removes']
@@ -232,17 +240,17 @@ def main():
             data = cmd + "\n"
             if not checkmode:
                 # this is not check mode
-                myTtlPaserWolker.execute('cmd', param_list, data=data)
+                myTtlPaserWolker.execute('none.ttl', param_list, data=data, ignore_result=ignore_result)
             else:
                 # this is check mode
-                myTtlPaserWolker.include_only('cmd', data=data)
-        if module.params['filename'] is not None:
+                myTtlPaserWolker.include_only('none.ttl', data=data)
+        if filename is not None:
             if not checkmode:
                 # this is not check mode
-                myTtlPaserWolker.execute(module.params['filename'], param_list)
+                myTtlPaserWolker.execute(filename, param_list, ignore_result=ignore_result)
             else:
                 # this is check mode
-                myTtlPaserWolker.include_only(module.params['filename'])
+                myTtlPaserWolker.include_only(filename)
         if not ignore_result and not checkmode:
             ignore_result_value = myTtlPaserWolker.getValue('result', error_stop=False)
             if result is None:
