@@ -14,6 +14,9 @@ import base64
 import platform
 import getpass
 from abc import ABC, abstractmethod
+import serial
+import typing
+import traceback
 
 IMP_ERR = None
 try:
@@ -36,7 +39,7 @@ except ImportError as ex:
 
 
 class MyFindfirst:
-    """find first handle class """
+    '''find first handle class '''
 
     def __init__(self, target):
         target = target.replace(".", "\\.").replace("*", ".*")
@@ -49,24 +52,24 @@ class MyFindfirst:
                 self.my_list.append(str(f))
 
     def close(self):
-        """ nothing """
+        ''' nothing '''
         pass
 
     def write(self, text):
-        """これは呼ばれないので何もしない"""
+        '''これは呼ばれないので何もしない'''
         pass
 
     def read(self, length: int):
-        """これは呼ばれないので何もしない"""
+        '''これは呼ばれないので何もしない'''
         pass
 
     def readline(self) -> str:
-        ans = b""
+        ans = b''
         if 0 < len(self.my_list):
             ans = self.my_list[0]
             self.my_list = self.my_list[1:]
             # print(f"MyFindfirst {str(self.my_list)}")
-            ans = ans.encode("utf-8")
+            ans = ans.encode('utf-8')
         else:
             raise OSError("readline exception")
         return ans
@@ -90,7 +93,7 @@ class MyAbstractShell(ABC):
         pass
 
     @abstractmethod
-    def recv(self, length: int) -> str:
+    def recv(self, length: int):
         pass
 
     @abstractmethod
@@ -101,13 +104,17 @@ class MyAbstractShell(ABC):
     def isActive(self) -> int:
         pass
 
+    @abstractmethod
+    def get_echo(self) -> bool:
+        return True
+
 
 class MyShell(MyAbstractShell):
     def __init__(self, command=None):
         if command is None:
             command = ['cmd']
         # print("MyShell __init__ start")
-        self.data = ""
+        self.data = ''
         self.lock = threading.Lock()
         self.active = 1
         self.process = subprocess.Popen(
@@ -118,16 +125,21 @@ class MyShell(MyAbstractShell):
             text=True,
             shell=True,
         )
-        thread = MyThread(self, "stdout", self.process.stdout)
+        thread = MyShellThread(self, "stdout", self.process.stdout)
         thread.start()
         # print("MyShell __init__ end")
 
+    def get_lock(self) -> threading.Lock:
+        return self.lock
+
+    @typing.override
     def send_ready(self) -> bool:
         # print("send_ready")
         if self.active == 0:
             return 0
         return self.process.stdin.writable()
 
+    @typing.override
     def send(self, message):
         # print(f"send /{message.strip()}/")
         if self.active == 0:
@@ -135,29 +147,31 @@ class MyShell(MyAbstractShell):
         self.process.stdin.write(message)
         self.process.stdin.flush()
 
+    @typing.override
     def recv_ready(self) -> bool:
-        self.process.stdout.flush()
-        # self.process.stderr.flush()
-        ans = False
         if 0 < len(self.data):
-            ans = True
-        # print(f"recv_ready {len(self.data)} / {ans}")
-        return ans
+            return True  # 残りデータがあるなら無条件OK
+        if self.active == 0:
+            return False
+        self.process.stdout.flush()
+        return False
 
-    def recv(self, length: int) -> str:
+    @typing.override
+    def recv(self, length: int):
         # print(f"recv d=/{self.data.strip()}/")
         if len(self.data) <= 0:
-            return
-        local_data = ""
-        with self.lock:
+            return b''
+        local_data = ''
+        with self.get_lock():
             local_data = self.data[0]
             self.data = self.data[1:]
-        return local_data.encode("utf-8")
+        return local_data.encode('utf-8')
 
+    @typing.override
     def close(self):
         # print("client close")
         self.active = 0
-        self.data = ""
+        self.data = ''
         local_process = self.process
         self.local_process = None
         if local_process is not None:
@@ -167,61 +181,75 @@ class MyShell(MyAbstractShell):
                 # anything delete
                 pass
 
+    @typing.override
     def isActive(self) -> int:
         return self.active
+
+    @typing.override
+    def get_echo(self) -> bool:
+        return True
 
 
 class MyPexpect(MyAbstractShell):
     def __init__(self):
         shell_name = os.getenv("SHELL", "/bin/sh")
         self.child = pexpect.spawn(shell_name, timeout=0, encoding='utf-8')
-        self.result = None
+        self.result = ''
 
+    @typing.override
     def send_ready(self) -> bool:
         return True
 
+    @typing.override
     def send(self, message):
         child = self.child
         if child is None:
             return
         child.send(message)
 
+    @typing.override
     def recv_ready(self) -> bool:
+        if self.result != "":
+            return True  # 残りデータがあるなら無条件OK
         child = self.child
         if child is None:
             return False
-        if self.result is not None:
-            return True
-        index = child.expect([r".", pexpect.EOF, pexpect.TIMEOUT])
-        if index == 0:
+        self.result = ""
+        target = ""
+        while True:
+            index = child.expect([r".", pexpect.EOF, pexpect.TIMEOUT])
+            if index == 2:
+                break  # timeout
+            elif index == 1:
+                self.close()
+                break  # EOF
+            #
             # child.after でマッチした文字列全体を取得
-            self.result = child.before + child.after
-            if 0 < len(self.result):
-                return True
-            else:
-                return False
-        elif index == 1:  # EOF
-            self.close()
-            return False
-        return False  # Timeout
+            target = child.before + child.after
+            if len(target) <= 0:
+                break  # 収集できなかった
+            #
+            # 文字列を加算
+            self.result = self.result + target
+        #
+        return 0 < len(target)
 
-    def recv(self, length: int) -> str:
-        if self.child is None:
-            return None
-        work = ''
-        if self.result is not None:
-            if len(self.result) <= length:
-                work = self.result
-                self.result = None
-            else:
-                work = self.result[:self.result]
-                self.result = self.result[self.result + 1:]
-        elif self.recv_ready():
-            work = self.recv(length)
-        if self.child is None:
-            return None
-        return work.encode("utf-8")
+    @typing.override
+    def recv(self, length: int):
+        if self.result == '' and not self.recv_ready():
+            return ''
+        if self.result == '':
+            return ''
+        if len(self.result) <= length:
+            work = self.result
+            self.result = ''
+        else:
+            work = self.result[:length]
+            self.result = self.result[length + 1:]
+        work = work.replace("\r", "")
+        return work.encode('utf-8')
 
+    @typing.override
     def close(self):
         child = self.child.close()
         self.child = None
@@ -230,30 +258,448 @@ class MyPexpect(MyAbstractShell):
         except Exception:
             pass
 
+    @typing.override
     def isActive(self) -> int:
         if self.child is not None:
             return 1
         return 0
 
+    @typing.override
+    def get_echo(self) -> bool:
+        return True
 
-class MyThread(threading.Thread):
+
+class MySerial(MyAbstractShell):
+    def __init__(self, command: str, rate: int, flowctrl=3, flowctrl_dtr=False, flowctrl_rts=False):
+        self.readSer = None
+        if platform.system().lower() != "linux":
+            # for Windows
+            if 0 < len(command) and "0" <= command[0] and command[0] <= "9":
+                # 1文字以上で 0-9の間ならCOMを追加する
+                command = "COM" + command
+        if flowctrl is None:
+            self.readSer = serial.Serial(command, rate, timeout=0.1)
+        else:
+            xonxoff = flowctrl == 1  # default False
+            rtscts = flowctrl == 2 or (flowctrl == 3 and flowctrl_rts)  # default False
+            dsrdtr = flowctrl == 4 or (flowctrl == 3 and flowctrl_dtr)  # default False
+            self.readSer = serial.Serial(command, rate, timeout=0.1, xonxoff=xonxoff, rtscts=rtscts, dsrdtr=dsrdtr)
+        self.active = True
+        self.data = b''
+
+    @typing.override
+    def send_ready(self) -> bool:
+        if not self.active:
+            return False
+        return self.readSer.writable()
+
+    @typing.override
+    def send(self, message):
+        if not self.active:
+            return
+        self.readSer.write(message.encode('utf-8'))
+
+    @typing.override
+    def recv_ready(self) -> bool:
+        if 0 < len(self.data):
+            return True  # 残りデータがあるなら無条件OK
+        if not self.active:
+            return False
+        self.readSer.flush()
+        if not self.readSer.readable():
+            return False
+        try:
+            self.data = self.readSer.read(size=256)
+        except Exception:
+            self.close()  # エラー がでたので強制終了
+            return False
+        return 0 < len(self.data)
+
+    @typing.override
+    def recv(self, length: int):
+        # if not self.active:
+        #    return None  # EOFのときはまだ読み込める
+        self.recv_ready()
+        if len(self.data) < length:
+            result = self.data
+            self.data = b''
+            return result
+        result = self.data[0:length]
+        self.data = self.data[length:]
+        return result
+
+    @typing.override
+    def close(self):
+        self.active = False
+        try:
+            localReadSer = self.readSer
+            self.readSer = None
+            if localReadSer is not None:
+                localReadSer.close()
+        except Exception:
+            pass
+
+    @typing.override
+    def isActive(self) -> int:
+        if self.active:
+            return 1
+        return 0
+
+    @typing.override
+    def get_echo(self) -> bool:
+        return True
+
+    def exit_status_ready(self):
+        return not self.active
+
+
+class MyTelnetT0(MyAbstractShell):
+
+    def __init__(self, client: socket.socket):
+        self.client = client
+        self.data = b''
+
+    @typing.override
+    def send_ready(self) -> bool:
+        if self.client is None:
+            return False
+        return True
+
+    @typing.override
+    def send(self, message: str):
+        if self.client is None:
+            return
+        self.send_binary(message.encode('utf-8'))
+
+    def send_binary(self, message):
+        if self.client is None:
+            return
+        self.client.sendall(message)
+
+    @typing.override
+    def recv_ready(self) -> bool:
+        if 0 < len(self.data):
+            return True  # 残りデータがあるなら無条件OK
+        if self.client is None:
+            return False
+        try:
+            self.client.settimeout(0.1)
+            recv_data = self.client.recv(1024)
+            if recv_data is None or recv_data == b'':
+                self.close()
+                return False
+            self.data = self.change_stream(recv_data)
+        except ConnectionResetError:
+            self.close()
+            return False
+        except socket.timeout:
+            return False
+        return 0 < len(self.data)
+
+    @typing.override
+    def change_stream(self, recv_data):
+        return recv_data
+
+    @typing.override
+    def recv(self, length: int):
+        if 0 == len(self.data):  # 残りデータがない
+            if self.client is None:  # closeである
+                return None
+        self.recv_ready()
+        if len(self.data) < length:
+            result = self.data
+            self.data = b''
+            return result
+        result = self.data[0:length]
+        self.data = self.data[length:]
+        return result
+
+    @typing.override
+    def close(self):
+        local_client = self.client
+        self.client = None
+        if local_client is not None:
+            try:
+                local_client.close()
+            except Exception:
+                pass
+
+    @typing.override
+    def isActive(self) -> int:
+        if self.client is not None:
+            return 1
+        return 0
+
+    @typing.override
+    def get_echo(self) -> bool:
+        return True
+
+    def exit_status_ready(self):
+        return self.client is None
+
+
+class MyTelnetT1(MyTelnetT0):
+
+    _CR = b'\r'
+    _LF = b'\n'
+
+    _NULL = b'\x00'                 # 0	Binary Transmission	[RFC856]
+    _ECHO = b'\x01'                 # 1	Echo	[RFC857]
+    _Reconnection = b'\x02'         # 2	Reconnection	[NIC 15391 of 1973]
+    _Suppress_Go_Ahead = b'\x03'    # 3	Suppress Go Ahead	[RFC858]
+    _AMSize_Negotiation = b'\x04'   # 4	Approx Message Size Negotiation	[NIC 15393 of 1973]
+    _Status = b'\x05'               # 5	Status	[RFC859]
+    _Timing_Mark = b'\x06'          # 6	Timing Mark	[RFC860]
+    _RCTrans_and_Echo = b'\x07'     # 7	Remote Controlled Trans and Echo	[RFC726]
+    _Output_Line_Width = b'\x08'    # 8	Output Line Width	[NIC 20196 of August 1978]
+    _Output_Page_Size = b'\x09'     # 9	Output Page Size	[NIC 20197 of August 1978]
+    _OCRDisposition = b'\x0a'       # 10	Output Carriage-Return Disposition	[RFC652]
+    _OHTStops = b'\x0b'             # 11	Output Horizontal Tab Stops	[RFC653]
+    _OHTDisposition = b'\x0c'       # 12	Output Horizontal Tab Disposition	[RFC654]
+    _OFDisposition = b'\x0d'        # 13	Output Formfeed Disposition	[RFC655]
+    _OVTabstops = b'\x0e'           # 14	Output Vertical Tabstops	[RFC656]
+    _OVTab_Disposition = b'\x0f'    # 15	Output Vertical Tab Disposition	[RFC657]
+    _OLDisposition = b'\x10'        # 16	Output Linefeed Disposition	[RFC658]
+    _Extended_ASCII = b'\x11'       # 17	Extended ASCII	[RFC698]
+    _Logout = b'\x12'               # 18	Logout	[RFC727]
+    _Byte_Macro = b'\x13'           # 19	Byte Macro	[RFC735]
+    _Data_Entry_Terminal = b'\x14'  # 20	Data Entry Terminal	[RFC1043][RFC732]
+    _SUPDUP = b'\x15'               # 21	SUPDUP	[RFC736][RFC734]
+    _SUPDUP_Output = b'\x16'        # 22	SUPDUP Output	[RFC749]
+    _Send_Location = b'\x17'        # 23	Send Location	[RFC779]
+    _Terminal_Type = b'\x18'        # 24	Terminal Type	[RFC1091]
+    _End_of_Record = b'\x19'        # 25	End of Record	[RFC885]
+    _TACACS_UI = b'\x1a'            # 26	TACACS User Identification	[RFC927]
+    _Output_Marking = b'\x1b'       # 27	Output Marking	[RFC933]
+    _TLocation_Number = b'\x1c'     # 28	Terminal Location Number	[RFC946]
+    _Telnet_3270_Regime = b'\x1d'   # 29	Telnet 3270 Regime	[RFC1041]
+    _X_3_PAD = b'\x1e'              # 30	X.3 PAD	[RFC1053]
+    _NAWS = b'\x1f'                 # 31	Negotiate About Window Size	[RFC1073]
+    _Terminal_Speed = b'\x20'       # 32	Terminal Speed	[RFC1079]
+    _RFC = b'\x21'                  # 33	Remote Flow Control	[RFC1372]
+    _Linemode = b'\x22'             # 34	Linemode	[RFC1184]
+    _X_Display_Location = b'\x23'   # 35	X Display Location	[RFC1096]
+    _EnvironmentOpt = b'\x24'       # 36	Environment Option	[RFC1408]
+    _Authentication_Opt = b'\25'    # 37	Authentication Option	[RFC2941]
+    _EncryptionOpt = b'\x26'        # 38	Encryption Option	[RFC2946]
+    _New_EnvironmentOpt = b'\x27'   # 39	New Environment Option	[RFC1572]
+
+    _EOF = b'\xF6'   # 236 [RFC1184]
+    _SE = b'\xF0'    # 240 [RFC854][RFC855]
+    _SB = b'\xFA'    # 250 [RFC854][RFC855]
+    _WILL = b'\xFB'  # 251 [RFC854][RFC855]
+    _WONT = b'\xFC'  # 252 [RFC854][RFC855]
+    _DO = b'\xFD'    # 253 [RFC854][RFC855]
+    _DONT = b'\xFe'  # 254 [RFC854][RFC855]
+    _IAC = b'\xff'   # 255 [RFC854][RFC855]
+
+    _IS = b'\x00'     # [RFC2941]
+    _SEND = b'\x01'   # [RFC2941]
+    _REPLY = b'\x02'  # [RFC2941]
+    _NAME = b'\x03'   # [RFC2941]
+
+    def __init__(self, client: socket.socket):
+        super().__init__(client)
+        self.recv_data = b''
+        self.state = MyTelnetT1._NULL  # text
+        self.sb_se_op = b''
+        self.sb_se = b''
+        self.alread_flag = {}
+        self.init_sender()
+
+    def init_sender(self):
+        ''' echo '''
+        self.send_binary(MyTelnetT1._IAC + MyTelnetT1._DO + MyTelnetT1._ECHO)
+
+    def is_alread_flag(self, bynary_data, do_or_will) -> bool:
+        key = bynary_data
+        if do_or_will:
+            key = key + b'd'
+        else:
+            key = key + b'w'
+        flag = False
+        if key in self.alread_flag:
+            flag = True
+        else:
+            self.alread_flag[key] = True
+        return flag
+
+    def print(self, text):
+        ''' for debug '''
+        # print(text)
+        pass
+
+    @typing.override
+    def change_stream(self, recv_data):
+        self.recv_data = self.recv_data + recv_data
+        mess = b''
+        # print(f"change_stream start {self.recv_data}")
+        while 0 < len(self.recv_data):
+            # print(f"xx {mess} / {self.recv_data} / {len(self.recv_data)} /s={self.state} / {MyTelnetT1._NULL}")
+            char_data = self.recv_data[0:1]
+            self.recv_data = self.recv_data[1:]
+            if self.state == MyTelnetT1._NULL:
+                if char_data == MyTelnetT1._IAC:
+                    self.state = char_data
+                elif char_data == MyTelnetT1._CR:
+                    self.state = char_data
+                elif char_data == MyTelnetT1._EOF:
+                    pass
+                else:
+                    mess = mess + char_data
+            elif self.state == MyTelnetT1._IAC:
+                if char_data == MyTelnetT1._IAC:
+                    # IACを送りたい場合のエスケープ情報。
+                    # だが送ると UTF-8 が壊れるので送らない
+                    self.state = MyTelnetT1._NULL
+                elif char_data == MyTelnetT1._WILL:
+                    self.state = char_data
+                elif char_data == MyTelnetT1._WONT:
+                    self.state = char_data
+                elif char_data == MyTelnetT1._DO:
+                    self.state = char_data
+                elif char_data == MyTelnetT1._DONT:
+                    self.state = char_data
+                elif char_data == MyTelnetT1._SB:
+                    self.state = MyTelnetT1._SB + b'op'
+                else:
+                    self.state = MyTelnetT1._NULL
+                    mess = mess + b'IAC_Unkown'
+            elif self.state == MyTelnetT1._WILL:
+                self.print(f"IAC WILL {char_data[0]}")
+                self.state = MyTelnetT1._NULL
+                if self.is_alread_flag(char_data, True):
+                    pass  # 一度受信したことがあるものは２度と応答しない
+                elif char_data == MyTelnetT1._ECHO:
+                    self.do_iac_will_echo(char_data)
+                else:
+                    self.do_iac_will_any(char_data)
+                    # 上記以外は _WONT を返す
+                    self.send_binary(MyTelnetT1._IAC + MyTelnetT1._DONT + char_data)
+                    self.print(f"res IAC DONT {char_data[0]}")
+            elif self.state == MyTelnetT1._WONT:
+                self.print(f"IAC WONT {char_data[0]}")
+                self.state = MyTelnetT1._NULL
+                if self.is_alread_flag(char_data, True):
+                    pass  # 一度受信したことがあるものは２度と応答しない
+                else:
+                    self.do_iac_do_any(char_data)  # WONTに対してはWONTしか返せない
+            elif self.state == MyTelnetT1._DO:
+                self.print(f"IAC DO {char_data[0]}")
+                self.state = MyTelnetT1._NULL
+                if self.is_alread_flag(char_data, False):
+                    pass  # 一度受信したことがあるものは２度と応答しない
+                elif char_data == MyTelnetT1._ECHO:
+                    self.do_iac_do_echo(char_data)
+                elif char_data == MyTelnetT1._NAWS:
+                    self.do_iac_do_NAWS(char_data)
+                elif char_data == MyTelnetT1._Terminal_Type:
+                    self.do_iac_do_Terminal_Type(char_data)
+                else:
+                    self.do_iac_do_any(char_data)  # 上記以外は _WONT を返す
+            elif self.state == MyTelnetT1._DONT:
+                self.print(f"IAC DONT {char_data[0]}")
+                self.state = MyTelnetT1._NULL
+                if self.is_alread_flag(char_data, False):
+                    pass  # 一度受信したことがあるものは２度と応答しない
+                else:
+                    self.do_iac_will_any(char_data)  # WONTに対してはWONTしか返せない
+            elif self.state == MyTelnetT1._SB + b'op':
+                # IAC SB option の option受付
+                self.sb_se = b''
+                self.sb_se_op = char_data
+                self.state = MyTelnetT1._SB
+                self.print(f"IAC1 SB {self.sb_se_op} / {char_data}")
+            elif self.state == MyTelnetT1._SB:
+                # IAC SB option 後のデータ受付
+                if char_data == MyTelnetT1._IAC:
+                    # IAC SB option 後のデータ内に IAC を見つけた
+                    self.state = MyTelnetT1._IAC + MyTelnetT1._SB
+                else:
+                    self.sb_se = self.sb_se + char_data
+                self.print(f"IAC2 SB {self.sb_se_op} {self.sb_se} {self.sb_se_op}")
+            elif self.state == MyTelnetT1._IAC + MyTelnetT1._SB:
+                self.print(f"IAC SB {self.sb_se_op} IAC")
+                # IAC SB option 後のデータ内に IAC を見つけた次の文字
+                if char_data == MyTelnetT1._SE:
+                    # IAC SB ... IAC SE まで完了した
+                    self.state = MyTelnetT1._NULL
+                    self.do_iac_sb_se()
+                else:
+                    # IACの後続が SBでなかったので データ受付継続
+                    # self.print(f"IAC SB {self.sb_se_op} IAC {char_data[0]}")
+                    self.state = MyTelnetT1._SB
+                    self.sb_se = self.sb_se + MyTelnetT1._IAC + char_data
+            elif self.state == MyTelnetT1._CR:
+                self.state = MyTelnetT1._NULL
+                if char_data == MyTelnetT1._CR:
+                    mess = mess + MyTelnetT1._CR  # CR のエスケープです
+                elif char_data == MyTelnetT1._NULL:  # teraterm だとこれ
+                    mess = mess + MyTelnetT1._CR
+                elif char_data == MyTelnetT1._LF:  # windowsのtelnetだとこれ
+                    mess = mess + MyTelnetT1._CR
+                else:
+                    mess = mess + char_data  # CR を除いたものを入れます
+            else:
+                raise TypeError(f"Stateus error {int(self.state)}/{char_data[0]}")
+        # print(f"change_stream end /{mess}/")
+        return mess
+
+    def do_iac_will_echo(self, char_data):
+        ''' サーバが echo になることは受け入れる '''
+        self.send_binary(MyTelnetT1._IAC + MyTelnetT1._DO + char_data)
+        self.print(f"res IAC DONT {char_data[0]}")
+
+    def do_iac_do_echo(self, char_data):
+        ''' クライアントが echo にはなりたくない '''
+        self.do_iac_do_any(char_data)
+
+    def do_iac_will_any(self, char_data):
+        ''' 基本 DONT を返す '''
+        self.send_binary(MyTelnetT1._IAC + MyTelnetT1._DONT + char_data)
+        self.print(f"res IAC DONT {char_data[0]}")
+
+    def do_iac_do_any(self, char_data):
+        ''' 基本 WONT を返す '''
+        self.send_binary(MyTelnetT1._IAC + MyTelnetT1._WONT + char_data)
+        self.print(f"res IAC WONT {char_data[0]}")
+
+    def do_iac_do_NAWS(self, char_data):
+        self.send_binary(MyTelnetT1._IAC + MyTelnetT1._WILL + char_data
+                         + MyTelnetT1._IAC + MyTelnetT1._SB + char_data
+                         + b'\0' + b'\x50' + b'\0' + b'\x18'
+                         + MyTelnetT1._IAC + MyTelnetT1._SE)
+        self.print("res IAC WILL NAWS IAC SB NAWS 80x24 IAC SE")
+
+    def do_iac_do_Terminal_Type(self, char_data):
+        self.send_binary(MyTelnetT1._IAC + MyTelnetT1._WILL + char_data
+                         + MyTelnetT1._IAC + MyTelnetT1._SB + char_data
+                         + MyTelnetT1._IS + b'VT100'
+                         + MyTelnetT1._IAC + MyTelnetT1._SE)
+
+    def do_iac_sb_se(self):
+        self.print(f"IAC SB {self.sb_se_op} / {self.sb_se} IAC SE")
+        # TODO:
+
+
+class MyShellThread(threading.Thread):
     def __init__(self, myShell: MyShell, name: str, stream):
-        # print("MyThread __init__ start")
+        # print("MyShellThread __init__ start")
         super().__init__()
         self.name = name
         self.myShell = myShell
         self.stream = stream
-        # print("MyThread __init__ end")
+        # print("MyShellThread __init__ end")
 
     def run(self):
-        """外部プロセスからの読み込み"""
-        # print(f"MyThread_run() start f={type(self.myShell)} n={self.name}")
+        '''外部プロセスからの読み込み'''
+        # print(f"MyShellThread_run() start f={type(self.myShell)} n={self.name}")
         while self.myShell.isActive() != 0:
             ans = self.stream.read(1)
             # print(f"start n={self.name} a=/{ans}/")
-            with self.myShell.lock:
+            with self.myShell.get_lock():
                 self.myShell.data = self.myShell.data + ans
-        # print(f"MyThread_run() end n={self.name} a=/{ans}/")
+        # print(f"MyShellThread_run() end n={self.name} a=/{ans}/")
         #
         # activeでなくなったので念のため消す
         try:
@@ -264,14 +710,14 @@ class MyThread(threading.Thread):
 
 
 class Label:
-    """ラベル情報の保存地域"""
+    ''' For Label '''
 
     def __init__(self, token_list):
-        """コンストラクタ"""
+        ''' __init__ '''
         self.token_list = token_list
 
     def getTokenList(self):
-        """トークンの取得"""
+        ''' get token list '''
         return self.token_list
 
     def __str__(self):
@@ -279,43 +725,53 @@ class Label:
 
 
 class TtlContinueFlagException(Exception):
-    """continue 用の例外"""
+    ''' For continue '''
 
     def __init__(self, message):
-        """コンストラクタ"""
+        ''' __init__ '''
         super().__init__(message)
 
 
 class TtlBreakFlagException(Exception):
-    """break 用の例外"""
+    ''' For break '''
 
     def __init__(self, message):
-        """コンストラクタ"""
+        ''' __init__ '''
         super().__init__(message)
 
 
 class TtlReturnFlagException(Exception):
-    """return 用の例外"""
+    ''' For return '''
 
     def __init__(self, message):
-        """コンストラクタ"""
+        ''' __init__ '''
         super().__init__(message)
 
 
 class TtlExitFlagException(Exception):
-    """exit 用の例外"""
+    ''' For exit'''
 
     def __init__(self, message):
-        """コンストラクタ"""
+        ''' __init__ '''
         super().__init__(message)
 
 
 class TtlResultException(Exception):
-    """exit 用の例外"""
+    ''' For return '''
 
     def __init__(self, message):
-        """コンストラクタ"""
+        ''' __init__ '''
         super().__init__(message)
+
+
+class TtlGotoException(Exception):
+    ''' For Goto '''
+
+    def __init__(self, message, line, label):
+        ''' __init__ '''
+        super().__init__(message)
+        self.line = line
+        self.label = label
 
 
 class TtlParseTreeVisitor(ParseTreeVisitor):
@@ -324,9 +780,9 @@ class TtlParseTreeVisitor(ParseTreeVisitor):
 
     def visitChildren(self, node):
         result = {}
-        result["name"] = node.__class__.__name__
+        result['name'] = node.__class__.__name__
         line_number = node.start.line
-        result["line"] = line_number
+        result['line'] = line_number
         #
         n = node.getChildCount()
         if n == 0:
@@ -338,7 +794,7 @@ class TtlParseTreeVisitor(ParseTreeVisitor):
             if childResult is not None:
                 worker_list.append(childResult)
         if worker_list != 0:
-            result["child"] = worker_list
+            result['child'] = worker_list
         return result
 
     def visitTerminal(self, node):
@@ -347,7 +803,7 @@ class TtlParseTreeVisitor(ParseTreeVisitor):
         if type < 0:
             return None
         x = TtlParserLexer.ruleNames[type - 1]
-        if x == "RN" or x == "WS":
+        if x == 'RN' or x == 'WS':
             return None
         return node.getText()
 
@@ -364,11 +820,61 @@ class ThrowingErrorListener(ErrorListener):
         raise TypeError(f"### l={line}:{column} Token recognition error - {msg}")
 
 
-class TtlPaserWolker(ABC):
-    """tera tekitou lang の実装部分(GUI除く)"""
+class SplitEscape():
+
+    split_escape_buffer = ''
+    split_escape_state = 0
+
+    def split_escape(self, text: str) -> str:
+        '''
+        装置から収集されたテキストがエスケープにより色付けされていると
+        なにかと困るので ここで取る。
+        ただし、本来であれば以下でエスケープはとれるのだが、
+        行間またぐと取れないので独自実装を入れた
+        ansi_escape = re.compile('\x1B\\[\\d+([;\\d]+){0,2}m')
+        return ansi_escape.sub('', text)
+        '''
+        result = ''
+        for char in text:
+            if self.split_escape_state == 0:
+                if char == "\x1b":
+                    self.split_escape_state = 1
+                    self.split_escape_buffer = char
+                else:
+                    result = result + char
+            elif self.split_escape_state == 1:
+                self.split_escape_buffer = self.split_escape_buffer + char
+                if char == '[':
+                    self.split_escape_state = 2
+                else:
+                    result = result + self.split_escape_buffer
+                    self.split_escape_state == 0
+                    self.split_escape_buffer = ''
+            else:
+                self.split_escape_buffer = self.split_escape_buffer + char
+                if '0' <= char and char <= '9':
+                    pass
+                elif char == ';':
+                    self.split_escape_state = self.split_escape_state + 1
+                    if 5 <= self.split_escape_state:
+                        result = result + self.split_escape_buffer
+                        self.split_escape_state = 0
+                        self.split_escape_buffer = ''
+                elif char == 'm':
+                    self.split_escape_state = 0
+                    self.split_escape_buffer = ''
+                else:
+                    result = result + self.split_escape_buffer
+                    self.split_escape_state = 0
+                    self.split_escape_buffer = ''
+        return result
+
+
+class TtlPaserWolker(ABC, SplitEscape):
+    '''tera tekitou lang の実装部分(GUI除く)'''
 
     def __init__(self):
-        """ init """
+        ''' init '''
         if IMP_ERR:
             raise ImportError(IMP_ERR)
         self.value_list = {}
@@ -376,9 +882,9 @@ class TtlPaserWolker(ABC):
         self.end_flag = False
         self.client = None
         self.shell = None
-        self.stdout = ""
+        self.stdout = ''
         self.file_handle_list = {}
-        self.title = "dummy"
+        self.title = 'dummy'
         self.title = self.getTitle()  # オーバーライドされたときにタイトルを差し替える
         self.log_file_handle = None
         self.log_start = True
@@ -390,12 +896,17 @@ class TtlPaserWolker(ABC):
         #
         self.encrypt_file = {}
         self.exitcode = None
+        #
+        self.speed = 9600
+        self.flowctrl = 3
+        self.flowctrl_rts = False
+        self.flowctrl_dtr = False
 
     def stop(self, error=None):
-        """強制停止処理"""
+        '''強制停止処理'''
         if error is not None:
-            self.setValue("error", error)
-            self.setValue("result", 0)
+            self.setValue('error', error)
+            self.setValue('result', 0)
         self.end_flag = True
         #
         # SSH接続していたら止める
@@ -412,9 +923,9 @@ class TtlPaserWolker(ABC):
         os.chdir(self.current_dir)
 
     def closeClient(self):
-        """close client"""
+        '''close client'''
         # print("closeClient()")
-        self.stdout = ""
+        self.stdout = ''
         self.log_connect_time = None
         #
         client = self.client
@@ -424,8 +935,8 @@ class TtlPaserWolker(ABC):
                 client.close()
             except Exception:
                 # どんなエラーがでようと必ず殺す
-                pass
                 client = self.client
+        #
         shell = self.shell
         self.shell = None
         if shell is not None:
@@ -437,58 +948,54 @@ class TtlPaserWolker(ABC):
 
     def set_default_value(self, param_list: list):
         #
-        self.setValue("error", "")
-        self.setValue("result", 1)
+        self.setValue('error', "")
+        self.setValue('result', 1)
         #
         # print(f" data={json.dumps(param_list, indent=2)}")
         for i in range(10):
-            self.setValue("param" + str(i + 1), "")
-            self.setValue("param[" + str(i + 1) + "]", "")
+            self.setValue('param' + str(i + 1), '')
+            self.setValue('param[' + str(i + 1) + ']', '')
         #
         for i, param in enumerate(param_list):
-            self.setValue("param" + str(i + 1), param)
-            self.setValue("param[" + str(i + 1) + "]", param)
+            self.setValue('param' + str(i + 1), param)
+            self.setValue('param[' + str(i + 1) + ']', param)
 
-    def execute(self, filename: str, param_list: list, data=None, ignore_result=False):
+    def execute(self, filename: str, param_list: list, data=None, ignore_result=False, goto_label=None):
         try:
-            self.set_default_value(param_list)
+            if goto_label is not None:
+                self.gotoContext(goto_label.line, goto_label.label)
+            else:
+                self.set_default_value(param_list)
+                #
+                # 一発目のinclude
+                self.include(filename, data)
+                #
+                if self.exitcode is not None:
+                    self.setValue('result', self.exitcode)
+                if not ignore_result:
+                    result = int(self.getValue('result'))
+                    error_data = self.getValue('error')
+                    if result == 0:
+                        raise TtlResultException(f"Exceptiont (result==0) f={filename} e=/{error_data}/")
             #
-            # 一発目のinclude
-            self.include(filename, data)
-            #
-            if self.exitcode is not None:
-                self.setValue("result", self.exitcode)
-            if not ignore_result:
-                result = int(self.getValue('result'))
-                error_data = self.getValue('error')
-                if result == 0:
-                    raise TtlResultException(f"Exceptiont (result==0) f={filename} e=/{error_data}/")
-            #
+        except TtlGotoException as goto_label:
+            self.findFor(goto_label)
+            self.execute(filename, param_list, data, ignore_result, goto_label)
         finally:
             # なにがあろうとセッションは必ず殺す
             self.closeClient()
 
-    def include_only(self, filename: str, data=None):
-        """読み込みここから"""
-        try:
-            #
-            # print(f"filename={filename} param={self.result_file_json}")
-            if filename not in self.result_file_json:
-                if data is None:
-                    with open(filename, "r", encoding="utf-8") as f:
-                        data = f.read()
-                result_json = self.include_data(data)
-                #
-                # for call command
-                self.result_file_json[filename] = result_json
-                #
-                # ラベル設定
-                self.correctLabel()
-                #
-        except Exception as e:
-            self.setLogInner(f"### except read file exception! f={str(e)}")
-            self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
-            raise  # そのまま上流へ送る
+    def findFor(self, goto_label: TtlGotoException):
+        tb_obj = goto_label.__traceback__
+        target_list = [
+            'self.forNextContext(',
+            'self.whileEndwhileContext(',
+            'self.untilEnduntilContext(',
+            'self.doLoopContext(']
+        for x in traceback.format_tb(tb_obj):
+            for target in target_list:
+                if target in x:
+                    raise TypeError(f"## l={goto_label.line} Please use break or continue!")
 
     def include(self, filename: str, data=None):
         if self.end_flag:
@@ -503,18 +1010,42 @@ class TtlPaserWolker(ABC):
         # 実処理ここから
         try:
             #
-            self.execute_result(self.result_file_json[filename]["child"])
+            self.execute_result(self.result_file_json[filename]['child'])
             #
+        except TtlGotoException:
+            raise  # メッセージも出さずそのまま上流へ送る
         except TtlExitFlagException:
-            # exitコマンドが呼び出されときは正常終了です
+            # exit, goto コマンドが呼び出されときは正常終了です
             pass
         except Exception as e:
-            self.setLogInner(f"### except execute_result f={str(e)}")
+            self.setLogInner(f"### except include f={str(e)}")
+            self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
+            raise  # そのまま上流へ送る
+
+    def include_only(self, filename: str, data=None):
+        '''読み込みここから'''
+        try:
+            #
+            # print(f"filename={filename} param={self.result_file_json}")
+            if filename not in self.result_file_json:
+                if data is None:
+                    with open(filename, 'r', encoding='utf-8') as f:
+                        data = f.read()
+                result_json = self.include_data(data)
+                #
+                # for call command
+                self.result_file_json[filename] = result_json
+                #
+                # ラベル設定
+                self.correctLabel()
+                #
+        except Exception as e:
+            self.setLogInner(f"### except read file exception! f={str(e)}")
             self.stop(f"{type(e).__name__} f={filename} e={str(e)} error!")
             raise  # そのまま上流へ送る
 
     def include_data(self, data: str):
-        """Jsonで結果を得る"""
+        '''Jsonで結果を得る'''
         if self.end_flag:
             return
         #
@@ -533,29 +1064,25 @@ class TtlPaserWolker(ABC):
         return tree.accept(visitor)
 
     def setValue(self, strvar: str, data):
-        """変数を設定する"""
+        '''変数を設定する'''
         # print(f"setValue={strvar} data={data}")
-        if self.isValue(strvar):  # this is label
+        if strvar in self.value_list:  # this is label
             if isinstance(self.getValue(strvar), Label):
                 raise TypeError(f"Label already set exception. v={strvar}")
         self.value_list[strvar] = data
 
     def setValueLabel(self, strvar: str, data: Label):
-        """変数を設定する"""
+        '''変数を設定する'''
         # print(f"01ラベルを設定した {strvar} /{data.getTokenList()}/")
         self.value_list[strvar] = data
 
-    def isValue(self, strvar: str) -> bool:
-        """変数がいるかチェックする"""
-        return strvar in self.value_list
-
     def getValue(self, strvar: str, error_stop=True):
-        """変数を取得する"""
+        '''変数を取得する'''
         if strvar not in self.value_list:
             for k in self.value_list:
                 # print(k)
-                if strvar + "[" in k:
-                    return "ARRAY"  # 配列指定がある
+                if strvar + '[' in k:
+                    return 'ARRAY'  # 配列指定がある
             if error_stop:
                 raise TypeError(f"Value not found err v={strvar}")
             return None
@@ -563,38 +1090,38 @@ class TtlPaserWolker(ABC):
         return self.value_list[strvar]
 
     def execute_result(self, x_list, ifFlag=1):
-        """execute_result"""
+        '''execute_result'''
         # print("execute_result")
         if self.end_flag:
             return
         for x in x_list:
-            name = x["name"]
-            line = x["line"]
+            name = x['name']
+            line = x['line']
             #
             # よくわからんがsleep入れないと不明なエラーが出る？
             # time.sleep(0.01)
             #
-            if "CommandlineContext" == name:
+            if 'CommandlineContext' == name:
                 if ifFlag != 0:
-                    self.commandlineContext(x["child"])
-            elif "ElseifContext" == name:
+                    self.commandlineContext(x['child'])
+            elif 'ElseifContext' == name:
                 if ifFlag == 0:
-                    first = self.getDataInt(x["child"][1])
+                    first = self.getDataInt(x['child'][1])
                     if first != 0:
-                        self.execute_result(x["child"][3:])
+                        self.execute_result(x['child'][3:])
                         ifFlag = 1
-            elif "ElseContext" == name:
+            elif 'ElseContext' == name:
                 if ifFlag == 0:
-                    self.execute_result(x["child"][1:])
+                    self.execute_result(x['child'][1:])
             else:
                 self.stop(error=f"### l={line} execute_result Unkown name={name} x={x}")
             if self.end_flag:
                 break
 
     def normpath(self, filename: str) -> str:
-        filename = os.path.normpath(filename.replace("\\", "/"))
-        if platform.system().lower() == "linux":
-            result = re.search("^([a-zA-Z]):(.*)$", filename)
+        filename = os.path.normpath(filename.replace("\\", '/'))
+        if platform.system().lower() == 'linux':
+            result = re.search('^([a-zA-Z]):(.*)$', filename)
             if result:
                 filename = f"/mnt/{result.group(1)}/{result.group(2)}"
         return filename
@@ -602,195 +1129,202 @@ class TtlPaserWolker(ABC):
     def commandlineContext(self, token_list):
         for x in token_list:
             # print(f"commandlineContext data={json.dumps(x, indent=2)}")
-            name = x["name"]
-            line = x["line"]
-            if "InputContext" == name:
-                strvar = self.getKeywordName(x["child"][0])
-                data = x["child"][2]
+            name = x['name']
+            line = x['line']
+            if 'InputContext' == name:
+                strvar = self.getKeywordName(x['child'][0])
+                data = x['child'][2]
                 data = self.getData(data)
                 self.setValue(strvar, data)
-            elif "CommandContext" == name:
-                command_name = x["child"][0]
-                if "assert" == command_name:
-                    self.doAssert(command_name, line, x["child"][1:])
-                elif "break" == command_name:
+            elif 'CommandContext' == name:
+                command_name = x['child'][0]
+                if 'assert' == command_name:
+                    self.doAssert(command_name, line, x['child'][1:])
+                elif 'break' == command_name:
                     raise TtlBreakFlagException(command_name)
-                elif "continue" == command_name:
+                elif 'continue' == command_name:
                     raise TtlContinueFlagException(command_name)
-                elif "end" == command_name:
+                elif 'end' == command_name:
                     self.end_flag = True
-                elif "exit" == command_name:
+                elif 'exit' == command_name:
                     raise TtlExitFlagException(command_name)
-                elif "return" == command_name:
+                elif 'goto' == command_name:
+                    label = str(self.getKeywordName(x['child'][1]))
+                    raise TtlGotoException(command_name, line, label)
+                elif 'return' == command_name:
                     raise TtlReturnFlagException(command_name)
-                elif "include" == command_name:
-                    p1 = self.getData(x["child"][1])
+                elif 'include' == command_name:
+                    p1 = self.getData(x['child'][1])
                     self.include(p1)
-                elif "call" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
+                elif 'call' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
                     # print(f"call label={p1}")
                     self.callContext(line, p1)
-                elif "bplusrecv" == command_name:
+                elif 'bplusrecv' == command_name:
                     self.doBplusrecv(command_name, line)
-                elif "bplussend" == command_name:
-                    p1 = self.getData(x["child"][1])
+                elif 'bplussend' == command_name:
+                    p1 = self.getData(x['child'][1])
                     self.doBplussend(command_name, line, p1)
-                elif "callmenu" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                elif 'callmenu' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doCallmenu(command_name, line, p1)
-                elif command_name in ["setdir", "changedir"]:
-                    p1 = self.getData(x["child"][1])
+                elif command_name in ['setdir', 'changedir']:
+                    p1 = self.getData(x['child'][1])
                     self.doChangedir(p1)
-                elif "clearscreen" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                elif 'clearscreen' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doClearscreen(command_name, line, p1)
-                elif command_name in ["closett", "disconnect", "unlink"]:
+                elif command_name in ['closett', 'disconnect', 'unlink']:
                     self.closeClient()
-                elif "connect" == command_name:
-                    self.doConnect(self.getData(x["child"][1]), line)
-                elif "dispstr" == command_name:
-                    self.doDispstr(x["child"][1:])
-                elif "flushrecv" == command_name:
+                elif 'connect' == command_name:
+                    self.doConnect(self.getData(x['child'][1]), line)
+                elif 'dispstr' == command_name:
+                    self.doDispstr(x['child'][1:])
+                elif 'flushrecv' == command_name:
                     self.doFlushrecv()
-                elif "enablekeyb" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                elif 'enablekeyb' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doEnablekeyb(command_name, line, p1)
-                elif "getmodemstatus" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif 'getmodemstatus' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     self.doGetmodemstatus(command_name, line, p1)
-                elif "gethostname" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
+                elif 'gethostname' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
                     self.doGethostname(p1)
-                elif "gettitle" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif 'gettitle' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     p1_val = self.getTitle()
                     self.setValue(p1, p1_val)
-                elif "logautoclosemode" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                elif 'logautoclosemode' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doLogautoclosemode(command_name, line, p1)
-                elif "logclose" == command_name:
+                elif 'logclose' == command_name:
                     self.doLogclose()
-                elif "loginfo" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
+                elif 'loginfo' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
                     self.doLoginfo(command_name, line, p1)
-                elif "logopen" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = self.getDataInt(x["child"][2])
-                    p3 = self.getDataInt(x["child"][3])
-                    p_len = len(x["child"])
+                elif 'logopen' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = self.getDataInt(x['child'][2])
+                    p3 = self.getDataInt(x['child'][3])
+                    p_len = len(x['child'])
                     p4 = 0
                     if 5 < p_len:
-                        p4 = self.getDataInt(x["child"][4])
+                        p4 = self.getDataInt(x['child'][4])
                     p5 = 0
                     if 6 <= p_len:
-                        p5 = self.getDataInt(x["child"][5])
+                        p5 = self.getDataInt(x['child'][5])
                     p6 = 0
                     if 7 <= p_len:
-                        p6 = self.getDataInt(x["child"][6])
+                        p6 = self.getDataInt(x['child'][6])
                     p7 = 0
                     if 8 <= p_len:
-                        p7 = self.getDataInt(x["child"][7])
+                        p7 = self.getDataInt(x['child'][7])
                     p8 = 0
                     if 9 <= p_len:
-                        p8 = self.getDataInt(x["child"][8])
+                        p8 = self.getDataInt(x['child'][8])
                     self.doLogopen(p1, p2, p3, p4, p5, p6, p7, p8)
-                elif "logpause" == command_name:
+                elif 'logpause' == command_name:
                     self.doLogpause()
-                elif "logrotate" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p_len = len(self.getData(x["child"]))
+                elif 'logrotate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p_len = len(self.getData(x['child']))
                     p2 = None
                     if 3 < p_len:
-                        p2 = self.getDataInt(x["child"][2])
+                        p2 = self.getDataInt(x['child'][2])
                     self.doLogrotate(command_name, line, p1, p2)
-                elif "logstart" == command_name:
+                elif 'logstart' == command_name:
                     self.doLogstart()
-                elif "logwrite" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'logwrite' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.doLogwrite(p1)
-                elif "recvln" == command_name:
+                elif 'recvln' == command_name:
                     self.doRecvln()
-                elif "scprecv" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'scprecv' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     p2 = p1
-                    if 3 <= len(x["child"]):
-                        p2 = str(self.getData(x["child"][2]))
+                    if 3 <= len(x['child']):
+                        p2 = str(self.getData(x['child'][2]))
                     self.doScprecv(p1, p2)
-                elif "scpsend" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'scpsend' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     p2 = p1
-                    if 3 <= len(x["child"]):
-                        p2 = str(self.getData(x["child"][2]))
+                    if 3 <= len(x['child']):
+                        p2 = str(self.getData(x['child'][2]))
                     self.doScpsend(p1, p2)
-                elif command_name in ["send", "sendbinary", "sendtext"]:
-                    self.doSend(x["child"][1:])
-                elif "sendbreak" == command_name:
+                elif command_name in ['send', 'sendbinary', 'sendtext']:
+                    self.doSend(x['child'][1:])
+                elif 'sendbreak' == command_name:
                     self.doSendbreak()
-                elif "sendln" == command_name:
-                    self.doSendln(x["child"][1:])
-                elif "settitle" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'sendln' == command_name:
+                    self.doSendln(x['child'][1:])
+                elif ('setbaud' == command_name) or ('setspeed' == command_name):
+                    self.speed = self.getDataInt(x['child'][1])
+                elif 'setflowctrl' == command_name:
+                    self.flowctrl = self.getDataInt(x['child'][1])
+                elif 'setdtr' == command_name:
+                    self.flowctrl_dtr = self.getDataInt(x['child'][1]) != 0
+                elif 'setrts' == command_name:
+                    self.flowctrl_rts = self.getDataInt(x['child'][1]) != 0
+                elif 'settitle' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.setTitle(p1)
-                elif "testlink" == command_name:
+                elif 'testlink' == command_name:
                     self.doTestlink()
-                elif command_name in ["wait", "wait4all"]:
-                    self.doWait(x["child"][1:])
-                elif "waitln" == command_name:
-                    self.doWaitln(x["child"][1:])
-                elif "execcmnd" == command_name:
-                    p1 = self.getData(x["child"][1])
+                elif command_name in ['wait', 'wait4all']:
+                    self.doWait(x['child'][1:])
+                elif 'waitln' == command_name:
+                    self.doWaitln(x['child'][1:])
+                elif 'execcmnd' == command_name:
+                    p1 = self.getData(x['child'][1])
                     result_json = self.include_data(p1)
-                    self.execute_result(result_json["child"])
-                elif "mpause" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                    self.execute_result(result_json['child'])
+                elif 'mpause' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doPause(p1 / 1000)
-                elif "pause" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                elif 'pause' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doPause(p1)
-                elif "code2str" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = x["child"][2]
+                elif 'code2str' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = x['child'][2]
                     p2 = self.getData(p2)
                     if p2 == 0:
-                        self.setValue(p1, "")
+                        self.setValue(p1, '')
                     else:
                         p2 = self.getChrSharp(p2)
                         self.setValue(p1, p2)
-                elif "expandenv" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = ""
-                    if 3 <= len(x["child"]):
-                        p2 = self.getData(x["child"][2])
+                elif 'expandenv' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = ''
+                    if 3 <= len(x['child']):
+                        p2 = self.getData(x['child'][2])
                     else:
                         p2 = self.getData(p1)
                     self.doExpandenv(p1, p2)
-                elif "int2str" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'int2str' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
                     self.setValue(p1, p2)
-                elif "sprintf" == command_name:
-                    self.doSprintf("inputstr", x["child"][1:])
-                elif "sprintf2" == command_name:
-                    p1 = x["child"][1]
+                elif 'sprintf' == command_name:
+                    self.doSprintf('inputstr', x['child'][1:])
+                elif 'sprintf2' == command_name:
+                    p1 = x['child'][1]
                     p1 = self.getKeywordName(p1)
-                    self.doSprintf(p1, x["child"][2:])
-                elif "str2code" == command_name:
-                    # print("str2code")
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = x["child"][2]
-                    # print(f"p2A={p2}")
+                    self.doSprintf(p1, x['child'][2:])
+                elif 'str2code' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = x['child'][2]
                     p2 = self.getData(p2)
-                    # print(f"p2B={p2}")
                     p2 = self.getSharpChr(p2)
-                    # print(f"p2C={p2}")
                     self.setValue(p1, p2)
-                elif "str2int" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getDataInt(x["child"][2])
+                elif 'str2int' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getDataInt(x['child'][2])
                     self.setValue(p1, p2)
-                elif "strcompare" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'strcompare' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     result = 0
                     if p1 == p2:
                         result = 0
@@ -798,410 +1332,410 @@ class TtlPaserWolker(ABC):
                         result = -1
                     else:
                         result = 1
-                    self.setValue("result", result)
-                elif "strconcat" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                    self.setValue('result', result)
+                elif 'strconcat' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     p1_str = self.getValue(p1)
-                    p2_str = x["child"][2]
+                    p2_str = x['child'][2]
                     p1_str = p1_str + self.getData(p2_str)
                     self.setValue(p1, p1_str)
-                elif "strcopy" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = self.getDataInt(x["child"][2]) - 1  # 1オリジン
-                    p3 = self.getDataInt(x["child"][3])
-                    p4 = self.getKeywordName(x["child"][4])
+                elif 'strcopy' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
+                    p3 = self.getDataInt(x['child'][3])
+                    p4 = self.getKeywordName(x['child'][4])
                     if p2 < 0:
                         p2 = 0
                     p1 = p1[p2: p2 + p3]
                     self.setValue(p4, p1)
-                elif "strinsert" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getDataInt(x["child"][2]) - 1  # 1オリジン
-                    p3 = str(self.getData(x["child"][3]))
+                elif 'strinsert' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
+                    p3 = str(self.getData(x['child'][3]))
                     p1_val = self.getData(p1)
                     # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
                     p1_val = p1_val[:p2] + p3 + p1_val[p2:]
                     self.setValue(p1, p1_val)
-                elif "strjoin" == command_name:
+                elif 'strjoin' == command_name:
                     # print(f"### l={line} {command_name}")
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
                     p3 = 9
                     # print(f"len {len(x['child'])}")
-                    if 4 <= len(x["child"]):
-                        p3 = self.getDataInt(x["child"][3])
-                    p1_val = ""
+                    if 4 <= len(x['child']):
+                        p3 = self.getDataInt(x['child'][3])
+                    p1_val = ''
                     for i in range(p3):
                         if i != 0:
                             p1_val = p1_val + p2
-                        p1_val = p1_val + self.getValue("groupmatchstr" + str(i + 1))
+                        p1_val = p1_val + self.getValue('groupmatchstr' + str(i + 1))
                     self.setValue(p1, p1_val)
-                elif "strlen" == command_name:
-                    p1 = len(self.getData(x["child"][1]))
-                    self.setValue("result", p1)
-                elif "strmatch" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'strlen' == command_name:
+                    p1 = len(self.getData(x['child'][1]))
+                    self.setValue('result', p1)
+                elif 'strmatch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     self.doStrmatch(p1, p2)
-                elif "strremove" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getDataInt(x["child"][2]) - 1  # 1オリジン
-                    p3 = self.getDataInt(x["child"][3])
+                elif 'strremove' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
+                    p3 = self.getDataInt(x['child'][3])
                     p1_val = self.getData(p1)
                     # print(f"### l={line} {command_name} {p1} {p2} {p3} {p1_val}")
                     p1_val = p1_val[:p2] + p1_val[p2 + p3:]
                     self.setValue(p1, p1_val)
-                elif "strreplace" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif 'strreplace' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     p1_val = self.getData(p1)
-                    p2 = self.getDataInt(x["child"][2]) - 1  # 1オリジン
-                    p3 = str(self.getData(x["child"][3]))
-                    p4 = str(self.getData(x["child"][4]))
+                    p2 = self.getDataInt(x['child'][2]) - 1  # 1オリジン
+                    p3 = str(self.getData(x['child'][3]))
+                    p4 = str(self.getData(x['child'][4]))
                     self.doStrreplace(p1, p1_val, p2, p3, p4)
-                elif "strscan" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'strscan' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     index = p1.find(p2)
                     if index < 0:
                         index = 0
                     else:
                         index = index + 1
                     # print(f"strscan {index}")
-                    self.setValue("result", index)
-                elif "strspecial" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                    self.setValue('result', index)
+                elif 'strspecial' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     p1_val = self.getData(p1)
-                    if 3 <= len(x["child"]):
-                        p1_val = str(self.getData(x["child"][2]))
-                    p1_val = p1_val.encode().decode("unicode_escape")
+                    if 3 <= len(x['child']):
+                        p1_val = str(self.getData(x['child'][2]))
+                    p1_val = p1_val.encode().decode('unicode_escape', errors='xmlcharrefreplace')
                     self.setValue(p1, p1_val)
-                elif "strsplit" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif 'strsplit' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     p1_val = self.getData(p1)
-                    p2 = str(self.getData(x["child"][2]))
+                    p2 = str(self.getData(x['child'][2]))
                     p3 = 10
-                    if 4 <= len(x["child"]):
-                        p3 = self.getDataInt(x["child"][3])
+                    if 4 <= len(x['child']):
+                        p3 = self.getDataInt(x['child'][3])
                     for i in range(9):
-                        self.setValue("groupmatchstr" + str(i + 1), "")
+                        self.setValue('groupmatchstr' + str(i + 1), '')
                     i = 0
                     while i < p3 - 1:
                         index = p1_val.find(p2)
                         if 0 <= index:
                             # print(f"aa i{i + 1} {p3} /{p1_val[0:index]}/ /{p1_val[index + len(p2):]}/")
-                            self.setValue("groupmatchstr" + str(i + 1), p1_val[0:index])
+                            self.setValue('groupmatchstr' + str(i + 1), p1_val[0:index])
                             p1_val = p1_val[index + len(p2):]
                         else:
                             break
                         i = i + 1
                     if 0 < len(p1_val):
                         # print(f"bb i{i + 1} {p3} /{p1_val}/")
-                        self.setValue("groupmatchstr" + str(i + 1), p1_val)
+                        self.setValue('groupmatchstr' + str(i + 1), p1_val)
                     i = i + 1
                     # print(f"i={i}")
-                    self.setValue("result", i)
-                elif "strtrim" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                    self.setValue('result', i)
+                elif 'strtrim' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     p1_var = self.getData(p1)
-                    p2 = self.getData(x["child"][2])
+                    p2 = self.getData(x['child'][2])
                     p1_var = self.doStrtrim(p1_var, p2)
                     self.setValue(p1, p1_var)
-                elif "tolower" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'tolower' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
                     p2 = p2.lower()
                     self.setValue(p1, p2)
-                elif "toupper" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'toupper' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
                     p2 = p2.upper()
                     self.setValue(p1, p2)
-                elif "basename" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'basename' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
                     p2 = self.normpath(p2)
                     p2 = os.path.basename(p2)
                     self.setValue(p1, str(p2))
-                elif "dirname" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'dirname' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
                     p2 = self.normpath(p2)
                     # print(f"p2a={p2}")
-                    p2 = re.sub(r"[\/]$", "", p2)
+                    p2 = re.sub(r'[\/]$', '', p2)
                     p2 = pathlib.Path(p2)
                     # print(f"p2b={p2}")
                     p2 = str(p2.parent)
                     # print(f"p2c={p2}")
                     self.setValue(p1, str(p2))
-                elif command_name in ["fileclose", "findclose"]:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif command_name in ['fileclose', 'findclose']:
+                    p1 = self.getKeywordName(x['child'][1])
                     self.doFileclose(p1)
-                elif "fileconcat" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'fileconcat' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     self.doFileconcat(p1, p2)
-                elif "filecopy" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'filecopy' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     self.doFilecopy(p1, p2)
-                elif "filecreate" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'filecreate' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doFileopen(p1, p2, 0, 0)
-                elif "filedelete" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'filedelete' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.doFiledelete(p1)
-                elif "fileopen" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
-                    p3 = self.getDataInt(x["child"][3])
+                elif 'fileopen' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
+                    p3 = self.getDataInt(x['child'][3])
                     p4 = 0
-                    if 5 <= len(x["child"]):
-                        p4 = self.getData(x["child"][4])
+                    if 5 <= len(x['child']):
+                        p4 = self.getData(x['child'][4])
                     self.doFileopen(p1, p2, p3, p4)
-                elif "filereadln" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
-                    p2 = str(self.getKeywordName(x["child"][2]))
+                elif 'filereadln' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
                     self.doFilereadln(line, p1, p2)
-                elif "fileread" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getDataInt(x["child"][2])
-                    p3 = self.getKeywordName(x["child"][3])
+                elif 'fileread' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getDataInt(x['child'][2])
+                    p3 = self.getKeywordName(x['child'][3])
                     self.doFileread(line, p1, p2, p3)
-                elif "filerename" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'filerename' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     self.doFilerename(p1, p2)
-                elif "filesearch" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'filesearch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.doFilesearch(p1)
-                elif "filestat" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getKeywordName(x["child"][2]))
+                elif 'filestat' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
                     p3 = None
-                    if 4 <= len(x["child"]):
-                        p3 = str(self.getKeywordName(x["child"][3]))
+                    if 4 <= len(x['child']):
+                        p3 = str(self.getKeywordName(x['child'][3]))
                     p4 = None
-                    if 4 <= len(x["child"]):
-                        p4 = str(self.getKeywordName(x["child"][4]))
+                    if 4 <= len(x['child']):
+                        p4 = str(self.getKeywordName(x['child'][4]))
                     self.doFilestat(p1, p2, p3, p4)
-                elif "filetruncate" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = self.getDataInt(x["child"][2])
+                elif 'filetruncate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = self.getDataInt(x['child'][2])
                     self.doFiletruncate(p1, p2)
-                elif "filewrite" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'filewrite' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doFilewrite(line, p1, p2)
-                elif "filewriteln" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2]) + "\n"
+                elif 'filewriteln' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2]) + "\n"
                     self.doFilewrite(line, p1, p2)
-                elif "findfirst" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
-                    p3 = self.getKeywordName(x["child"][3])
+                elif 'findfirst' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = self.getKeywordName(x['child'][3])
                     self.doFindfirst(line, p1, p2, p3)
-                elif "findnext" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
-                    p2 = str(self.getKeywordName(x["child"][2]))
+                elif 'findnext' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
                     self.doFindnext(line, p1, p2)
-                elif "foldercreate" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'foldercreate' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.doFoldercreate(p1)
-                elif "folderdelete" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'folderdelete' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.doFolderdelete(p1)
-                elif "foldersearch" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
+                elif 'foldersearch' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
                     self.doFoldersearch(p1)
-                elif "getdir" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif 'getdir' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     path = pathlib.Path.cwd()
                     self.setValue(p1, str(path))
-                elif "makepath" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = str(self.getData(x["child"][2]))
-                    p3 = str(self.getData(x["child"][3]))
+                elif 'makepath' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getData(x['child'][3]))
                     self.doMakepath(p1, p2, p3)
-                elif command_name in ["setpassword", "setpassword2"]:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
-                    p3 = str(self.getData(x["child"][3]))
-                    p4 = "anonymouse"
-                    if 5 <= len(x["child"]):
-                        p4 = str(self.getData(x["child"][4]))
+                elif command_name in ['setpassword', 'setpassword2']:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getData(x['child'][3]))
+                    p4 = 'anonymouse'
+                    if 5 <= len(x['child']):
+                        p4 = str(self.getData(x['child'][4]))
                     self.doSetpassword(p1, p2, p3, p4)
-                elif command_name in ["getpassword", "getpassword2"]:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
-                    p3 = str(self.getKeywordName(x["child"][3]))
-                    p4 = "anonymouse"
-                    if 5 <= len(x["child"]):
-                        p4 = str(self.getData(x["child"][4]))
+                elif command_name in ['getpassword', 'getpassword2']:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
+                    p3 = str(self.getKeywordName(x['child'][3]))
+                    p4 = 'anonymouse'
+                    if 5 <= len(x['child']):
+                        p4 = str(self.getData(x['child'][4]))
                     self.doGetpassword(p1, p2, p3, p4)
-                elif command_name in ["ispassword", "ispassword2"]:
-                    p1 = self.getData(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif command_name in ['ispassword', 'ispassword2']:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doIspassword(p1, p2)
-                elif command_name in ["delpassword", "delpassword2"]:
-                    p1 = self.getData(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif command_name in ['delpassword', 'delpassword2']:
+                    p1 = self.getData(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doDelpassword(p1, p2)
-                elif "checksum8" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'checksum8' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doChecksum8(p1, p2)
-                elif "checksum8file" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'checksum8file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doChecksum8file(p1, p2)
-                elif "checksum16" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'checksum16' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doChecksum16(p1, p2)
-                elif "checksum16file" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'checksum16file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doChecksum16file(p1, p2)
-                elif "checksum32" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'checksum32' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doChecksum32(p1, p2)
-                elif "checksum32file" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'checksum32file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doChecksum32file(p1, p2)
-                elif "crc16" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'crc16' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doCrc16(p1, p2)
-                elif "crc16file" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'crc16file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doCrc16file(p1, p2)
-                elif "crc32" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'crc32' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doCrc32(p1, p2)
-                elif "crc32file" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
-                    p2 = self.getData(x["child"][2])
+                elif 'crc32file' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
+                    p2 = self.getData(x['child'][2])
                     self.doCrc32file(p1, p2)
-                elif "exec" == command_name:
-                    self.doExec(line, x["child"][1:])
-                elif "getdate" == command_name:
-                    self.doGetdate(x["child"][1:])
-                elif "getenv" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = self.getKeywordName(x["child"][2])
+                elif 'exec' == command_name:
+                    self.doExec(line, x['child'][1:])
+                elif 'getdate' == command_name:
+                    self.doGetdate(x['child'][1:])
+                elif 'getenv' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = self.getKeywordName(x['child'][2])
                     # print(f"getenv1 c=({command_name}) l={p1} r={p2}")
                     p1 = os.getenv(p1)
                     if p1 is None:
-                        p1 = ""
+                        p1 = ''
                     # print(f"getenv2 c=({command_name}) l={p1} r={p2}")
                     self.setValue(p2, p1)
-                elif "getipv4addr" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
-                    p2 = str(self.getKeywordName(x["child"][2]))
+                elif 'getipv4addr' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
                     self.doGetipv4addr(p1, p2)
-                elif "getipv6addr" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
-                    p2 = str(self.getKeywordName(x["child"][2]))
+                elif 'getipv6addr' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = str(self.getKeywordName(x['child'][2]))
                     self.doGetipv6addr(p1, p2)
-                elif "gettime" == command_name:
-                    self.doGetdate(x["child"][1:], format="%H:%M:%S")
-                elif "getttdir" == command_name:
-                    p1 = self.getKeywordName(x["child"][1])
+                elif 'gettime' == command_name:
+                    self.doGetdate(x['child'][1:], format='%H:%M:%S')
+                elif 'getttdir' == command_name:
+                    p1 = self.getKeywordName(x['child'][1])
                     self.setValue(p1, self.current_dir)
-                elif "getver" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
+                elif 'getver' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
                     p2 = None
-                    if 3 <= len(x["child"]):
-                        p2 = float(self.getData(x["child"][2]))
+                    if 3 <= len(x['child']):
+                        p2 = float(self.getData(x['child'][2]))
                     self.doGetver(p1, p2)
-                elif "ifdefined" == command_name:
-                    p1 = str(x["child"][1])
+                elif 'ifdefined' == command_name:
+                    p1 = str(x['child'][1])
                     self.doIfdefined(p1)
-                elif "intdim" == command_name:
-                    p1 = x["child"][1]
-                    p2 = self.getDataInt(x["child"][2])
+                elif 'intdim' == command_name:
+                    p1 = x['child'][1]
+                    p2 = self.getDataInt(x['child'][2])
                     for i in range(p2):
-                        self.setValue(p1 + "[" + str(i) + "]", 0)
-                elif "random" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
-                    p2 = self.getDataInt(x["child"][2])
+                        self.setValue(p1 + '[' + str(i) + ']', 0)
+                elif 'random' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
+                    p2 = self.getDataInt(x['child'][2])
                     p1_val = random.randint(0, p2)
                     self.setValue(p1, p1_val)
-                elif "setenv" == command_name:
-                    p1 = str(self.getData(x["child"][1]))
-                    p2 = str(self.getData(x["child"][2]))
+                elif 'setenv' == command_name:
+                    p1 = str(self.getData(x['child'][1]))
+                    p2 = str(self.getData(x['child'][2]))
                     os.environ[p1] = p2
                     # print(f"setenv2 c=({command_name}) l={p1} r={p2}")
-                elif "setexitcode" == command_name:
-                    p1 = self.getDataInt(x["child"][1])
+                elif 'setexitcode' == command_name:
+                    p1 = self.getDataInt(x['child'][1])
                     self.doSetexitcode(p1)
-                elif "strdim" == command_name:
-                    p1 = x["child"][1]
-                    p2 = self.getDataInt(x["child"][2])
+                elif 'strdim' == command_name:
+                    p1 = x['child'][1]
+                    p2 = self.getDataInt(x['child'][2])
                     for i in range(p2):
-                        self.setValue(p1 + "[" + str(i) + "]", "")
-                elif "uptime" == command_name:
-                    p1 = str(self.getKeywordName(x["child"][1]))
+                        self.setValue(p1 + '[' + str(i) + ']', '')
+                elif 'uptime' == command_name:
+                    p1 = str(self.getKeywordName(x['child'][1]))
                     self.setValue(p1, int(uptime.uptime() * 1000))
                 else:
                     # print(f"### l={line} コマンドが分からない{name}")
-                    self.commandContext(command_name, line, x["child"][1:])
-            elif "ForNextContext" == name:
-                self.forNextContext(x["child"])
-            elif "WhileEndwhileContext" == name:
-                self.whileEndwhileContext(x["child"])
-            elif "UntilEnduntilContext" == name:
-                self.untilEnduntilContext(x["child"])
-            elif "DoLoopContext" == name:
-                self.doLoopContext(x["child"])
-            elif "If1Context" == name:
-                self.if1Context(x["child"])
-            elif "If2Context" == name:
-                self.if2Context(x["child"])
-            elif "LabelContext" != name:
+                    self.commandContext(command_name, line, x['child'][1:])
+            elif 'ForNextContext' == name:
+                self.forNextContext(x['child'])
+            elif 'WhileEndwhileContext' == name:
+                self.whileEndwhileContext(x['child'])
+            elif 'UntilEnduntilContext' == name:
+                self.untilEnduntilContext(x['child'])
+            elif 'DoLoopContext' == name:
+                self.doLoopContext(x['child'])
+            elif 'If1Context' == name:
+                self.if1Context(x['child'])
+            elif 'If2Context' == name:
+                self.if2Context(x['child'])
+            elif 'LabelContext' != name:
                 pass
             else:
-                self.stop(error=f"### l={line} Unkown name={name}")
+                self.stop(error=f'### l={line} Unkown name={name}')
             if self.end_flag:
                 break
 
     def commandContext(self, name, line, data_list):
-        """(GUI系を)オーバーライドさせて使う"""
+        '''(GUI系を)オーバーライドさせて使う'''
         # GUIでしかできないのでダニーを入れておく
-        if name in ["passwordbox", "inputbox", "listbox"]:
+        if name in ['passwordbox', 'inputbox', 'listbox']:
             # print(f"super.commandContext {name} start")
             self.printCommand(name, line, data_list)
-            self.setValue("inputstr", "aaa")
+            self.setValue('inputstr', 'aaa')
             # print(f"super.commandContext {name} end")
         elif name in [
-            "bringupbox",
-            "closesbox",
-            "messagebox",
-            "statusbox",
-            "setdlgpos",
+            'bringupbox',
+            'closesbox',
+            'messagebox',
+            'statusbox',
+            'setdlgpos',
         ]:
             self.printCommand(name, line, data_list)
-        elif "dirnamebox" == name:
+        elif 'dirnamebox' == name:
             self.printCommand(name, line, data_list)
-            self.setValue("result", 1)
-            self.setValue("inputstr", str(os.getcwd()))
-        elif "filenamebox" == name:
+            self.setValue('result', 1)
+            self.setValue('inputstr', str(os.getcwd()))
+        elif 'filenamebox' == name:
             self.printCommand(name, line, data_list)
-            self.setValue("result", 0)
-            self.setValue("inputstr", "tmp.txt")
-        elif name in ["yesnobox"]:
+            self.setValue('result', 0)
+            self.setValue('inputstr', 'tmp.txt')
+        elif name in ['yesnobox']:
             self.printCommand(name, line, data_list)
-            self.setValue("result", 1)
-        elif name in ["showtt"]:
+            self.setValue('result', 1)
+        elif name in ['showtt']:
             self.printCommand(name, line, data_list)
             self.setValue(self.getKeywordName(data_list[0]), 0)
-        elif name in ["setdlgpos", "show", "callmenu", "enablekeyb"]:
+        elif name in ['setdlgpos', 'show', 'callmenu', 'enablekeyb']:
             pass
         else:
             self.printCommand(name, line, data_list)
@@ -1220,37 +1754,37 @@ class TtlPaserWolker(ABC):
             if isinstance(result, int):
                 result = str(result)
             elif isinstance(result, Label):
-                result = "LABEL"
+                result = 'LABEL'
             if keywordName is None:
                 message = message + f" p({result})"
             else:
                 message = message + f" p({keywordName}/{result})"
-        self.setLog(message + "\n")
+        self.setLogInner(message + "\n")
         return message
 
     def correctLabel(self):
-        """ラベルを収集する"""
+        '''ラベルを収集する'''
         self.correctLabelAll(self.result_file_json.values())
 
     def correctLabelAll(self, token_list_list: list):
-        """ラベルを収集する"""
+        '''ラベルを収集する'''
         i = -1
         for token_dict in token_list_list:
             i = i + 1
-            name = token_dict["name"]  # StatementContext
+            name = token_dict['name']  # StatementContext
             # print(f"correctLabelAll i={i} {name}")
             if "StatementContext" == name:
                 # print("hit")
-                self.correctLabelAll(token_dict["child"])  # StatementContext
-            elif "CommandlineContext" == name:
+                self.correctLabelAll(token_dict['child'])  # StatementContext
+            elif 'CommandlineContext' == name:
                 # print("hit2")
                 j = -1
-                next_list = token_dict["child"]
+                next_list = token_dict['child']
                 for next in next_list:
                     j = j + 1
-                    if "LabelContext" == next["name"]:
+                    if 'LabelContext' == next['name']:
                         # print(f"hot3 {next['child']}")
-                        label_name = next["child"][1]
+                        label_name = next['child'][1]
                         # print("hit4")
                         label = Label(token_list_list[i + 1:])
                         # print(f"xxx data={label_name} // {label.getTokenList()}")
@@ -1262,21 +1796,22 @@ class TtlPaserWolker(ABC):
     def callContext(self, line, label):
         #
         try:
-            # print("callContest")
-            label = self.getValue(label, error_stop=False)
-            if label is None:
-                raise TypeError(f"### l={line} No hit label error none label={label}")
-            if not isinstance(label, Label):
-                raise TypeError(f"### l={line} No hit label error label={label}")
-            for token in label.getTokenList():
-                # print(f"hit x {token}")
-                self.execute_result([token])
-                if self.end_flag:
-                    break
+            self.gotoContext(line, label)
         except TtlReturnFlagException:
-            # print("TtlReturnFlagException")
             pass
+
+    def gotoContext(self, line, label_str):
         #
+        # print("gotoContest")
+        label = self.getValue(label_str, error_stop=False)
+        if label is None:
+            raise TypeError(f"### l={line} No hit label error none label={label_str}")
+        if not isinstance(label, Label):
+            raise TypeError(f"### l={line} No hit label error label={label_str}")
+        for token in label.getTokenList():
+            self.execute_result([token])
+            if self.end_flag:
+                break
 
     def forNextContext(self, data_list):
         intvar = self.getKeywordName(data_list[1])
@@ -1341,7 +1876,7 @@ class TtlPaserWolker(ABC):
                         # do/loop
                         # print(f"do/loop={data}")
                         pass
-                    elif "CommandlineContext" == data["name"]:
+                    elif 'CommandlineContext' == data['name']:
                         # print(f"LineContext={data}")
                         self.execute_result([data])
                     else:
@@ -1373,49 +1908,49 @@ class TtlPaserWolker(ABC):
             result = int(result)
         except (TypeError, ValueError) as e:
             if isinstance(data, dict):
-                if "line" in data:
+                if 'line' in data:
                     raise TypeError(f"### l={data['line']} {type(e).__name__} e={e}")
             raise  # そのまま上流へ送る
         return result
 
     def getData(self, data):
-        """構文解析からデータを抽出する"""
+        '''構文解析からデータを抽出する'''
         result = ""
         if isinstance(data, str):
             result = self.getValue(data)
-        elif "name" not in data:
+        elif 'name' not in data:
             raise TypeError(f"unkown name data={str(data)}")
-        elif "P11ExpressionContext" == data["name"]:
-            result = self.p11ExpressionContext(data["child"])
-        elif "P10ExpressionContext" == data["name"]:
-            result = self.p10ExpressionContext(data["child"])
-        elif "P9ExpressionContext" == data["name"]:
-            result = self.p9ExpressionContext(data["child"])
-        elif "P8ExpressionContext" == data["name"]:
-            result = self.p8ExpressionContext(data["child"])
-        elif "P7ExpressionContext" == data["name"]:
-            result = self.p7ExpressionContext(data["child"])
-        elif "P6ExpressionContext" == data["name"]:
-            result = self.p6ExpressionContext(data["child"])
-        elif "P5ExpressionContext" == data["name"]:
-            result = self.p5ExpressionContext(data["child"])
-        elif "P4ExpressionContext" == data["name"]:
-            result = self.p4ExpressionContext(data["child"])
-        elif "P3ExpressionContext" == data["name"]:
-            result = self.p3ExpressionContext(data["child"])
-        elif "P2ExpressionContext" == data["name"]:
-            result = self.p2ExpressionContext(data["child"])
-        elif "P1ExpressionContext" == data["name"]:
-            result = self.p1ExpressionContext(data["child"])
-        elif "IntExpressionContext" == data["name"]:
-            result = self.intExpressionContext(data["child"])
-        elif "StrExpressionContext" == data["name"]:
-            result = self.strExpressionContext(data["child"])
-        elif "IntContextContext" == data["name"]:
-            result = self.intContext(data["child"])
-        elif "StrContextContext" == data["name"]:
-            result = self.strContext(data["child"])
-        elif "KeywordContext" == data["name"]:
+        elif 'P11ExpressionContext' == data['name']:
+            result = self.p11ExpressionContext(data['child'])
+        elif 'P10ExpressionContext' == data['name']:
+            result = self.p10ExpressionContext(data['child'])
+        elif 'P9ExpressionContext' == data['name']:
+            result = self.p9ExpressionContext(data['child'])
+        elif 'P8ExpressionContext' == data['name']:
+            result = self.p8ExpressionContext(data['child'])
+        elif 'P7ExpressionContext' == data['name']:
+            result = self.p7ExpressionContext(data['child'])
+        elif 'P6ExpressionContext' == data['name']:
+            result = self.p6ExpressionContext(data['child'])
+        elif 'P5ExpressionContext' == data['name']:
+            result = self.p5ExpressionContext(data['child'])
+        elif 'P4ExpressionContext' == data['name']:
+            result = self.p4ExpressionContext(data['child'])
+        elif 'P3ExpressionContext' == data['name']:
+            result = self.p3ExpressionContext(data['child'])
+        elif 'P2ExpressionContext' == data['name']:
+            result = self.p2ExpressionContext(data['child'])
+        elif 'P1ExpressionContext' == data['name']:
+            result = self.p1ExpressionContext(data['child'])
+        elif 'IntExpressionContext' == data['name']:
+            result = self.intExpressionContext(data['child'])
+        elif 'StrExpressionContext' == data['name']:
+            result = self.strExpressionContext(data['child'])
+        elif 'IntContextContext' == data['name']:
+            result = self.intContext(data['child'])
+        elif 'StrContextContext' == data['name']:
+            result = self.strContext(data['child'])
+        elif 'KeywordContext' == data['name']:
             result = self.keywordContext(data)
         else:
             raise TypeError(f"unkown keyword n={data['name']}")
@@ -1454,7 +1989,7 @@ class TtlPaserWolker(ABC):
         # print(f"p9ExpressionContext count={2} data={data[2]['name']} child={data[2]['child']} ")
         val2 = self.getDataInt(data[2])
         result = 0
-        if "==" == oper or "=" == oper:
+        if '==' == oper or '=' == oper:
             result = val1 == val2
         else:  # <> or !=
             result = val1 != val2
@@ -1470,11 +2005,11 @@ class TtlPaserWolker(ABC):
         oper = data[1]
         val2 = self.getDataInt(data[2])
         result = 0
-        if "<" == oper:
+        if '<' == oper:
             result = val1 < val2
-        elif "<=" == oper:
+        elif '<=' == oper:
             result = val1 <= val2
-        elif ">" == oper:
+        elif '>' == oper:
             result = val1 > val2
         else:  # '>='
             result = val1 >= val2
@@ -1523,11 +2058,11 @@ class TtlPaserWolker(ABC):
         oper = data[1]
         val2 = self.getDataInt(data[2])
         result = 0
-        if ">>>" == oper:
+        if '>>>' == oper:
             result = val1 >> val2
-        elif ">>" == oper:
+        elif '>>' == oper:
             result = val1 >> val2
-        elif "<<" == oper:
+        elif '<<' == oper:
             result = val1 << val2
         return result
 
@@ -1539,9 +2074,9 @@ class TtlPaserWolker(ABC):
         oper = data[1]
         val2 = self.getDataInt(data[2])
         result = 0
-        if "+" == oper:
+        if '+' == oper:
             result = val1 + val2
-        elif "-" == oper:
+        elif '-' == oper:
             result = val1 - val2
         return result
 
@@ -1553,14 +2088,14 @@ class TtlPaserWolker(ABC):
         oper = data[1]
         val2 = self.getDataInt(data[2])
         result = 0
-        if "*" == oper:
+        if '*' == oper:
             result = val1 * val2
-        elif "/" == oper:
+        elif '/' == oper:
             try:
                 result = val1 // val2
             except ZeroDivisionError as e:
                 raise TypeError(f"ZeroDivisionError e={str(e)}")
-        elif "%" == oper:
+        elif '%' == oper:
             try:
                 result = val1 % val2
             except ZeroDivisionError as e:
@@ -1589,10 +2124,10 @@ class TtlPaserWolker(ABC):
 
     def strContext(self, data_list):
         # print(f"str={data_list}")
-        result = ""
+        result = ''
         for data in data_list:
             state = 0
-            old = ""
+            old = ''
             for i in range(len(data)):
                 hit_flag = False
                 ch0 = data[i]
@@ -1604,14 +2139,14 @@ class TtlPaserWolker(ABC):
                     elif ch0 == '"':
                         state = 2
                         hit_flag = True
-                    elif ch0 == "#":
+                    elif ch0 == '#':
                         hit_flag = True
                     else:
                         old = old + ch0
                     if hit_flag:
                         result = result + self.getChrSharp_str(old)
-                        old = ""  # clear
-                        if ch0 == "#":
+                        old = ''  # clear
+                        if ch0 == '#':
                             old = ch0
                 elif state == 1:
                     if ch0 == "'":
@@ -1629,21 +2164,21 @@ class TtlPaserWolker(ABC):
 
     def getChrSharp_str(self, base) -> str:
         if len(base) <= 0:
-            return ""
+            return ''
         #
         # print(f"\tbaseB={base}")
-        if "#" == base[0]:
+        if '#' == base[0]:
             # print(f"\tbaseC={base} data={base[1:]}")
             base = self.getChrSharp(self.getAsciiNum(base[1:]))
             # print(f"\tbaseD={base} data={base[1:]}")
-        elif "$" == base[0]:
+        elif '$' == base[0]:
             base = self.getAsciiNum(base)
         return base
 
     def getChrSharp(self, data: int) -> str:
         if data <= 0:
             return chr(data & 0xFF)
-        result = ""
+        result = ''
         while 0 < data:
             result = chr(data & 0xFF) + result
             data = data >> 8
@@ -1652,9 +2187,9 @@ class TtlPaserWolker(ABC):
     def getSharpChr(self, data: str) -> int:
         # print(f"getSharpChr {data}")
         if len(data) <= 0:
-            return ""
+            return ''
         result = 0
-        while "" != data:
+        while '' != data:
             result = (result * 256) + ord(data[0])
             data = data[1:]
         return result
@@ -1663,7 +2198,7 @@ class TtlPaserWolker(ABC):
         result = 0
         data = data_list[0]
         # print(f"intContext={data}")
-        if 0 < len(data) and data[0] == "$":
+        if 0 < len(data) and data[0] == '$':
             result = self.getAsciiNum(data)
         else:
             result = int(data)
@@ -1671,16 +2206,16 @@ class TtlPaserWolker(ABC):
 
     def getAsciiNum(self, data: str) -> int:
         # print(f"getAsciiNum={data} len={len(data)} data[0]={data[0]}")
-        if (0 < len(data)) and ("$" == data[0]):
+        if (0 < len(data)) and ('$' == data[0]):
             ans = int(data[1:], 16)
             # print(f"data[1:]={data[1:]} ans={ans}")
             return ans
         return int(data)
 
     def getKeywordName(self, data):
-        """構文内のキーワード名を取得する"""
+        '''構文内のキーワード名を取得する'''
         # print(f"keywordName {data}")
-        if "name" not in data:
+        if 'name' not in data:
             if isinstance(data, str):
                 return data
             elif isinstance(data, list):
@@ -1688,14 +2223,14 @@ class TtlPaserWolker(ABC):
             raise TypeError("keywordName name not in data")
         #
         # this is dict
-        if "StrExpressionContext" == data["name"]:
-            return self.getKeywordName(data["child"][0])
-        elif "KeywordContext" != data["name"]:
+        if 'StrExpressionContext' == data['name']:
+            return self.getKeywordName(data['child'][0])
+        elif 'KeywordContext' != data['name']:
             raise TypeError(
                 f"### l={data['line']} keywordName name is not KeywordContext {data}"
             )
         #
-        data = data["child"]
+        data = data['child']
         # print(f"data={data} len={len(data)}")
         if len(data) == 1:
             # 単純指定
@@ -1704,34 +2239,34 @@ class TtlPaserWolker(ABC):
             # 配列対策
             index = data[2]
             index = self.getData(index)
-            return data[0] + "[" + str(int(index)) + "]"
+            return data[0] + '[' + str(int(index)) + ']'
 
     def keywordContext(self, data):
-        """構文内のキーワードから値を抽出する"""
+        '''構文内のキーワードから値を抽出する'''
         # print(f"keywordContext data={data}")
         return self.getValue(self.getKeywordName(data))
 
     def doAssert(self, command_name: str, line: int, data_list) -> str:
-        """assert 処理用"""
+        '''assert 処理用'''
         message = self.printCommand(command_name, line, data_list)
         p1 = self.getData(data_list[0])
         if p1 == 0:
             raise TypeError(message)
 
     def doBplusrecv(self, command_name: str, line: int):
-        """bplusrecv 処理用"""
+        '''bplusrecv 処理用'''
         self.printCommand(command_name, line, [])
 
     def doBplussend(self, command_name: str, line: int, p1):
-        """bplussend 処理用"""
+        '''bplussend 処理用'''
         self.printCommand(command_name, line, [p1])
 
     def doCallmenu(self, command_name: str, line: int, p1):
-        """callmenu 処理用"""
+        '''callmenu 処理用'''
         self.printCommand(command_name, line, [p1])
 
     def doChangedir(self, p1):
-        """changedir 処理用"""
+        '''changedir 処理用'''
         p1 = pathlib.Path(p1)
         if p1.is_absolute():
             # print(f"pathA={p1}")
@@ -1742,81 +2277,126 @@ class TtlPaserWolker(ABC):
             os.chdir(p1)
 
     def doClearscreen(self, command_name: str, line: int, p1):
-        """clearscreen 処理用"""
+        '''clearscreen 処理用'''
         self.printCommand(command_name, line, [p1])
 
     def doConnect(self, data: str, line):
-        """接続する"""
+        '''接続する'''
         # print(f"do connect data={data}")
         if self.client is not None:
-            self.setValue("error", "Already connected")
-            self.setValue("result", 0)
+            self.setValue('error', 'Already connected')
+            self.setValue('result', 0)
             return
         param_list = re.split(r"[ \t]+", data)
-        server = "localhost"
+        server = 'localhost'
         user = None
         passwd = None
         keyfile = None
-        port_number = 22
+        com_key = None
+        port_number = None
         param_cmd = False
+        telnet = False
+        telnet_t = 0
         for param in param_list:
             if len(param) <= 0:
                 continue
-            if param[0] != "/":
-                server = param.split(":")
+            if param[0] != '/':
+                server = param.split(':')
                 if len(server) == 1:
                     server = server[0]
                 elif len(server) == 2:
                     port_number = int(server[1])
                     server = server[0]
                 else:
-                    self.setValue("error", "Invalid server name")
-                    self.setValue("result", 0)
+                    self.setValue('error', 'Invalid server name')
+                    self.setValue('result', 0)
                     return
             else:
-                user_string = "user="
-                passwd_string = "passwd="
-                keyfile_string = "keyfile="
+                user_string = 'user='
+                passwd_string = 'passwd='
+                keyfile_string = 'keyfile='
+                com_string = 'C='
                 param = param[1:]
                 # print(f"\tparam={param}")
                 if "ssh" == param:
                     pass
-                elif "1" == param:
-                    self.setValue("error", "SSH1 not support")
-                    self.setValue("result", 0)
+                elif '1' == param:
+                    self.setValue('error', 'SSH1 not support')
+                    self.setValue('result', 0)
                     return
-                elif "2" == param:
+                elif '2' == param:
                     pass  # SSH2
-                elif "cmd" == param:
+                elif 'cmd' == param:
                     param_cmd = True
-                elif "ask4passwd" == param:
-                    self.setValue("error", "Not Support ask4passwd error!")
-                    self.setValue("result", 0)
+                elif 't=0' == param.lower():
+                    telnet_t = 0
+                elif 't=1' == param.lower():
+                    telnet_t = 1
+                elif 'nossh' == param.lower():
+                    telnet = True
+                elif 'ask4passwd' == param:
+                    self.setValue('error', 'Not Support ask4passwd error!')
+                    self.setValue('result', 0)
                     return
-                elif "auth=password" == param:
+                elif 'auth=password' == param:
                     pass  # わからん
-                elif "auth=publickey" == param:
+                elif 'auth=publickey' == param:
                     pass  # わからん
-                elif "auth=challenge" == param:
+                elif 'auth=challenge' == param:
                     pass  # わからん
-                elif re.search("^" + user_string, param):
+                elif re.search('^' + user_string, param):
                     user = param[len(user_string):]
-                elif re.search("^" + passwd_string, param):
+                elif re.search('^' + passwd_string, param):
                     passwd = param[len(passwd_string):]
-                elif re.search("^" + keyfile_string, param):
+                elif re.search('^' + keyfile_string, param):
                     keyfile = param[len(keyfile_string):]
                     keyfile = self.normpath(keyfile)
+                elif re.search('^' + com_string, param):
+                    com_key = param[len(com_string):]
+                    com_key = self.normpath(com_key)
                 else:
                     # 知らないパラメータが来たら停止する
-                    self.setValue("error", f"unkown paramater={param}")
-                    self.setValue("result", 0)
+                    self.setValue('error', f"unkown paramater={param}")
+                    self.setValue('result', 0)
                     return
         #
         # 前の接続は削除
         self.closeClient()
         #
+        if port_number is None:  # オプションで変えていない場合
+            if telnet:
+                port_number = 23
+            else:
+                port_number = 22
+
+        #
         # ここから接続処理
-        if not param_cmd:
+        if com_key is not None:
+            try:
+                self.shell = MySerial(
+                    com_key, self.speed,
+                    flowctrl=self.flowctrl,
+                    flowctrl_dtr=self.flowctrl_dtr,
+                    flowctrl_rts=self.flowctrl_rts)
+                self.setValue('result', 2)
+            except Exception as e:
+                self.setValue('error', f"### l={line} {type(e).__name__} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+        elif telnet:
+            try:
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client.connect((server, port_number))
+                if telnet_t == 0:
+                    self.shell = MyTelnetT0(client)
+                else:
+                    self.shell = MyTelnetT1(client)
+                self.setValue('result', 2)
+            except Exception as e:
+                self.setValue('error', f"### l={line} {type(e).__name__} e={e}")
+                self.setValue('result', 0)
+                self.closeClient()
+        elif not param_cmd:
             try:
                 self.client = paramiko.SSHClient()
                 self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -1838,7 +2418,7 @@ class TtlPaserWolker(ABC):
                 #
                 # 接続成功
                 #
-                self.setValue("result", 2)
+                self.setValue('result', 2)
                 self.log_connect_time = time.time()
                 # print("connect OK !")
                 #
@@ -1848,8 +2428,8 @@ class TtlPaserWolker(ABC):
                 paramiko.AuthenticationException,
                 paramiko.SSHException,
             ) as e:
-                self.setValue("error", f"### l={line} {type(e).__name__} e={e}")
-                self.setValue("result", 0)
+                self.setValue('error', f"### l={line} {type(e).__name__} e={e}")
+                self.setValue('result', 0)
                 self.closeClient()
         else:
             if platform.system().lower() == "linux":
@@ -1860,7 +2440,7 @@ class TtlPaserWolker(ABC):
                 self.shell = MyShell()
             #
             # 接続成功
-            self.setValue("result", 2)
+            self.setValue('result', 2)
 
     def doDispstr(self, data_list):
         for data in data_list:
@@ -1870,17 +2450,17 @@ class TtlPaserWolker(ABC):
             self.setLogInner(result)
 
     def doEnablekeyb(self, command_name: str, line: int, p1):
-        """enablekeyb 処理用"""
+        '''enablekeyb 処理用'''
         pass
 
     def doGetmodemstatus(self, command_name: str, line: int, p1):
-        """getmodemstatus 処理用"""
+        '''getmodemstatus 処理用'''
         # print(f"{p1}")
         self.setValue(p1, 0)
-        self.setValue("result", 1)  # 必ず失敗
+        self.setValue('result', 1)  # 必ず失敗
 
     def doGethostname(self, p1):
-        """ホスト名の取得"""
+        '''ホスト名の取得'''
         if self.client is not None and self.shell is not None and self.shell.active:
             # 外部と接続しているとき
             ip_address = self.client.get_transport().getpeername()[0]
@@ -1893,9 +2473,9 @@ class TtlPaserWolker(ABC):
 
     def doTestlink(self):
         if self.shell is None or not self.shell.active:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
         else:
-            self.setValue("result", 2)
+            self.setValue('result', 2)
 
     def doSend(self, data_list):
         # print(f"doSend() d={data_list}")
@@ -1949,9 +2529,9 @@ class TtlPaserWolker(ABC):
         self.doWaitAll(result_list)
 
     def doFlushrecv(self):
-        """do flush"""
+        '''do flush'''
         # すでに読んだものを空にする
-        self.stdout = ""
+        self.stdout = ''
         #
         # まだ読めてないものを空にする
         while not self.end_flag:
@@ -1963,9 +2543,10 @@ class TtlPaserWolker(ABC):
             if not local_ssh.recv_ready():
                 break
             #
-            output = local_ssh.recv(1024).decode("utf-8")
+            output = local_ssh.recv(1024).decode('utf-8', errors='xmlcharrefreplace')
             if output is None:
                 break
+            output = self.split_escape(output)  # escape文字を吹き飛ばす
             self.setLogInner(output)
 
     def doWaitAll(self, result_list):
@@ -1974,7 +2555,7 @@ class TtlPaserWolker(ABC):
         now_time = time.time()
         result = 0
         hit_flag = False
-        self.setValue("result", 0)
+        self.setValue('result', 0)
         while not self.end_flag and not hit_flag:
             #
             if m_timeout != 0:
@@ -2006,7 +2587,7 @@ class TtlPaserWolker(ABC):
                 # print(f"remain1=/{self.stdout}/ cutlen={max + result_len}")
                 self.stdout = self.stdout[max + result_len:]
                 # print(f"remain2=/{self.stdout.strip()}/")
-                self.setValue("result", result)
+                self.setValue('result', result)
                 # ヒットしていたら終了
                 break
             #
@@ -2018,10 +2599,12 @@ class TtlPaserWolker(ABC):
             if local_ssh.recv_ready():
                 now_time = time.time()  # 最後の時間更新
                 # print("recv start! ============")
-                output = local_ssh.recv(1024).decode("utf-8")
+                output = local_ssh.recv(1024)
                 # print(f"recv! end {output} ============")
                 if output is None:
                     break
+                output = output.decode('utf-8', errors='xmlcharrefreplace')
+                output = self.split_escape(output)  # escape文字を吹き飛ばす
                 self.setLogInner(output)
                 self.stdout = self.stdout + output
                 #
@@ -2031,10 +2614,10 @@ class TtlPaserWolker(ABC):
 
     def getTimer(self) -> float:
         m_timeout = 0.0
-        x = self.getValue("timeout", error_stop=False)
+        x = self.getValue('timeout', error_stop=False)
         if x is not None:
             m_timeout = int(x)
-        x = self.getValue("mtimeout", error_stop=False)
+        x = self.getValue('mtimeout', error_stop=False)
         if x is not None:
             m_timeout = m_timeout + (int(x) / 1000)
         return m_timeout
@@ -2070,7 +2653,7 @@ class TtlPaserWolker(ABC):
         include_screen_buffer_flag,
         timestamp_type,
     ):
-        """open the log"""
+        '''open the log'''
         # 開いているものがあったらクローズする
         self.doLogclose()
         #
@@ -2093,20 +2676,20 @@ class TtlPaserWolker(ABC):
         #
         # タイムスタンプありなら最初に書き込む
         if self.log_timestamp_type != -1:
-            self.log_file_handle.write(self.getTimestamp().encode("utf-8"))
+            self.log_file_handle.write(self.getTimestamp().encode('utf-8'))
 
     def doLogpause(self):
         self.log_start = False
 
     def doLogrotate(self, name, line, p1, p2):
-        """必要ならオーバーライドしてください"""
+        '''必要ならオーバーライドしてください'''
         self.commandContext(name, line, (p1, p2))
 
     def doLogstart(self):
         self.log_start = True
 
     def doLogwrite(self, strvar: str):
-        """無条件で書き込む"""
+        ''' log write '''
         if self.log_file_handle is None:
             # ログが開かれていない
             return
@@ -2114,34 +2697,34 @@ class TtlPaserWolker(ABC):
         if self.log_timestamp_type == -1:
             # タイムスタンプは不要
             if isinstance(strvar, str):
-                strvar = strvar.encode("utf-8")
+                strvar = strvar.encode('utf-8')
             self.log_file_handle.write(strvar)
         else:
             # タイムスタンプを付ける必要がある
             while True:
-                if strvar == "":
+                if strvar == '':
                     break
                 index = strvar.find("\n")
                 if index < 0:
                     if isinstance(strvar, str):
-                        strvar = strvar.encode("utf-8")
+                        strvar = strvar.encode('utf-8')
                     self.log_file_handle.write(strvar)
                     break
                 target = strvar[: index + 1]
                 if isinstance(target, str):
-                    target = target.encode("utf-8")
+                    target = target.encode('utf-8')
                 self.log_file_handle.write(target)
-                self.log_file_handle.write(self.getTimestamp().encode("utf-8"))
+                self.log_file_handle.write(self.getTimestamp().encode('utf-8'))
                 strvar = strvar[index + 1:]
 
     def getTimestamp(self) -> str:
-        """タイムスタンプを入れる"""
+        '''タイムスタンプを入れる'''
         if self.log_timestamp_type == 0:
             # ローカルタイム
-            return "[" + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]"
+            return '[' + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ']'
         elif self.log_timestamp_type == 1:
             # UTC
-            return "[" + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") + "]"
+            return '[' + datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') + ']'
         elif self.log_timestamp_type == 2:
             # 経過時間 (Logging)
             return self.getTimestampElapsed(self.log_login_time)
@@ -2150,7 +2733,7 @@ class TtlPaserWolker(ABC):
             return self.getTimestampElapsed(self.log_connect_time)
 
     def getTimestampElapsed(self, start) -> str:
-        """経過時間を文字に変換する"""
+        '''経過時間を文字に変換する'''
         total_seconds = 0
         if start is not None:
             total_seconds = int(start - time.time())
@@ -2161,8 +2744,12 @@ class TtlPaserWolker(ABC):
         return f"[{day} {hours:02}:{minutes:02}:{seconds:02}]"
 
     def setLogInner(self, strvar: str):
-        """ログファイル書き込みが必要ならこちらを使います"""
+        ''' ログ書き込み前に事前処理を行います '''
         #
+        strvar = strvar.replace("\r\n", "\n")
+        strvar = strvar.replace("\r", "\n")
+        if "\n" != os.linesep:
+            strvar = strvar.replace("\n", os.linesep)
         # ログ出力/オーバーライドする方に渡す
         self.setLog(strvar)
         #
@@ -2172,50 +2759,50 @@ class TtlPaserWolker(ABC):
 
     @abstractmethod
     def setLog(self, strvar: str):
-        """ Please Override! """
+        ''' Please Override! '''
         pass
 
     def doChecksum8(self, p1: str, p2: str):
-        p2_byte = p2.encode("utf-8")
+        p2_byte = p2.encode('utf-8')
         self.getChecksum(p1, p2_byte, 0x0F)
 
     def doChecksum8file(self, p1: str, p2: str):
         self.setValue(p1, 0)  # default value
         try:
-            with open(p2, "rb") as f:
+            with open(p2, 'rb') as f:
                 p2_byte = f.read()
                 self.getChecksum(p1, p2_byte, 0x0F)
-                self.setValue("result", 0)
+                self.setValue('result', 0)
         except Exception:
-            self.setValue("result", -1)
+            self.setValue('result', -1)
 
     def doChecksum16(self, p1: str, p2: str):
-        p2_byte = p2.encode("utf-8")
+        p2_byte = p2.encode('utf-8')
         self.getChecksum(p1, p2_byte, 0xFF)
 
     def doChecksum16file(self, p1: str, p2: str):
         self.setValue(p1, 0)  # default value
         try:
-            with open(p2, "rb") as f:
+            with open(p2, 'rb') as f:
                 p2_byte = f.read()
                 self.getChecksum(p1, p2_byte, 0xFF)
-                self.setValue("result", 0)
+                self.setValue('result', 0)
         except Exception:
-            self.setValue("result", -1)
+            self.setValue('result', -1)
 
     def doChecksum32(self, p1: str, p2: str):
-        p2_byte = p2.encode("utf-8")
+        p2_byte = p2.encode('utf-8')
         self.getChecksum(p1, p2_byte, 0xFFFF)
 
     def doChecksum32file(self, p1: str, p2: str):
         self.setValue(p1, 0)  # default value
         try:
-            with open(p2, "rb") as f:
+            with open(p2, 'rb') as f:
                 p2_byte = f.read()
                 self.getChecksum(p1, p2_byte, 0xFFFF)
-                self.setValue("result", 0)
+                self.setValue('result', 0)
         except Exception:
-            self.setValue("result", -1)
+            self.setValue('result', -1)
 
     def getChecksum(self, p1: str, p2_byte, mask: int):
         sum = 0
@@ -2225,18 +2812,18 @@ class TtlPaserWolker(ABC):
         self.setValue(p1, sum)
 
     def doCrc16(self, p1: str, p2: str):
-        p2_byte = p2.encode("utf-8")
+        p2_byte = p2.encode('utf-8')
         self.crc16_IBM_SDLC(p1, p2_byte)
 
     def doCrc16file(self, p1: str, p2: str):
         self.setValue(p1, 0)  # default value
         try:
-            with open(p2, "rb") as f:
+            with open(p2, 'rb') as f:
                 p2_byte = f.read()
                 self.crc16_IBM_SDLC(p1, p2_byte)
-                self.setValue("result", 0)
+                self.setValue('result', 0)
         except Exception:
-            self.setValue("result", -1)
+            self.setValue('result', -1)
 
     def crc16_IBM_SDLC(self, p1: str, data: bytes):
         r = 0xFFFF
@@ -2251,18 +2838,18 @@ class TtlPaserWolker(ABC):
         self.setValue(p1, r)
 
     def doCrc32(self, p1: str, p2: str):
-        p2_byte = p2.encode("utf-8")
+        p2_byte = p2.encode('utf-8')
         self.crc32_IBM_SDLC(p1, p2_byte)
 
     def doCrc32file(self, p1: str, p2: str):
         self.setValue(p1, 0)  # default value
         try:
-            with open(p2, "rb") as f:
+            with open(p2, 'rb') as f:
                 p2_byte = f.read()
                 self.crc32_IBM_SDLC(p1, p2_byte)
-                self.setValue("result", 0)
+                self.setValue('result', 0)
         except Exception:
-            self.setValue("result", -1)
+            self.setValue('result', -1)
 
     def crc32_IBM_SDLC(self, p1: str, data: bytes):
         r = 0xFFFFFFFF
@@ -2284,31 +2871,31 @@ class TtlPaserWolker(ABC):
         show = 1  # SW_SHOWNORMAL
         if 2 <= (data_len):
             show = self.getData(data_line[1]).lower()
-            if "show" == show:
+            if 'show' == show:
                 pass
-            elif "minimize" == show:
+            elif 'minimize' == show:
                 show = 6  # SW_MINIMIZE
-            elif "maximize" == show:
+            elif 'maximize' == show:
                 show = 3  # SW_MAXIMIZE
-            elif "hide" == show:
+            elif 'hide' == show:
                 show = 0  # SW_HIDE
             else:
                 raise TypeError(f"### l={line} doExec type error")
         wait = 0
         if 3 <= (data_len):
             wait = self.getDataInt(data_line[2])
-        base_directory = "."
+        base_directory = '.'
         if 4 <= (data_len):
             base_directory = self.getData(data_line[3])
             if not os.path.isdir(base_directory):
-                base_directory = "."
+                base_directory = '.'
         # print(f"\tcommand_list={command_list}")
         # print(f"\tshow={show}")
         # print(f"\twait={wait}")
         # print(f"\tbase_directory={base_directory}")
         #
         si = None
-        if platform.system().lower() != "linux":
+        if platform.system().lower() != 'linux':
             si = subprocess.STARTUPINFO()
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = 0  # SW_HIDE
@@ -2317,9 +2904,9 @@ class TtlPaserWolker(ABC):
         )
         if wait != 0:
             p.wait()  # プロセスが終了するまで待機
-            self.setValue("result", p.returncode)
+            self.setValue('result', p.returncode)
 
-    def doGetdate(self, data_line, format="%Y-%m-%d"):
+    def doGetdate(self, data_line, format='%Y-%m-%d'):
         date = self.getKeywordName(data_line[0])
         data_len = len(data_line)
         if 2 <= data_len:
@@ -2329,7 +2916,7 @@ class TtlPaserWolker(ABC):
         # print(f"timezone={local_timezone}")
         if 3 <= data_len:
             local_timezone = self.getData(data_line[2])
-        date_str = ""
+        date_str = ''
         if local_timezone is None:
             local_now = datetime.now()
         else:
@@ -2338,25 +2925,25 @@ class TtlPaserWolker(ABC):
         self.setValue(date, date_str)
 
     def doExpandenv(self, p1, p2):
-        if platform.system().lower() != "linux":
+        if platform.system().lower() != 'linux':
             p2 = os.path.expandvars(p2)
         else:
             pattern = r"%(.*?)%"
             p2 = re.sub(pattern, lambda match: f"%{match.group(1).lower()}%", p2)
-            p2 = p2.replace("%windir%", "c:\\windows")
-            p2 = p2.replace("%systemroot%", "/root")
-            p2 = p2.replace("%programfiles%", "/usr/local")
-            p2 = p2.replace("%programfiles(x86)%", "/usr/local")
-            p2 = p2.replace("%userprofile%", os.environ.get("HOME"))
-            p2 = p2.replace("%appdata%", "/usr/local")
-            p2 = p2.replace("%localappdata%", "/usr/local")
-            p2 = p2.replace("%temp%", "/tmp")
-            p2 = p2.replace("%tmp%", "/tmp")
-            p2 = p2.replace("%computerprogramfiles%", "/usr/local")
-            p2 = p2.replace("%public%", os.environ.get("HOME"))
-            p2 = p2.replace("%computername%", socket.gethostname())
-            p2 = p2.replace("%username%", getpass.getuser())
-            p2 = p2.replace("%path%", os.environ.get("PATH"))
+            p2 = p2.replace('%windir%', 'c:\\windows')
+            p2 = p2.replace('%systemroot%', '/root')
+            p2 = p2.replace('%programfiles%', '/usr/local')
+            p2 = p2.replace('%programfiles(x86)%', '/usr/local')
+            p2 = p2.replace('%userprofile%', os.environ.get('HOME'))
+            p2 = p2.replace('%appdata%', '/usr/local')
+            p2 = p2.replace('%localappdata%', '/usr/local')
+            p2 = p2.replace('%temp%', '/tmp')
+            p2 = p2.replace('%tmp%', '/tmp')
+            p2 = p2.replace('%computerprogramfiles%', '/usr/local')
+            p2 = p2.replace('%public%', os.environ.get('HOME'))
+            p2 = p2.replace('%computername%', socket.gethostname())
+            p2 = p2.replace('%username%', getpass.getuser())
+            p2 = p2.replace('%path%', os.environ.get('PATH'))
         #
         self.setValue(p1, p2)
 
@@ -2370,10 +2957,10 @@ class TtlPaserWolker(ABC):
         strvar = format % tuple(data_new)
         # print(f"strvar={strvar}")
         self.setValue(inputstr, strvar)
-        self.setValue("result", 0)
+        self.setValue('result', 0)
 
     def doPause(self, p1):
-        """指定された秒数待つ"""
+        '''指定された秒数待つ'''
         # print(f"pause {p1}")
         if self.end_flag:
             return
@@ -2391,7 +2978,7 @@ class TtlPaserWolker(ABC):
 
     def doStrtrim(self, p1_var: str, p2: str) -> str:
         # エスケープを変換する
-        p2 = p2.encode().decode("unicode_escape")
+        p2 = p2.encode().decode('unicode_escape', errors='xmlcharrefreplace')
 
         # 前方方向
         while 0 < len(p1_var):
@@ -2414,24 +3001,24 @@ class TtlPaserWolker(ABC):
         worker = {}
         filename = self.normpath(filename)
         worker = self.get_encrypt_file(filename)
-        encrypt_byte = encrypt_str.encode("utf-8")
+        encrypt_byte = encrypt_str.encode('utf-8')
         encrypt_byte = encrypt_byte.ljust(32, b"\0")  # 32byte以下なら増やす
         encrypt_byte = encrypt_byte[:32]  # 32byte以上を無視する
         encrypt_byte = base64.urlsafe_b64encode(encrypt_byte)
         cipher = Fernet(encrypt_byte)
         #
-        target_0 = password.encode("utf-8")  # 文字をセット
-        target_1 = f"{password}_{encrypt_str}".encode("utf-8")
+        target_0 = password.encode('utf-8')  # 文字をセット
+        target_1 = f"{password}_{encrypt_str}".encode('utf-8')
         # print(f"d {password_name} {password} 0={target_0}")
         target_0 = cipher.encrypt(target_0)  # byte列に変更して暗号化
         target_1 = cipher.encrypt(target_1)
-        target_0 = base64.b64encode(target_0).decode()  # base64に変更して文字にする
-        target_1 = base64.b64encode(target_1).decode()
+        target_0 = base64.b64encode(target_0).decode('utf-8', errors='xmlcharrefreplace')  # base64に変更して文字にする
+        target_1 = base64.b64encode(target_1).decode('utf-8', errors='xmlcharrefreplace')
         worker[password_name] = [target_0, target_1]
         # print(f"c {password_name} {password}  0={target_0}")
         result = self.set_encrypt_file(filename, worker)
         # print(f"doSetpassword2 str={filename} p={password_name} p={password} w={worker}")
-        self.setValue("result", result)
+        self.setValue('result', result)
         # print(f"doSetpassword3 str={filename} p={password_name} p={password} w={worker}")
 
     def doGetpassword(
@@ -2442,7 +3029,7 @@ class TtlPaserWolker(ABC):
         worker = self.get_encrypt_file(filename)
         # print(f"doGetpassword worker={worker}")
         if password_name in worker and 2 <= len(worker[password_name]):
-            encrypt_byte = encrypt_str.encode("utf-8")
+            encrypt_byte = encrypt_str.encode('utf-8')
             encrypt_byte = encrypt_byte.ljust(32, b"\0")  # 32byte以下なら増やす
             encrypt_byte = encrypt_byte[:32]  # 32byte以上を無視する
             encrypt_byte = base64.urlsafe_b64encode(encrypt_byte)
@@ -2452,22 +3039,22 @@ class TtlPaserWolker(ABC):
             target_0 = base64.b64decode(worker[password_name][0].encode())
             target_1 = base64.b64decode(worker[password_name][1].encode())
             try:
-                target_0 = cipher.decrypt(target_0).decode("utf-8")
-                target_1 = cipher.decrypt(target_1).decode("utf-8")
+                target_0 = cipher.decrypt(target_0).decode('utf-8', errors='xmlcharrefreplace')
+                target_1 = cipher.decrypt(target_1).decode('utf-8', errors='xmlcharrefreplace')
             except InvalidToken:
-                self.setValue("result", 0)
+                self.setValue('result', 0)
                 return
             # print(f"e {password_name} 0={target_0}")
             # print(f"e {password_name} 0={target_1}")
             #
             if f"{target_0}_{encrypt_str}" == target_1:
                 self.setValue(p3, target_0)
-                self.setValue("result", 1)
+                self.setValue('result', 1)
             else:
                 # encriptが一致しなかった
-                self.setValue("result", 0)
+                self.setValue('result', 0)
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doIspassword(self, filename: str, password_name: str):
         # print(f"doGetpassword p3={p3}")
@@ -2475,9 +3062,9 @@ class TtlPaserWolker(ABC):
         worker = self.get_encrypt_file(filename)
         # print(f"doGetpassword worker={worker}")
         if password_name in worker:
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doDelpassword(self, filename: str, password_name: str):
         # print(f"doGetpassword p3={p3}")
@@ -2489,7 +3076,7 @@ class TtlPaserWolker(ABC):
         self.set_encrypt_file(filename, worker)
 
     def set_encrypt_file(self, filename, worker: dict) -> int:
-        """暗号化のファイル書き込み後、学習しておく"""
+        '''暗号化のファイル書き込み後、学習しておく'''
         # エンコードしたい元の文字列
         original_text = json.dumps(worker)
         filename = self.normpath(filename)
@@ -2498,14 +3085,14 @@ class TtlPaserWolker(ABC):
         #
         # ファイルへの書き込み
         try:
-            with open(filename, "wt") as f:
+            with open(filename, 'wt') as f:
                 f.write(original_text)
         except (FileNotFoundError, IOError):
             return 0
         return 1
 
     def get_encrypt_file(self, filename):
-        """暗号化のファイル読み込みを１回で終わらせる"""
+        '''暗号化のファイル読み込みを１回で終わらせる'''
         #
         # すでに読み込んでいるなら、それを使う
         filename = self.normpath(filename)
@@ -2516,7 +3103,7 @@ class TtlPaserWolker(ABC):
         # データがないのでファイルからロードする
         worker = {}
         try:
-            with open(filename, "rt") as f:
+            with open(filename, 'rt') as f:
                 worker = json.loads(f.read())
                 self.encrypt_file[filename] = worker
         except (FileNotFoundError, IOError, json.decoder.JSONDecodeError):
@@ -2526,38 +3113,38 @@ class TtlPaserWolker(ABC):
     def doFileopen(
         self, file_handle, filename: str, append_flag: int, readonly_flag: int
     ):
-        """ファイルハンドルを作る"""
+        '''ファイルハンドルを作る'''
         if file_handle in self.file_handle_list:
             self.doFileClose(file_handle)
         filename = self.normpath(filename)
         self.file_handle_list[file_handle] = {}
-        self.file_handle_list[file_handle]["file_handle"] = None
-        self.file_handle_list[file_handle]["filename"] = filename
-        self.file_handle_list[file_handle]["append_flag"] = append_flag
-        self.file_handle_list[file_handle]["readonly_flag"] = readonly_flag
-        self.getValue("result", 0)
+        self.file_handle_list[file_handle]['file_handle'] = None
+        self.file_handle_list[file_handle]['filename'] = filename
+        self.file_handle_list[file_handle]['append_flag'] = append_flag
+        self.file_handle_list[file_handle]['readonly_flag'] = readonly_flag
+        self.getValue('result', 0)
 
     def doFindfirst(self, line, file_handle, file_name: str, strvar: str):
-        """ファイルハンドルを作る"""
+        '''ファイルハンドルを作る'''
         if file_handle in self.file_handle_list:
             self.doFileClose(file_handle)
         self.file_handle_list[file_handle] = {}
-        self.file_handle_list[file_handle]["file_handle"] = MyFindfirst(file_name)
-        self.file_handle_list[file_handle]["filename"] = file_name
-        self.file_handle_list[file_handle]["append_flag"] = False
-        self.file_handle_list[file_handle]["readonly_flag"] = True
+        self.file_handle_list[file_handle]['file_handle'] = MyFindfirst(file_name)
+        self.file_handle_list[file_handle]['filename'] = file_name
+        self.file_handle_list[file_handle]['append_flag'] = False
+        self.file_handle_list[file_handle]['readonly_flag'] = True
         self.doFindnext(line, file_handle, strvar)
 
     def doFindnext(self, line, file_handle, strvar: str):
-        """次のファイルを取得する"""
+        '''次のファイルを取得する'''
         self.doFilereadln(line, file_handle, strvar)
-        if self.getValue("result") == 0:
-            self.setValue("result", 1)
+        if self.getValue('result') == 0:
+            self.setValue('result', 1)
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFileclose(self, file_handle):
-        """ファイルハンドルがいたら消す"""
+        '''ファイルハンドルがいたら消す'''
         if file_handle not in self.file_handle_list:
             return
         file_handle_base = self.file_handle_list[file_handle]
@@ -2565,7 +3152,7 @@ class TtlPaserWolker(ABC):
         self.file_handle_list[file_handle] = None
         del self.file_handle_list[file_handle]
         #
-        file_handle_file = file_handle_base["file_handle"]
+        file_handle_file = file_handle_base['file_handle']
         if file_handle_file is None:
             return
         try:
@@ -2577,23 +3164,23 @@ class TtlPaserWolker(ABC):
         if file_handle not in self.file_handle_list:
             raise TypeError(f"### l={line} file_handle not found f={file_handle}")
         file_handle_base = self.file_handle_list[file_handle]
-        file_handle_file = file_handle_base["file_handle"]
+        file_handle_file = file_handle_base['file_handle']
         if file_handle_file is None:
             option = 'wb'
-            if file_handle_base["append_flag"] != 0:
+            if file_handle_base['append_flag'] != 0:
                 option = 'ab'
-            file_handle_file = open(file_handle_base["filename"], option)
-            file_handle_base["file_handle"] = file_handle_file
-        file_handle_file.write(data.encode("utf-8"))
+            file_handle_file = open(file_handle_base['filename'], option)
+            file_handle_base['file_handle'] = file_handle_file
+        file_handle_file.write(data.encode('utf-8'))
 
     def openHandle(self, line, file_handle):
         if file_handle not in self.file_handle_list:
             raise TypeError(f"### l={line} file_handle not found f={file_handle}")
         file_handle_base = self.file_handle_list[file_handle]
-        file_handle_file = file_handle_base["file_handle"]
+        file_handle_file = file_handle_base['file_handle']
         if file_handle_file is None:
-            file_handle_file = open(file_handle_base["filename"], "rb")
-            file_handle_base["file_handle"] = file_handle_file
+            file_handle_file = open(file_handle_base['filename'], 'rb')
+            file_handle_base['file_handle'] = file_handle_file
         return file_handle_file
 
     def doFileread(self, line, file_handle, read_byte, strvar):
@@ -2601,61 +3188,63 @@ class TtlPaserWolker(ABC):
         #
         text = file_handle_file.read(read_byte)
         if text is not None:
-            self.setValue(strvar, text.decode())
-            self.setValue("result", 1)
+            self.setValue(strvar, text.decode('utf-8', errors='xmlcharrefreplace'))
+            self.setValue('result', 1)
         else:
-            self.setValue(strvar, "")
-            self.setValue("result", 0)
+            self.setValue(strvar, '')
+            self.setValue('result', 0)
 
     def doFilereadln(self, line, file_handle, strvar):
         file_handle_file = self.openHandle(line, file_handle)
         #
         try:
             text = file_handle_file.readline()
-            self.setValue(strvar, text.decode())
-            self.setValue("result", 0)
+            text = text.decode('utf-8', errors='xmlcharrefreplace')
+            text = text.rstrip("\n").rstrip("\r")
+            self.setValue(strvar, text)
+            self.setValue('result', 0)
         except OSError:
-            self.setValue(strvar, "")
-            self.setValue("result", 1)
+            self.setValue(strvar, '')
+            self.setValue('result', 1)
 
     def doFileconcat(self, p1, p2):
         p1 = self.normpath(p1)
         p2 = self.normpath(p2)
         if p1 == p2:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
             return
         try:
-            with open(p1, "ab") as f1:
-                with open(p2, "rb") as f2:
+            with open(p1, 'ab') as f1:
+                with open(p2, 'rb') as f2:
                     f1.write(f2.read())
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         except OSError:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFilecopy(self, p1, p2):
         p1 = self.normpath(p1)
         p2 = self.normpath(p2)
         if p1 == p2:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
             return
         try:
-            with open(p1, "rb") as f1:
-                with open(p2, "wb") as f2:
+            with open(p1, 'rb') as f1:
+                with open(p2, 'wb') as f2:
                     f2.write(f1.read())
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         except OSError:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFiledelete(self, filename):
         filename = self.normpath(filename)
         if not os.path.exists(filename):
-            self.setValue("result", 0)
+            self.setValue('result', 0)
             return
         try:
             os.remove(filename)
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         except OSError:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFilerename(self, p1, p2):
         p1 = self.normpath(p1)
@@ -2663,18 +3252,18 @@ class TtlPaserWolker(ABC):
         # print(f"doFilerename0 {p1} {p2}")
         if p1 == p2:
             # print(f"doFilerename1 {p1} {p2}")
-            self.setValue("result", 1)
+            self.setValue('result', 1)
             return
         if not os.path.exists(p1):
             # print(f"doFilerename2 {p1} {p2}")
-            self.setValue("result", 1)
+            self.setValue('result', 1)
             return
         self.doFiledelete(p2)
         try:
             os.rename(p1, p2)
-            self.setValue("result", 0)
+            self.setValue('result', 0)
         except OSError:
-            self.setValue("result", 1)
+            self.setValue('result', 1)
 
     def doStrreplace(self, strvar, strvar_val, index, regex, newstr):
         strvar_pre = strvar_val[0:index]
@@ -2682,31 +3271,31 @@ class TtlPaserWolker(ABC):
         strvar_val = strvar_pre + re.sub(regex, newstr, strvar_val)
         try:
             self.setValue(strvar, strvar_val)
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         except (re.error, TypeError, ValueError):
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doStrmatch(self, target_string, string_with_regular_expressio):
         # print(f"strmatch {target_string} {string_with_regular_expressio}")
         match = re.search(string_with_regular_expressio, target_string)
         if match:
             # print(f"hit strmatch {target_string} {string_with_regular_expressio}")
-            self.setValue("result", match.start() + 1)
+            self.setValue('result', match.start() + 1)
             i = 0
             for grp in match.groups():
-                self.setValue("groupmatchstr" + str(i + 1), grp)
+                self.setValue('groupmatchstr' + str(i + 1), grp)
                 i = i + 1
                 if 10 <= i:
                     break
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFilesearch(self, filename):
         filename = self.normpath(filename)
         if os.path.exists(filename):
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFilestat(self, filename, size, mtime, drive):
         try:
@@ -2720,14 +3309,14 @@ class TtlPaserWolker(ABC):
             if drive is not None:
                 drive_val, xx = os.path.splitdrive(filename)
                 self.setValue(drive, drive_val)
-            self.setValue("result", 0)
+            self.setValue('result', 0)
         except FileNotFoundError:
             self.setValue(size, 0)
             if mtime is not None:
-                self.setValue(mtime, "")
+                self.setValue(mtime, '')
             if drive is not None:
-                self.setValue(drive, "")
-            self.setValue("result", -1)
+                self.setValue(drive, '')
+            self.setValue('result', -1)
 
     def doFiletruncate(self, filename: str, size: int):
         size_val = 0
@@ -2742,41 +3331,41 @@ class TtlPaserWolker(ABC):
         try:
             if size < size_val:
                 # 切り詰めが必要
-                with open(filename, "r+b") as f:
+                with open(filename, 'r+b') as f:
                     fd = f.fileno()
                     os.truncate(fd, size)
             else:
                 # ゼロバイト加算
-                with open(filename, "ab") as f:
+                with open(filename, 'ab') as f:
                     f.write(bytes(size - size_val))
         except OSError:
-            self.setValue("result", -1)
+            self.setValue('result', -1)
 
     def doFoldercreate(self, folder_name):
         try:
             folder_name = self.normpath(folder_name)
             os.mkdir(folder_name)
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         except FileNotFoundError:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFolderdelete(self, folder_path):
         folder_path = self.normpath(folder_path)
         if not os.path.isdir(folder_path):
-            self.setValue("result", 0)
+            self.setValue('result', 0)
             return
         try:
             os.rmdir(folder_path)
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         except OSError:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doFoldersearch(self, folder_path):
         folder_path = self.normpath(folder_path)
         if os.path.isdir(folder_path):
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doMakepath(self, strvar, dir, name):
         dir = self.normpath(dir)
@@ -2789,7 +3378,7 @@ class TtlPaserWolker(ABC):
         if ip is None:
             self.setValue(intvar, 0)
             return
-        self.setValue(string_array + "[0]", ip)
+        self.setValue(string_array + '[0]', ip)
         self.setValue(intvar, 1)
 
     def doGetipv6addr(self, string_array, intvar):
@@ -2797,7 +3386,7 @@ class TtlPaserWolker(ABC):
         i = 0
         if infos is None:
             self.setValue(intvar, 0)
-            self.setValue("result", 0)
+            self.setValue('result', 0)
             return
         for info in infos:
             ipv6 = info[4][0]
@@ -2806,30 +3395,30 @@ class TtlPaserWolker(ABC):
             i = i + 1
         self.setValue(intvar, i)
         if 0 < i:
-            self.setValue("result", 1)
+            self.setValue('result', 1)
         else:
-            self.setValue("result", 0)
+            self.setValue('result', 0)
 
     def doGetver(self, strvar: str, target_version: float):
-        """バージョン情報 オーバーライドして使ってください"""
+        '''バージョン情報 オーバーライドして使ってください'''
         # print("doGetver")
         now_version = float(VERSION)
         self.setValue(strvar, str(now_version))
         if target_version is not None:
             if now_version == target_version:
-                self.setValue("result", 0)
+                self.setValue('result', 0)
             elif now_version < target_version:
-                self.setValue("result", -1)
+                self.setValue('result', -1)
             else:
-                self.setValue("result", 1)
+                self.setValue('result', 1)
         # print("doGetver end")
 
     def setTitle(self, title: str):
-        """タイトルの設定 オーバーライドして使ってください"""
+        '''タイトルの設定 オーバーライドして使ってください'''
         self.title = title
 
     def getTitle(self) -> str:
-        """タイトルの取得 オーバーライドして使ってください"""
+        '''タイトルの取得 オーバーライドして使ってください'''
         return self.title
 
     def doIfdefined(self, strvar: str):
@@ -2846,18 +3435,18 @@ class TtlPaserWolker(ABC):
         else:
             for value in self.value_list:
                 # print(f"hit2 {value}/{strvar}")
-                if strvar + "[" in value:
+                if strvar + '[' in value:
                     if isinstance(self.getValue(value), int):
                         result = 5
                     else:
                         result = 6
                     break
-            self.setValue("result", 0)
+            self.setValue('result', 0)
         # print(f"doIfdefined v={strvar} d={result}")
-        self.setValue("result", result)
+        self.setValue('result', result)
 
     def doScprecv(self, p1, p2):
-        """SCP 受信"""
+        '''SCP 受信'''
         if self.client is None:
             return
         sftp_connection = self.client.open_sftp()
@@ -2865,7 +3454,7 @@ class TtlPaserWolker(ABC):
         sftp_connection.close()
 
     def doScpsend(self, p1, p2):
-        """SCP 転送"""
+        '''SCP 転送'''
         if self.client is None:
             return
         sftp_connection = self.client.open_sftp()

@@ -1,0 +1,9 @@
+; Please use break or continue!
+for i 5 1
+  goto Label
+next
+
+:Label
+
+result = 1
+;

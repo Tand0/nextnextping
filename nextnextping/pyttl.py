@@ -14,6 +14,7 @@ class MyTtlPaserWolker(TtlPaserWolker):
 
     def setLog(self, strvar):
         """ log setting """
+        # print(f"[{strvar}]")
         print(strvar, end="")
 
 

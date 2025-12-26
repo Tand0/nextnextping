@@ -1,0 +1,11 @@
+; Please use break or continue!
+i = 1
+until i > 10
+  goto Label
+  assert 1 i
+  i = i + 1
+enduntil
+
+:Label
+result = 1
+;

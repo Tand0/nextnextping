@@ -3,7 +3,7 @@
     "results": [
         {
             "message": "The test `ansible-test sanity --test pylint` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/pylint.html)] failed with 1 error:", 
-            "output": "plugins/modules/ttl.py:236:52: syntax-error: Parsing failed: 'unindent does not match any outer indentation level (ttl, line 236)'"
+            "output": "plugins/module_utils/ttl_parser_worker.py:848:20: ansible-bad-function: Call module.log or module.debug instead of builtins.print"
         }
     ], 
     "verified": false

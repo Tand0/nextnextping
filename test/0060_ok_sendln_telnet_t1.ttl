@@ -1,0 +1,65 @@
+
+; なんかいたら消す
+testlink
+if result == 2 then
+    closett
+endif
+
+
+; 接続する
+error=''
+; assert 1  "connect start"
+connect 'localhost:2202 /nossh /T=1'
+assert result ==2  "connect start" error result
+
+timeout = 20
+
+command = 'ping -c 1 localhost'
+sendln command
+wait command
+assert result ==1  "wait test" error result
+wait '$' '#'
+assert result ==1  "wait test" error result
+
+; text
+command = 'ping -c 1 localhost'
+sendln command
+wait command
+assert result ==1  "wait test" error result
+result = 0
+wait '$' '#'
+assert result ==1  "wait test" error result
+
+; text
+command = 'pwd'
+sendln command
+wait command
+assert result ==1  "wait test" error result
+result = 0
+wait '#' '$'
+assert result ==2  "wait test" error result
+
+; タイムアウトを発生させる
+timeout = 1
+wait 'xxxx'
+assert result ==0  "timeout test" error result
+
+gethostname hostname
+assert 1 "gethostname test" hostname
+
+sendbreak
+
+; exit
+send 'exit'
+sendln
+pause 2
+disconnect
+testlink
+
+assert result != 2  "exit test" error ; まだ接続できている
+closett
+assert 1 "gethostname test" hostname
+
+
+error=''
+result = 1

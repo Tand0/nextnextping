@@ -1,0 +1,13 @@
+; Jump to the next line of the ':label'.
+goto Label
+; ...
+; ...
+assert 0 "Goto error test"
+; ...
+; ...
+
+:Label
+
+
+result = 1
+;

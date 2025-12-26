@@ -921,7 +921,7 @@ class MyThread():
         try:
             self.myTtlPaserWolker = MyTtlPaserWolker(self.threading, self.next_next_ping, self.next_next_ping.log[type][param])
         except Exception as e:
-            self.myTtlPaserWolker.setLog(f"Exception create {str(e)}")
+            self.myTtlPaserWolker.setLogInner(f"Exception create {str(e)}")
             return 0  # this is NG!
         try:
             if not os.path.isabs(filename):
@@ -934,7 +934,7 @@ class MyThread():
             #
             self.myTtlPaserWolker.execute(filename, param_list_next)
         except Exception as e:
-            self.myTtlPaserWolker.setLog(f"Exception execute {str(e)}")
+            self.myTtlPaserWolker.setLogInner(f"Exception execute {str(e)}")
             return 0  # this is NG!
         finally:
             # なにがあろうとworkerは絶対に殺す

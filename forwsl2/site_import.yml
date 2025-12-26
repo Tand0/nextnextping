@@ -7936,7 +7936,807 @@
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-233 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: test-233 0058_ok_linux_serial_test.ttl
+  ttl:
+    filename: 0058_ok_linux_serial_test.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-233 True 0058_ok_linux_serial_test.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0058_ok_linux_serial_test.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-234 0058_ok_linux_serial_test.ttl
+  ttl:
+    cmd: |
+      command = "%systemroot%"
+      expandenv str command
+      strcompare str "/root"
+      if 0!=result then
+      assert 1 "this is not Linux" command
+      result = 1
+      end
+      endif
+      ; test for speed
+      setbaud  921600
+      setspeed 460800
+      setbaud  230400
+      setspeed 9600
+      ; RTS on
+      setrts 1
+      ; RTS off
+      setrts 0
+      ; DTR on
+      setdtr 1
+      ; DTR off
+      setdtr 0
+      ; test for flowcontrol
+      setflowctrl 1
+      setflowctrl 2
+      setflowctrl 4
+      setflowctrl 3
+      fileopen IN '../test_pty.key' 0
+      filereadln IN ttl_filename
+      fileclose IN
+      command = "/C="
+      strconcat command ttl_filename
+      connect command
+      assert result == 2 "connect serial fail test" command
+      command = "ping localhost"
+      sendln command
+      wait command
+      wait "$"
+      assert result == 1 "wait test"
+      sendln "exit"
+      closett
+      assert 1 "OK"
+      retult = 1
+      end
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-234 True 0058_ok_linux_serial_test.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0058_ok_linux_serial_test.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-235 0058_ok_linux_serial_test.ttl
+  ttl:
+    filename: 0058_ok_linux_serial_test.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-235 True 0058_ok_linux_serial_test.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0058_ok_linux_serial_test.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-236 0058_ok_linux_serial_test.ttl
+  ttl:
+    cmd: |
+      command = "%systemroot%"
+      expandenv str command
+      strcompare str "/root"
+      if 0!=result then
+      assert 1 "this is not Linux" command
+      result = 1
+      end
+      endif
+      ; test for speed
+      setbaud  921600
+      setspeed 460800
+      setbaud  230400
+      setspeed 9600
+      ; RTS on
+      setrts 1
+      ; RTS off
+      setrts 0
+      ; DTR on
+      setdtr 1
+      ; DTR off
+      setdtr 0
+      ; test for flowcontrol
+      setflowctrl 1
+      setflowctrl 2
+      setflowctrl 4
+      setflowctrl 3
+      fileopen IN '../test_pty.key' 0
+      filereadln IN ttl_filename
+      fileclose IN
+      command = "/C="
+      strconcat command ttl_filename
+      connect command
+      assert result == 2 "connect serial fail test" command
+      command = "ping localhost"
+      sendln command
+      wait command
+      wait "$"
+      assert result == 1 "wait test"
+      sendln "exit"
+      closett
+      assert 1 "OK"
+      retult = 1
+      end
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-236 True 0058_ok_linux_serial_test.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0058_ok_linux_serial_test.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-237 0059_ok_sendln_telnet_t0.ttl
+  ttl:
+    filename: 0059_ok_sendln_telnet_t0.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-237 True 0059_ok_sendln_telnet_t0.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0059_ok_sendln_telnet_t0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-238 0059_ok_sendln_telnet_t0.ttl
+  ttl:
+    cmd: |
+      ; なんかいたら消す
+      testlink
+      if result == 2 then
+      closett
+      endif
+      ; 接続する
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2201 /nossh /T=0'
+      assert result ==2  "connect start" error result
+      result = 0
+      wait '$'
+      assert result ==1  "wait test" error result
+      ; text
+      sendln 'test'
+      wait 'test'
+      result = 0
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      sendln 'work'
+      result = 0
+      wait '#' '$'
+      assert result ==2  "wait test" error result
+      ; タイムアウトを発生させる
+      timeout = 1
+      wait 'xxxx'
+      assert result ==0  "timeout test" error result
+      gethostname hostname
+      assert 1 "gethostname test" hostname
+      sendbreak
+      ; exit
+      send 'exit'
+      sendln
+      pause 2
+      disconnect
+      testlink
+      assert result != 2  "exit test" error ; まだ接続できている
+      closett
+      assert 1 "gethostname test" hostname
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-238 True 0059_ok_sendln_telnet_t0.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0059_ok_sendln_telnet_t0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-239 0059_ok_sendln_telnet_t0.ttl
+  ttl:
+    filename: 0059_ok_sendln_telnet_t0.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-239 True 0059_ok_sendln_telnet_t0.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0059_ok_sendln_telnet_t0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-240 0059_ok_sendln_telnet_t0.ttl
+  ttl:
+    cmd: |
+      ; なんかいたら消す
+      testlink
+      if result == 2 then
+      closett
+      endif
+      ; 接続する
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2201 /nossh /T=0'
+      assert result ==2  "connect start" error result
+      result = 0
+      wait '$'
+      assert result ==1  "wait test" error result
+      ; text
+      sendln 'test'
+      wait 'test'
+      result = 0
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      sendln 'work'
+      result = 0
+      wait '#' '$'
+      assert result ==2  "wait test" error result
+      ; タイムアウトを発生させる
+      timeout = 1
+      wait 'xxxx'
+      assert result ==0  "timeout test" error result
+      gethostname hostname
+      assert 1 "gethostname test" hostname
+      sendbreak
+      ; exit
+      send 'exit'
+      sendln
+      pause 2
+      disconnect
+      testlink
+      assert result != 2  "exit test" error ; まだ接続できている
+      closett
+      assert 1 "gethostname test" hostname
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-240 True 0059_ok_sendln_telnet_t0.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0059_ok_sendln_telnet_t0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-241 0060_ok_sendln_telnet_t1.ttl
+  ttl:
+    filename: 0060_ok_sendln_telnet_t1.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-241 True 0060_ok_sendln_telnet_t1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0060_ok_sendln_telnet_t1.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-242 0060_ok_sendln_telnet_t1.ttl
+  ttl:
+    cmd: |
+      ; なんかいたら消す
+      testlink
+      if result == 2 then
+      closett
+      endif
+      ; 接続する
+      error=''
+      ; assert 1  "connect start"
+      connect 'localhost:2202 /nossh /T=1'
+      assert result ==2  "connect start" error result
+      timeout = 20
+      command = 'ping -c 1 localhost'
+      sendln command
+      wait command
+      assert result ==1  "wait test" error result
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      command = 'ping -c 1 localhost'
+      sendln command
+      wait command
+      assert result ==1  "wait test" error result
+      result = 0
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      command = 'pwd'
+      sendln command
+      wait command
+      assert result ==1  "wait test" error result
+      result = 0
+      wait '#' '$'
+      assert result ==2  "wait test" error result
+      ; タイムアウトを発生させる
+      timeout = 1
+      wait 'xxxx'
+      assert result ==0  "timeout test" error result
+      gethostname hostname
+      assert 1 "gethostname test" hostname
+      sendbreak
+      ; exit
+      send 'exit'
+      sendln
+      pause 2
+      disconnect
+      testlink
+      assert result != 2  "exit test" error ; まだ接続できている
+      closett
+      assert 1 "gethostname test" hostname
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-242 True 0060_ok_sendln_telnet_t1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0060_ok_sendln_telnet_t1.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-243 0060_ok_sendln_telnet_t1.ttl
+  ttl:
+    filename: 0060_ok_sendln_telnet_t1.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-243 True 0060_ok_sendln_telnet_t1.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0060_ok_sendln_telnet_t1.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-244 0060_ok_sendln_telnet_t1.ttl
+  ttl:
+    cmd: |
+      ; なんかいたら消す
+      testlink
+      if result == 2 then
+      closett
+      endif
+      ; 接続する
+      error=''
+      ; assert 1  "connect start"
+      connect 'localhost:2202 /nossh /T=1'
+      assert result ==2  "connect start" error result
+      timeout = 20
+      command = 'ping -c 1 localhost'
+      sendln command
+      wait command
+      assert result ==1  "wait test" error result
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      command = 'ping -c 1 localhost'
+      sendln command
+      wait command
+      assert result ==1  "wait test" error result
+      result = 0
+      wait '$' '#'
+      assert result ==1  "wait test" error result
+      ; text
+      command = 'pwd'
+      sendln command
+      wait command
+      assert result ==1  "wait test" error result
+      result = 0
+      wait '#' '$'
+      assert result ==2  "wait test" error result
+      ; タイムアウトを発生させる
+      timeout = 1
+      wait 'xxxx'
+      assert result ==0  "timeout test" error result
+      gethostname hostname
+      assert 1 "gethostname test" hostname
+      sendbreak
+      ; exit
+      send 'exit'
+      sendln
+      pause 2
+      disconnect
+      testlink
+      assert result != 2  "exit test" error ; まだ接続できている
+      closett
+      assert 1 "gethostname test" hostname
+      error=''
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-244 True 0060_ok_sendln_telnet_t1.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0060_ok_sendln_telnet_t1.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-245 0061_ok_goto.ttl
+  ttl:
+    filename: 0061_ok_goto.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-245 True 0061_ok_goto.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0061_ok_goto.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-246 0061_ok_goto.ttl
+  ttl:
+    cmd: |
+      ; Jump to the next line of the ':label'.
+      goto Label
+      ; ...
+      ; ...
+      assert 0 "Goto error test"
+      ; ...
+      ; ...
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-246 True 0061_ok_goto.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0061_ok_goto.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-247 0061_ok_goto.ttl
+  ttl:
+    filename: 0061_ok_goto.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-247 True 0061_ok_goto.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0061_ok_goto.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-248 0061_ok_goto.ttl
+  ttl:
+    cmd: |
+      ; Jump to the next line of the ':label'.
+      goto Label
+      ; ...
+      ; ...
+      assert 0 "Goto error test"
+      ; ...
+      ; ...
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-248 True 0061_ok_goto.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0061_ok_goto.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-249 0062_ng_goto_return.ttl
+  ttl:
+    filename: 0062_ng_goto_return.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-249 False 0062_ng_goto_return.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-250 0062_ng_goto_return.ttl
+  ttl:
+    cmd: |
+      goto Label
+      assert 0 "Goto error test"
+      end
+      :Label
+      result = 1
+      ; goto に対し return は適用できない
+      return
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-250 False 0062_ng_goto_return.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-251 0062_ng_goto_return.ttl
+  ttl:
+    filename: 0062_ng_goto_return.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-252 0062_ng_goto_return.ttl
+  ttl:
+    cmd: |
+      goto Label
+      assert 0 "Goto error test"
+      end
+      :Label
+      result = 1
+      ; goto に対し return は適用できない
+      return
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-253 0063_ng_goto_for.ttl
+  ttl:
+    filename: 0063_ng_goto_for.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-253 False 0063_ng_goto_for.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-254 0063_ng_goto_for.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      for i 5 1
+      goto Label
+      next
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-254 False 0063_ng_goto_for.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-255 0063_ng_goto_for.ttl
+  ttl:
+    filename: 0063_ng_goto_for.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-256 0063_ng_goto_for.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      for i 5 1
+      goto Label
+      next
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-257 0064_ng_goto_while.ttl
+  ttl:
+    filename: 0064_ng_goto_while.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-257 False 0064_ng_goto_while.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-258 0064_ng_goto_while.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      while 1
+      goto Label
+      endwhile
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-258 False 0064_ng_goto_while.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-259 0064_ng_goto_while.ttl
+  ttl:
+    filename: 0064_ng_goto_while.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-260 0064_ng_goto_while.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      while 1
+      goto Label
+      endwhile
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-261 0065_ng_goto_untile.ttl
+  ttl:
+    filename: 0065_ng_goto_untile.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-261 False 0065_ng_goto_untile.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-262 0065_ng_goto_untile.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      i = 1
+      until i > 10
+      goto Label
+      assert 1 i
+      i = i + 1
+      enduntil
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-262 False 0065_ng_goto_untile.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-263 0065_ng_goto_untile.ttl
+  ttl:
+    filename: 0065_ng_goto_untile.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-264 0065_ng_goto_untile.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      i = 1
+      until i > 10
+      goto Label
+      assert 1 i
+      i = i + 1
+      enduntil
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-265 0066_ng_goto_do.ttl
+  ttl:
+    filename: 0066_ng_goto_do.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-265 False 0066_ng_goto_do.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-266 0066_ng_goto_do.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      do 1
+      goto Label
+      loop
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-266 False 0066_ng_goto_do.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-267 0066_ng_goto_do.ttl
+  ttl:
+    filename: 0066_ng_goto_do.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-268 0066_ng_goto_do.ttl
+  ttl:
+    cmd: |
+      ; Please use break or continue!
+      do 1
+      goto Label
+      loop
+      :Label
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-269 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   ttl:
     filename: 1008_ok_localhost-2200_ping_127-0-0-1.ttl
     chdir: ../test
@@ -7944,14 +8744,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-233 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-failed-269 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-234 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: test-270 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -7976,14 +8776,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-234 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-failed-270 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-235 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: test-271 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   ttl:
     filename: 1008_ok_localhost-2200_ping_127-0-0-1.ttl
     chdir: ../test
@@ -7991,14 +8791,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-235 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-changed-271 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-236 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: test-272 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8023,14 +8823,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-236 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-changed-272 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-237 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: test-273 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   ttl:
     filename: 1009_ok_localhost-2200_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8038,14 +8838,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-237 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-failed-273 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-238 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: test-274 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8070,14 +8870,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-238 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-failed-274 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-239 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: test-275 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   ttl:
     filename: 1009_ok_localhost-2200_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8085,14 +8885,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-239 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-changed-275 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-240 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: test-276 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8117,14 +8917,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-240 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-changed-276 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-241 1010_ok_localhost-2200_show.ttl
+- name: test-277 1010_ok_localhost-2200_show.ttl
   ttl:
     filename: 1010_ok_localhost-2200_show.ttl
     chdir: ../test
@@ -8132,14 +8932,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-241 True 1010_ok_localhost-2200_show.ttl
+- name: assert-failed-277 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-242 1010_ok_localhost-2200_show.ttl
+- name: test-278 1010_ok_localhost-2200_show.ttl
   ttl:
     cmd: |
       ;
@@ -8164,14 +8964,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-242 True 1010_ok_localhost-2200_show.ttl
+- name: assert-failed-278 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-243 1010_ok_localhost-2200_show.ttl
+- name: test-279 1010_ok_localhost-2200_show.ttl
   ttl:
     filename: 1010_ok_localhost-2200_show.ttl
     chdir: ../test
@@ -8179,14 +8979,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-243 True 1010_ok_localhost-2200_show.ttl
+- name: assert-changed-279 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-244 1010_ok_localhost-2200_show.ttl
+- name: test-280 1010_ok_localhost-2200_show.ttl
   ttl:
     cmd: |
       ;
@@ -8211,14 +9011,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-244 True 1010_ok_localhost-2200_show.ttl
+- name: assert-changed-280 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-245 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: test-281 1011_ok_cisco1_ping_127-0-0-1.ttl
   ttl:
     filename: 1011_ok_cisco1_ping_127-0-0-1.ttl
     chdir: ../test
@@ -8226,14 +9026,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-245 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-failed-281 True 1011_ok_cisco1_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-246 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: test-282 1011_ok_cisco1_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8258,14 +9058,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-246 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-failed-282 True 1011_ok_cisco1_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-247 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: test-283 1011_ok_cisco1_ping_127-0-0-1.ttl
   ttl:
     filename: 1011_ok_cisco1_ping_127-0-0-1.ttl
     chdir: ../test
@@ -8273,14 +9073,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-247 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-changed-283 True 1011_ok_cisco1_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-248 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: test-284 1011_ok_cisco1_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8305,14 +9105,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-248 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-changed-284 True 1011_ok_cisco1_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-249 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: test-285 1012_ok_cisco1_trace_127-0-0-1.ttl
   ttl:
     filename: 1012_ok_cisco1_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8320,14 +9120,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-249 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-failed-285 True 1012_ok_cisco1_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-250 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: test-286 1012_ok_cisco1_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8352,14 +9152,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-250 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-failed-286 True 1012_ok_cisco1_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-251 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: test-287 1012_ok_cisco1_trace_127-0-0-1.ttl
   ttl:
     filename: 1012_ok_cisco1_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8367,14 +9167,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-251 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-changed-287 True 1012_ok_cisco1_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-252 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: test-288 1012_ok_cisco1_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8399,14 +9199,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-252 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-changed-288 True 1012_ok_cisco1_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-253 1013_ok_cisco1_show.ttl
+- name: test-289 1013_ok_cisco1_show.ttl
   ttl:
     filename: 1013_ok_cisco1_show.ttl
     chdir: ../test
@@ -8414,14 +9214,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-253 True 1013_ok_cisco1_show.ttl
+- name: assert-failed-289 True 1013_ok_cisco1_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1013_ok_cisco1_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-254 1013_ok_cisco1_show.ttl
+- name: test-290 1013_ok_cisco1_show.ttl
   ttl:
     cmd: |
       ;
@@ -8446,14 +9246,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-254 True 1013_ok_cisco1_show.ttl
+- name: assert-failed-290 True 1013_ok_cisco1_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1013_ok_cisco1_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-255 1013_ok_cisco1_show.ttl
+- name: test-291 1013_ok_cisco1_show.ttl
   ttl:
     filename: 1013_ok_cisco1_show.ttl
     chdir: ../test
@@ -8461,14 +9261,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-255 True 1013_ok_cisco1_show.ttl
+- name: assert-changed-291 True 1013_ok_cisco1_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1013_ok_cisco1_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-256 1013_ok_cisco1_show.ttl
+- name: test-292 1013_ok_cisco1_show.ttl
   ttl:
     cmd: |
       ;
@@ -8493,14 +9293,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-256 True 1013_ok_cisco1_show.ttl
+- name: assert-changed-292 True 1013_ok_cisco1_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1013_ok_cisco1_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-257 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: test-293 1014_ok_cisco2_ping_127-0-0-1.ttl
   ttl:
     filename: 1014_ok_cisco2_ping_127-0-0-1.ttl
     chdir: ../test
@@ -8508,14 +9308,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-257 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-failed-293 True 1014_ok_cisco2_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-258 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: test-294 1014_ok_cisco2_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8540,14 +9340,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-258 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-failed-294 True 1014_ok_cisco2_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-259 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: test-295 1014_ok_cisco2_ping_127-0-0-1.ttl
   ttl:
     filename: 1014_ok_cisco2_ping_127-0-0-1.ttl
     chdir: ../test
@@ -8555,14 +9355,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-259 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-changed-295 True 1014_ok_cisco2_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-260 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: test-296 1014_ok_cisco2_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8587,14 +9387,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-260 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-changed-296 True 1014_ok_cisco2_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-261 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: test-297 1015_ok_cisco2_trace_127-0-0-1.ttl
   ttl:
     filename: 1015_ok_cisco2_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8602,14 +9402,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-261 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-failed-297 True 1015_ok_cisco2_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-262 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: test-298 1015_ok_cisco2_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8634,14 +9434,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-262 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-failed-298 True 1015_ok_cisco2_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-263 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: test-299 1015_ok_cisco2_trace_127-0-0-1.ttl
   ttl:
     filename: 1015_ok_cisco2_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8649,14 +9449,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-263 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-changed-299 True 1015_ok_cisco2_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-264 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: test-300 1015_ok_cisco2_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8681,14 +9481,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-264 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-changed-300 True 1015_ok_cisco2_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-265 1016_ok_cisco2_show.ttl
+- name: test-301 1016_ok_cisco2_show.ttl
   ttl:
     filename: 1016_ok_cisco2_show.ttl
     chdir: ../test
@@ -8696,14 +9496,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-265 True 1016_ok_cisco2_show.ttl
+- name: assert-failed-301 True 1016_ok_cisco2_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1016_ok_cisco2_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-266 1016_ok_cisco2_show.ttl
+- name: test-302 1016_ok_cisco2_show.ttl
   ttl:
     cmd: |
       ;
@@ -8728,14 +9528,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-266 True 1016_ok_cisco2_show.ttl
+- name: assert-failed-302 True 1016_ok_cisco2_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1016_ok_cisco2_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-267 1016_ok_cisco2_show.ttl
+- name: test-303 1016_ok_cisco2_show.ttl
   ttl:
     filename: 1016_ok_cisco2_show.ttl
     chdir: ../test
@@ -8743,14 +9543,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-267 True 1016_ok_cisco2_show.ttl
+- name: assert-changed-303 True 1016_ok_cisco2_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1016_ok_cisco2_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-268 1016_ok_cisco2_show.ttl
+- name: test-304 1016_ok_cisco2_show.ttl
   ttl:
     cmd: |
       ;
@@ -8775,14 +9575,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-268 True 1016_ok_cisco2_show.ttl
+- name: assert-changed-304 True 1016_ok_cisco2_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1016_ok_cisco2_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-269 1017_ok_qx_ping_127-0-0-1.ttl
+- name: test-305 1017_ok_qx_ping_127-0-0-1.ttl
   ttl:
     filename: 1017_ok_qx_ping_127-0-0-1.ttl
     chdir: ../test
@@ -8790,14 +9590,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-269 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-failed-305 True 1017_ok_qx_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-270 1017_ok_qx_ping_127-0-0-1.ttl
+- name: test-306 1017_ok_qx_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8822,14 +9622,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-270 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-failed-306 True 1017_ok_qx_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-271 1017_ok_qx_ping_127-0-0-1.ttl
+- name: test-307 1017_ok_qx_ping_127-0-0-1.ttl
   ttl:
     filename: 1017_ok_qx_ping_127-0-0-1.ttl
     chdir: ../test
@@ -8837,14 +9637,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-271 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-changed-307 True 1017_ok_qx_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-272 1017_ok_qx_ping_127-0-0-1.ttl
+- name: test-308 1017_ok_qx_ping_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8869,14 +9669,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-272 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-changed-308 True 1017_ok_qx_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-273 1018_ok_qx_trace_127-0-0-1.ttl
+- name: test-309 1018_ok_qx_trace_127-0-0-1.ttl
   ttl:
     filename: 1018_ok_qx_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8884,14 +9684,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-273 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-failed-309 True 1018_ok_qx_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-274 1018_ok_qx_trace_127-0-0-1.ttl
+- name: test-310 1018_ok_qx_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8916,14 +9716,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-274 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-failed-310 True 1018_ok_qx_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-275 1018_ok_qx_trace_127-0-0-1.ttl
+- name: test-311 1018_ok_qx_trace_127-0-0-1.ttl
   ttl:
     filename: 1018_ok_qx_trace_127-0-0-1.ttl
     chdir: ../test
@@ -8931,14 +9731,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-275 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-changed-311 True 1018_ok_qx_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-276 1018_ok_qx_trace_127-0-0-1.ttl
+- name: test-312 1018_ok_qx_trace_127-0-0-1.ttl
   ttl:
     cmd: |
       ;
@@ -8963,14 +9763,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-276 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-changed-312 True 1018_ok_qx_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-277 1019_ok_qx_show.ttl
+- name: test-313 1019_ok_qx_show.ttl
   ttl:
     filename: 1019_ok_qx_show.ttl
     chdir: ../test
@@ -8978,14 +9778,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-277 True 1019_ok_qx_show.ttl
+- name: assert-failed-313 True 1019_ok_qx_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1019_ok_qx_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-278 1019_ok_qx_show.ttl
+- name: test-314 1019_ok_qx_show.ttl
   ttl:
     cmd: |
       ;
@@ -9010,14 +9810,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-278 True 1019_ok_qx_show.ttl
+- name: assert-failed-314 True 1019_ok_qx_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1019_ok_qx_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-279 1019_ok_qx_show.ttl
+- name: test-315 1019_ok_qx_show.ttl
   ttl:
     filename: 1019_ok_qx_show.ttl
     chdir: ../test
@@ -9025,14 +9825,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-279 True 1019_ok_qx_show.ttl
+- name: assert-changed-315 True 1019_ok_qx_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1019_ok_qx_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-280 1019_ok_qx_show.ttl
+- name: test-316 1019_ok_qx_show.ttl
   ttl:
     cmd: |
       ;
@@ -9057,14 +9857,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-280 True 1019_ok_qx_show.ttl
+- name: assert-changed-316 True 1019_ok_qx_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1019_ok_qx_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-281 1020_ok_vmware_show.ttl
+- name: test-317 1020_ok_vmware_show.ttl
   ttl:
     filename: 1020_ok_vmware_show.ttl
     chdir: ../test
@@ -9072,14 +9872,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-281 True 1020_ok_vmware_show.ttl
+- name: assert-failed-317 True 1020_ok_vmware_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1020_ok_vmware_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-282 1020_ok_vmware_show.ttl
+- name: test-318 1020_ok_vmware_show.ttl
   ttl:
     cmd: |
       ;
@@ -9104,14 +9904,14 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-282 True 1020_ok_vmware_show.ttl
+- name: assert-failed-318 True 1020_ok_vmware_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1020_ok_vmware_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-283 1020_ok_vmware_show.ttl
+- name: test-319 1020_ok_vmware_show.ttl
   ttl:
     filename: 1020_ok_vmware_show.ttl
     chdir: ../test
@@ -9119,14 +9919,14 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-283 True 1020_ok_vmware_show.ttl
+- name: assert-changed-319 True 1020_ok_vmware_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1020_ok_vmware_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-284 1020_ok_vmware_show.ttl
+- name: test-320 1020_ok_vmware_show.ttl
   ttl:
     cmd: |
       ;
@@ -9151,7 +9951,7 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-284 True 1020_ok_vmware_show.ttl
+- name: assert-changed-320 True 1020_ok_vmware_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1020_ok_vmware_show.ttl

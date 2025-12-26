@@ -1,0 +1,14 @@
+
+
+goto Label
+
+assert 0 "Goto error test"
+end
+
+:Label
+
+result = 1
+
+; goto に対し return は適用できない
+return
+;

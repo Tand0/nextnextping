@@ -50,16 +50,16 @@ Command index
   <!-- - [sendlnmulticast](https://teratermproject.github.io/manual/5/en/macro/command/sendlnmulticast.html) -->
   - [sendtext](https://teratermproject.github.io/manual/5/en/macro/command/sendtext.html)
   <!-- - [sendmulticast](https://teratermproject.github.io/manual/5/en/macro/command/sendmulticast.html) -->
-  <!-- - [setbaud](https://teratermproject.github.io/manual/5/en/macro/command/setbaud.html) -->
+  - [setbaud](https://teratermproject.github.io/manual/5/en/macro/command/setbaud.html)
   <!-- - [setdebug](https://teratermproject.github.io/manual/5/en/macro/command/setdebug.html) -->
   - [setdtr](https://teratermproject.github.io/manual/5/en/macro/command/setdtr.html)
   <!-- - [setecho](https://teratermproject.github.io/manual/5/en/macro/command/setecho.html) -->
-  <!-- - [setflowctrl](https://teratermproject.github.io/manual/5/en/macro/command/setflowctrl.html) -->
+  - [setflowctrl](https://teratermproject.github.io/manual/5/en/macro/command/setflowctrl.html)
   <!-- - [setmulticastname](https://teratermproject.github.io/manual/5/en/macro/command/setmulticastname.html) -->
-  <!-- - [setrts](https://teratermproject.github.io/manual/5/en/macro/command/setrts.html) -->
+  - [setrts](https://teratermproject.github.io/manual/5/en/macro/command/setrts.html)
   <!-- - [setserialdelaychar](https://teratermproject.github.io/manual/5/en/macro/command/setserialdelaychar.html) -->
   <!-- - [setserialdelayline](https://teratermproject.github.io/manual/5/en/macro/command/setserialdelayline.html) -->
-  <!-- - [setspeed](https://teratermproject.github.io/manual/5/en/macro/command/setspeed.html) -->
+  - [setspeed](https://teratermproject.github.io/manual/5/en/macro/command/setspeed.html)
   <!-- - [setsync](https://teratermproject.github.io/manual/5/en/macro/command/setsync.html) -->
   - [settitle](https://teratermproject.github.io/manual/5/en/macro/command/settitle.html)
   <!-- - [showtt](https://teratermproject.github.io/manual/5/en/macro/command/showtt.html) -->
@@ -237,13 +237,28 @@ connect <command line parameters>
 - SSH connection. Telnet connection, SSH1 connection, and COM port connection are not possible.
   - SSH接続します。telnet接続やSSH1接続、COMポート接続はできません。
 
+
+### telnet connection
+
+- The following example shows a telnet connection.
+- If the `nossh` option is not specified, an SSH2 connection will be used.
+
+```
+connect 'myserver:22 /noss /T=1'  ; telnet and telnet negotiation
+connect 'myserver:22 /noss /T=0'  ; telnet and telnet NOT negotiation
+connect 'myserver:22 /noss'  ; telnet and telnet NOT negotiation
+```
+
+### SSH1 connection
+
 ### SSH2 connection
-- Connect using python paramiko.
-    - pythonのparamikoを使って接続します。
+
+- SSH2 connect using python paramiko.
 - `/ask4passwd` cannot be used.
     - `/ask4passwd` は使えません。
 - SSH1 cannot be used due to security issues.
 - telnet cannot be used due to security issues.
+- If you specify `/1`, it is not supported due to Paramiko security reasons.
 - If you omit `/2`, you will connect using SSH2.
 - To make an ssh connection, you need a server to connect to.
   - ssh接続をするには接続先のサーバが必要です。
@@ -253,6 +268,26 @@ connect 'myserver /ssh    /user=username /passwd=password'
 connect 'myserver /ssh /2 /user=username /passwd=password'
 connect 'myserver /ssh    /user=username /passwd=password /keyfile=private-key-file'
 connect 'myserver /ssh /2 /user=username /passwd=password /keyfile=private-key-file'
+```
+
+### Serial connection
+
+- Serial connect using python paramiko.
+    - pythonの pyserial を使って接続します。
+- Because of the pyserial specification, the parameters passed are different from those of teraterm macros.
+    - pyserial の仕様により、渡されるパラメータは teraterm マクロとは異なります。
+    - Linuxの場合は `/dev/pts/*` や `/dev/ttyS*` のように指定します。
+    - Windowsの場合は `COM0` または `0` のように指定します。
+    - Windowsの場合で先頭文字が数字の場合 `COM0` のように内部で `COM` を付与します。
+
+```
+For Linux:
+connect '/C=/dev/pts/8'
+
+For Windows:
+connect '/C=COM4'
+or
+connect '/C=4'
 ```
 
 ### command line connection

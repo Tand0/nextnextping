@@ -1,0 +1,56 @@
+
+
+command = "%systemroot%"
+expandenv str command
+strcompare str "/root"
+if 0!=result then
+    assert 1 "this is not Linux" command
+    result = 1
+    end
+endif
+
+; test for speed
+setbaud  921600
+setspeed 460800
+setbaud  230400 
+setspeed 9600
+
+; RTS on
+setrts 1
+
+; RTS off
+setrts 0
+
+; DTR on
+setdtr 1
+
+; DTR off
+setdtr 0
+
+; test for flowcontrol
+setflowctrl 1
+setflowctrl 2
+setflowctrl 4
+setflowctrl 3
+
+fileopen IN '../test_pty.key' 0
+filereadln IN ttl_filename
+fileclose IN
+
+command = "/C="
+strconcat command ttl_filename
+connect command
+assert result == 2 "connect serial fail test" command
+
+command = "ping localhost"
+sendln command
+wait command
+wait "$"
+assert result == 1 "wait test"
+
+sendln "exit"
+closett
+
+assert 1 "OK"
+retult = 1
+end

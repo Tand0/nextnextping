@@ -110,15 +110,16 @@ $ nextnextping
   - `python mybuild.py` を実行する。※ pyinstaller が動きます
   - `pytest -s` を実行する
       - すべての test にパスすることを確認する
-      - 内部で Mock の ssh や scp サーバを起動します
-      - Layer4 port 2200 を占有します
+      - layer port 2000 は SSH/SFTP server Mock です 
+      - layer port 2001 は telnet server Mock です。ネゴシエーションしません 
+      - layer port 2002 は telnet server Mock です。ネゴシエーションします
+      - linux の場合 `socat` コマンドを使って仮想 serial port の `/dev/pts/XX` を生成します 
   - `wsl` を起動する
       - `wsl` の中で `pytest -s` を実行する
       - すべての test にパスすることを確認する
-      - `wsl` の中で `python3 test/test_nextnextping.py` を起動しっぱなにする
+      - `wsl` の中で `python3 test/ttlbackground.py` を起動しっぱなにする
           - `wsl` の中で実行しないと後続の `site.yml` が正常動作しません
-          - Mock の ssh や scp サーバを起動します
-          - Layer4 port 2200 を占有します
+          - Mock の ssh や scp  、telnetサーバを起動します
   - もう一枚コマンドプロンプトを起動して `wsl` を起動する
       - `cd ../bin` に移動する
       - `nextnextping` を実行して動作に問題ないことを確認する
@@ -127,8 +128,9 @@ $ nextnextping
       - `cd ./forwsl2` に移動する
       - `wsl` の中で `ansible-playbook site.yml` を実行する
       - すべての test にパスすることを確認する
-      - `wsl` の中で `ansible-playbook site_pypi.yml` を実行して PyPi にアップロードする 
+  - ここからリリースのフェーズになります
       - `./dest` 配下に公開に必要なファイル群ができあがる
+      - `wsl` の中で `ansible-playbook site_pypi.yml` を実行して PyPi にアップロードする 
       - 2つのコマンドプロンプトを `wsl` を `exit` で抜ける
   - ansible-galaxy に登録する
     - [ansible-galaxy](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)

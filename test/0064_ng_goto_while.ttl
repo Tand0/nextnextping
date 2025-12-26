@@ -1,0 +1,9 @@
+; Please use break or continue!
+while 1
+  goto Label
+endwhile
+
+:Label
+
+result = 1
+;

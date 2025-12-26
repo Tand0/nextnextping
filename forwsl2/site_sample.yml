@@ -7,7 +7,6 @@
       ttl:
         cmd: |
           connect 'localhost:2200 /ssh /user=username /passwd=password'
-          pause 1
           flushrecv
           sendln 'ping localhost'
           wait '$'
