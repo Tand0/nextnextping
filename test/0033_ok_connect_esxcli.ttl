@@ -1,6 +1,6 @@
 ;INPUT_START
 
-basename file_name param1
+; basename file_name param1
 target_display = "pingを打つ装置"
 target_type = 3  ; 1=ping, 2=traceroute, 3=show run
 base_display = "SSH接続する装置"

@@ -1,6 +1,9 @@
 
 - import_playbook: site_build.yml
 
+# build を先にしないとバージョンがおかしくなる
+- import_playbook: site_doc.yml
+
 - import_playbook: site_sample.yml
 
 - import_playbook: site_test.yml

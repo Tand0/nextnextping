@@ -13,7 +13,7 @@ description:
   - This implementation imitates the TTL used in teraterm.
   - Ansible allows you to control the macro language "TTL"
   - realize functions such as auto-dial and auto-login.
-author: Ando (@ando)
+author: Ando (@tando)
 
 attributes:
   check_mode:
@@ -21,21 +21,18 @@ attributes:
     description:
       - Can run in check_mode and return changed status
         prediction without modifying target.
-      - If not supported, the action will be skipped.
 
 options:
   filename:
     description:
       - TTL macro file name
     required: false
-    default:
     type: path
   cmd:
     description:
       - TTL macro text
     required: false
     type: str
-    default:
   creates:
     type: path
     description:
@@ -74,7 +71,7 @@ EXAMPLES = r'''
 # call ttl from file
 ---
 - name: ../test/0000_ok_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0000_ok_test.ttl
     chdir: ../test
     ignore_result: false
@@ -85,7 +82,7 @@ EXAMPLES = r'''
 
 # call ttl from command
 - name: "test: connect /cmd"
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       connect '/cmd'
       ;
@@ -167,6 +164,11 @@ delta:
     returned: always
     type: str
     sample: '0:00:00.325771'
+version:
+    description: This version
+    returned: always
+    type: str
+    sample: '1.29.1'
 '''
 
 import datetime
@@ -175,11 +177,14 @@ IMP_ERR = None
 try:
     from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import TtlPaserWolker
     from ansible_collections.tand0.ttl.plugins.module_utils.ttl_parser_worker import Label
+    from ansible_collections.tand0.ttl.plugins.module_utils.version import VERSION
 except (ImportError, ModuleNotFoundError, NameError) as ex:
     class TtlPaserWolker():
         pass
     IMP_ERR = ex
+    VERSION = "unkown"
 import os
+import typing
 
 
 def main():
@@ -208,7 +213,7 @@ def main():
     creates = module.params['creates']
     removes = module.params['removes']
     checkmode = module.check_mode
-    changed = not checkmode
+    changed = not checkmode and not (cmd is None and filename is None)
     start_time = datetime.datetime.now()
     result = {
         'filename': filename,
@@ -221,10 +226,8 @@ def main():
         'value': {}}
     #
     #
-    myTtlPaserWolker = None
+    parser = None
     try:
-        if filename is None and cmd is None:
-            module.fail_json(msg='Either the cmd or filename parameter must be given.', **result)
         #
         param_list = []
         if filename is None:
@@ -240,33 +243,32 @@ def main():
         if creates:
             if os.path.exists(creates):
                 result['stdout'] = f"skipped, since {creates} does exists"
-                module.exit_json(skipped=True, **result)
+                module.exit_json(changed=False, skipped=True, **result)
                 return
         if removes:
             if not os.path.exists(removes):
                 result['stdout'] = f"skipped, since {removes} does not exists"
-                module.exit_json(skipped=True, **result)
-                # module.exit_json(changed=False, skipped=True, rc=0, **result)
+                module.exit_json(changed=False, skipped=True, **result)
                 return
         #
-        myTtlPaserWolker = MyTtlPaserWolker(module)
+        parser = MyTtlPaserWolker(module)
         if cmd is not None:
             data = cmd + "\n"
             if not checkmode:
                 # this is not check mode
-                myTtlPaserWolker.execute('none.ttl', param_list, data=data, ignore_result=ignore_result)
+                parser.execute('none.ttl', param_list, data=data, ignore_result=ignore_result)
             else:
                 # this is check mode
-                myTtlPaserWolker.include_only('none.ttl', data=data)
+                parser.include_only('none.ttl', data=data)
         if filename is not None:
             if not checkmode:
                 # this is not check mode
-                myTtlPaserWolker.execute(filename, param_list, ignore_result=ignore_result)
+                parser.execute(filename, param_list, ignore_result=ignore_result)
             else:
                 # this is check mode
-                myTtlPaserWolker.include_only(filename)
+                parser.include_only(filename)
         if not ignore_result and not checkmode:
-            ignore_result_value = myTtlPaserWolker.getValue('result', error_stop=False)
+            ignore_result_value = parser.get_value('result', error_stop=False)
             if result is None:
                 ignore_result_value = 0
             if ignore_result_value == 0:
@@ -275,14 +277,15 @@ def main():
         module.fail_json(msg=f"Exception execute {str(e)}", **result)
     finally:
         os.chdir(current_directory)
-        if myTtlPaserWolker is not None:
-            result['stdout'] = myTtlPaserWolker.my_stdout
-            result['value'] = replace_param(myTtlPaserWolker.value_list)
-            myTtlPaserWolker.stop()
+        if parser is not None:
+            result['stdout'] = parser.my_stdout
+            result['value'] = replace_param(parser.value_list)
+            parser.stop()
         end_time = datetime.datetime.now()
         result['delta'] = str(end_time - start_time)
         result['end'] = str(end_time)
         result['stdout_lines'] = result['stdout'].splitlines()
+        result['version'] = str(VERSION)
     #
     module.exit_json(changed=changed, skipped=False, **result)
 
@@ -312,7 +315,8 @@ class MyTtlPaserWolker(TtlPaserWolker):
         self.my_module = my_module
         super().__init__()
 
-    def setLog(self, strvar):
+    @typing.override
+    def set_log(self, strvar):
         """ log setting """
         self.my_stdout = self.my_stdout + strvar
         self.my_module.log(str(strvar))

@@ -1,6 +1,6 @@
 {
-    "setting": "/mnt/d/gitwork/nextnextping/bin/sample02_sshping/setting.txt",
-    "title": "/mnt/d/gitwork/nextnextping/bin/sample02_sshping/setting.txt",
+    "setting": "D:/gitwork/nextnextping/bin/sample02_sshping/setting.txt",
+    "title": "D:/gitwork/nextnextping/bin/sample02_sshping/setting.txt",
     "wait_time": 1,
     "loop": false,
     "debug": false,
@@ -39,6 +39,6 @@
             "timeout": 30
         }
     ],
-    "ignore_messagebox": true,
+    "ignore_messagebox": false,
     "ignore_log": true
 }

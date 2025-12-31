@@ -88,17 +88,25 @@ strdim strmsg 4
 strmsg[0] = 'バナナ'
 strmsg[1] = 'りんご'
 strmsg[2] = 'みかん'
-assert 1 strmsg[0]
-assert 1 strmsg[1]
-assert 1 strmsg[2]
-assert 1 strmsg[3]
+strcompare strmsg[0] 'バナナ'
+assert result = 0 strmsg[0] result
+strcompare strmsg[1] 'りんご'
+assert result = 0 strmsg[1] result
+strcompare strmsg[2] 'みかん'
+assert result = 0 strmsg[2] result
+strcompare strmsg[3] ''
+assert result = 0 strmsg[3] result
 
-strdim intmsg 2
+
+intdim intmsg 1
+assert intmsg[0] == 0 intmsg[0]
+
+intdim intmsg 3
 intmsg[0] = 1
 intmsg[1] = 2
-assert 1 intmsg[0]
-assert 1 intmsg[1]
-
+assert intmsg[0] == 1 intmsg[0]
+assert intmsg[1] == 2 intmsg[1]
+assert intmsg[2] == 0 intmsg[2]
 
 
 ; valstrに '123' を代入

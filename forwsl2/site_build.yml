@@ -4,59 +4,95 @@
     - tand0.ttl
   vars:
     pythoninterpreter: /mnt/d/gitwork/ansibletest/ansible/venv/bin/python3.12
-    wsl2homework: /home/t-ando/work/collections/ansible_collections/tand0/ttl/
+    ttl_home: /home/t-ando/work/collections/ansible_collections/tand0/ttl/
+    doc_home: /home/t-ando/work/collections/ansible_collections/tand0/makedoc/
   tasks:
-    - name: copy to document
-      shell:
-        cmd: "python3 site_build.py"
-      register: python3_build
-    - name: create python package stdout
-      debug:
-         var: python3_build.stdout_lines
 
-    - name: file copy (ansible tand0.ttl)
+    - name: copy to file
       copy:
-        src: ../nextnextping/grammer/
-        dest: collections/ansible_collections/tand0/ttl/plugins/module_utils
+        src: "{{ item['src'] }}"
+        dest: "{{ item['dest'] }}"
+      loop:
+        - src: ../nextnextping/grammer/
+          dest: ./collections/ansible_collections/tand0/ttl/plugins/module_utils/
+
+    - name: get all data
+      ttl:
+      register: version
+    - debug:
+        msg: "{{ version }}"
 
     - name: get version
-      version:
+      ttl:
       register: version
     - debug:
         msg: "version: {{ version.version }}.1"
 
+    - name: create test ttl
+      shell:
+        cmd: "python3 collections/ansible_collections/tand0/makedoc/plugins/module_utils/site_build.py"
+      register: python3_build
+
+    - name: create python package stdout
+      debug:
+         var: python3_build.stdout_lines
+
+    - name: test directory created
+      file:
+        path: "/home/t-ando/work/"
+        state: directory
+        mode: "775"
+
+    - name: copy to file
+      copy:
+        src: "{{ item['src'] }}"
+        dest: "{{ item['dest'] }}"
+      loop:
+        - src: ../bin/sample01_winping
+          dest: ../nextnextping/dist/nextnextping
+        - src: ../bin/sample02_sshping
+          dest: ../nextnextping/dist/nextnextping
+        - src: ../bin/sample03_ttl
+          dest: ../nextnextping/dist/nextnextping
+        - src: ../bin/sample04_box
+          dest: ../nextnextping/dist/nextnextping
+        - src: ./collections
+          dest: /home/t-ando/work/
+
     - lineinfile:
-        path: collections/ansible_collections/tand0/ttl/galaxy.yml
+        path: "{{ item.path }}"
         regexp: '^version:'
         line: 'version: "{{ version.version }}.1"'
-
-    - name: file copy (local environment)
-      copy:
-        src: collections
-        dest: /home/t-ando/work/
+      loop:
+        - path: "{{ttl_home}}galaxy.yml"
+        - path: "{{doc_home}}galaxy.yml"
 
     - name: Execute ansible-test sanity
       command: ansible-test sanity --requirements --python-interpreter {{pythoninterpreter}} --skip-test import
       args:
-        chdir: "{{wsl2homework}}"
-      register: sanity_result
-      ignore_errors: True
-    - name: Execute ansible-test sanity debug
-      debug:
-        var: sanity_result.stdout_lines
-    - name: Check ansible-test sanity
-      fail:
-      when: (not ansible_check_mode) and (sanity_result.failed == True)
+        chdir: "{{ item.chdir }}"
+      changed_when: false  # sanity check なので changedは立てない
+      loop:
+        - chdir: "{{ttl_home}}"
+        - chdir: "{{doc_home}}"
 
     - name: Ceate tar gz file
       command: ansible-galaxy collection build . --force
       args:
-        chdir: "{{wsl2homework}}"
+        chdir: "{{ item.chdir }}"
+      loop:
+        - chdir: "{{ttl_home}}"
+        - chdir: "{{doc_home}}"
 
     - name: file copy (local environment)
       copy:
-        src: "{{wsl2homework}}tand0-ttl-{{version.version}}.1.tar.gz"
+        src: "{{item.base}}tand0-{{item.package}}-{{version.version}}.1.tar.gz"
         dest: ../dist
+      loop:
+        - base: "{{ttl_home}}"
+          package: "ttl"
+        - base: "{{doc_home}}"
+          package: "makedoc"
 
     - name: create zip file for windows
       community.general.archive:

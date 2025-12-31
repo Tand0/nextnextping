@@ -6,10 +6,10 @@
     - name: "test: connect SSH2"
       ttl:
         cmd: |
-          connect 'localhost:2200 /ssh /user=username /passwd=password'
-          flushrecv
+          connect 'localhost:2200 /ssh /user=ubuntu /passwd=password'
+          wait "$"
           sendln 'ping localhost'
-          wait '$'
+          wait "$"
       register: ttl_output
     - name: "test: connect /cmd"
       debug:

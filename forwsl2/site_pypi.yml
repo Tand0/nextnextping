@@ -4,11 +4,9 @@
     - tand0.ttl
   vars:
   tasks:
-    - name: get version
-      version:
+    - name: get all data
+      ttl:
       register: version
-    - debug:
-        msg: "version: {{ version.version }}.1"
 
     - lineinfile:
         path: ../pyproject.toml

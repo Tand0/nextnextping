@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test validate-modules` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html)] failed with 2 errors:", 
+            "output": "plugins/modules/makedoc.py:0:0: doc-default-does-not-match-spec: Argument 'css_file_list' in argument_spec defines default as (None) but documentation defines default as (['None'])\nplugins/modules/makedoc.py:0:0: doc-default-does-not-match-spec: Argument 'extensions' in argument_spec defines default as (None) but documentation defines default as (['None'])"
+        }
+    ], 
+    "verified": false
+}

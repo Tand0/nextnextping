@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/shebang.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test shebang` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/shebang.html)] failed with 14 errors:", 
+            "output": "README.md:0:0: file without shebang should not be executable\ndocs/makedoc.md:0:0: file without shebang should not be executable\ngalaxy.yml:0:0: file without shebang should not be executable\nmeta/runtime.yml:0:0: file without shebang should not be executable\nplugins/README.md:0:0: file without shebang should not be executable\nplugins/module_utils/__init__.py:0:0: file without shebang should not be executable\nplugins/module_utils/site_build.py:0:0: file without shebang should not be executable\nplugins/modules/makedoc.py:0:0: file without shebang should not be executable\nrequirements.txt:0:0: file without shebang should not be executable\ntests/output/bot/ansible-test-sanity-import-python-3.12.json:0:0: file without shebang should not be executable\ntests/output/bot/ansible-test-sanity-pep8.json:0:0: file without shebang should not be executable\ntests/output/bot/ansible-test-sanity-pylint.json:0:0: file without shebang should not be executable\ntests/output/bot/ansible-test-sanity-shebang.json:0:0: file without shebang should not be executable\ntests/output/bot/ansible-test-sanity-validate-modules.json:0:0: file without shebang should not be executable"
+        }
+    ], 
+    "verified": false
+}

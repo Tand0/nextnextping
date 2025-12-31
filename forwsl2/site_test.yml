@@ -4,14 +4,14 @@
     - tand0.ttl
   tasks:
     - name: assert OK
-      ttl:
+      tand0.ttl.ttl:
         cmd: |
           result = 1
           assert 1 result
       register: ttl_output
 
     - name: assert NG
-      ttl:
+      tand0.ttl.ttl:
         cmd: |
           assert 0 result
           result = 1
@@ -22,7 +22,7 @@
       when: (ttl_output.failed == False) and (not ansible_check_mode)
 
     - name: result NG
-      ttl:
+      tand0.ttl.ttl:
         cmd: |
           result = 0
         ignore_result: False
@@ -32,12 +32,12 @@
       when: (ttl_output.failed == False) and (not ansible_check_mode)
 
     - name: result NG but ignore_result is default(True)
-      ttl:
+      tand0.ttl.ttl:
         cmd: |
           result = 0
 
     - name: ../test/0000_ok_test.ttl and param
-      ttl:
+      tand0.ttl.ttl:
         cmd: xxx = 1025
         filename: 0000_ok_test.ttl
         chdir: ../test
@@ -53,7 +53,7 @@
       when: (not ansible_check_mode) and (ttl_output.value.a != 6)
 
     - name: "test: connect /cmd"
-      ttl:
+      tand0.ttl.ttl:
         cmd: |
           connect '/cmd'
           ;
@@ -81,7 +81,7 @@
         msg: "{{ttl_output.delta}}"
 
     - name: ttl creates test
-      ttl:
+      tand0.ttl.ttl:
         filename: 0000_ok_test.ttl
         creates: 0000_ok_test.ttl
         chdir: ../test
@@ -95,7 +95,7 @@
       when: (not ansible_check_mode) and (ttl_output.skipped == False)
   
     - name: ttl creates test
-      ttl:
+      tand0.ttl.ttl:
         filename: 0000_ok_test.ttl
         creates: xxxx.ttl
         chdir: ../test
@@ -110,7 +110,7 @@
 
 
     - name: ttl creates test
-      ttl:
+      tand0.ttl.ttl:
         filename: 0000_ok_test.ttl
         creates: 0000_ok_test.ttl
         chdir: ../test
@@ -124,7 +124,7 @@
       when: (not ansible_check_mode) and (ttl_output.skipped == False)
   
     - name: ttl creates test
-      ttl:
+      tand0.ttl.ttl:
         filename: 0000_ok_test.ttl
         creates: xxxx.ttl
         chdir: ../test
@@ -138,7 +138,7 @@
       when: (not ansible_check_mode) and (ttl_output.skipped == True)
 
     - name: ttl removes test
-      ttl:
+      tand0.ttl.ttl:
         filename: 0000_ok_test.ttl
         removes: 0000_ok_test.ttl
         chdir: ../test
@@ -152,7 +152,7 @@
       when: (not ansible_check_mode) and (ttl_output.skipped == True)
   
     - name: ttl removes test
-      ttl:
+      tand0.ttl.ttl:
         filename: 0000_ok_test.ttl
         removes: xxxx.ttl
         chdir: ../test

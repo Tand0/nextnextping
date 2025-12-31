@@ -59,6 +59,7 @@ else
     recvln
     recvln
     pause 1
+    flushrecv
 
     ; text
     command = 'dir'

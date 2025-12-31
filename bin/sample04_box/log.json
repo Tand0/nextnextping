@@ -1,0 +1,9 @@
+{
+    "ttl": {
+        "box.ttl": {
+            "stdout": "### l=3 c=assert p(1) p(result/0) p(inputstr/)\r\n### l=6 c=assert p(1) p(result/0) p(inputstr/)\r\n### l=9 c=assert p(1) p(result/1) p(inputstr/D:/gitwork/nextnextping/bin/sample04_box/setting.txt)\r\n### l=12 c=assert p(1) p(result/1) p(inputstr/D:/gitwork/nextnextping/bin/sample04_box)\r\n### l=19 c=assert p(1) p(result/2)\r\n### l=21 c=assert p(1) p(result/2) p(msg[2]/apple)\r\n### l=34 c=assert p(1) p(result/5)\r\n### l=36 c=assert p(1) p(result/5) p(msg[5]/Saturday)\r\n### l=41 c=assert p(1) p(yesnobox is YES)\r\n",
+            "result": "OK",
+            "date": "2025/12/31 15:37:30"
+        }
+    }
+}

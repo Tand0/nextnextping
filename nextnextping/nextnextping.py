@@ -23,6 +23,7 @@ from nextnextping.grammer.version import VERSION
 import webbrowser
 import platform
 import pexpect
+import typing
 
 SAMPLE_TTL = '''
 
@@ -576,37 +577,40 @@ return
 '''
 
 
-class MyTtlPaserWolker(TtlPaserWolker):
-    """ パサーをオーバーライドしてgui周りの処理を行わせる """
+class NextNextTtlPaserWolker(TtlPaserWolker):
+    ''' パサーをオーバーライドしてgui周りの処理を行わせる '''
     def __init__(self, threading, next_next_ping, log_type_param):
         self.threading = threading
         self.next_next_ping = next_next_ping
         self.log_type_param = log_type_param
-        self.log_type_param['stdout'] = ""
+        self.log_type_param['stdout'] = ''
         super().__init__()
 
-    def setLog(self, strvar):
-        """ オーバライドしてログを設定する """
+    @typing.override
+    def set_log(self, strvar):
+        ''' オーバライドしてログを設定する '''
         self.log_type_param['stdout'] = self.log_type_param['stdout'] + strvar
 
-    def doLogopen(self, filename, binary_flag, append_flag,
-                  plain_text_flag, timestamp_flag, hide_dialog_flag,
-                  include_screen_buffer_flag, timestamp_type):
-        """ open the log """
+    @typing.override
+    def do_logopen(self, filename, binary_flag, append_flag,
+                   plain_text_flag, timestamp_flag, hide_dialog_flag,
+                   include_screen_buffer_flag, timestamp_type):
+        ''' open the log '''
         if self.next_next_ping.init['ignore_log']:
             return  # ログを開かないようにする
         # 親を呼ぶ
-        super().doLogopen(
+        super().do_logopen(
             filename, binary_flag, append_flag,
             plain_text_flag, timestamp_flag, hide_dialog_flag,
             include_screen_buffer_flag, timestamp_type)
 
-    def commandContext(self, name, line, data_list):
-        """ GUI側で処理すべきコマンド群 """
+    @typing.override
+    def do_command_context(self, name, line, data_list):
+        ''' GUI側で処理すべきコマンド群 '''
         # print(f"commandContext {name}")
-        if "passwordbox" == name:
-            p1 = str(self.getData(data_list[0]))
-            p2 = str(self.getData(data_list[1]))
+        if 'passwordbox' == name:
+            p1 = self.get_data_str(data_list[0])
+            p2 = self.get_data_str(data_list[1])
             done_event = threading.Event()
             self.next_next_ping.root.after(
                 0, lambda: self.next_next_ping.show_password_dialog(done_event, p1, p2))
@@ -617,15 +621,15 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                self.setValue('result', 0)
-                self.setValue('inputstr', '')
+                self.set_value('result', 0)
+                self.set_value('inputstr', '')
             else:
-                self.setValue('result', 1)
-                self.setValue('inputstr', inputstr)
+                self.set_value('result', 1)
+                self.set_value('inputstr', inputstr)
             return
-        if "inputbox" == name:
-            p1 = str(self.getData(data_list[0]))
-            p2 = str(self.getData(data_list[1]))
+        if 'inputbox' == name:
+            p1 = self.get_data_str(data_list[0])
+            p2 = self.get_data_str(data_list[1])
             done_event = threading.Event()
             self.next_next_ping.root.after(
                 0, lambda: self.next_next_ping.show_inputdialog(done_event, p1, p2))
@@ -636,14 +640,14 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                self.setValue('result', 0)
-                self.setValue('inputstr', '')
+                self.set_value('result', 0)
+                self.set_value('inputstr', '')
             else:
-                self.setValue('result', 1)
-                self.setValue('inputstr', inputstr)
+                self.set_value('result', 1)
+                self.set_value('inputstr', inputstr)
             return
-        elif "dirnamebox" == name:
-            p1 = str(self.getData(data_list[0]))
+        elif 'dirnamebox' == name:
+            p1 = self.get_data_str(data_list[0])
             done_event = threading.Event()
             self.next_next_ping.root.after(
                 0, lambda: self.next_next_ping.show_dirdialog(done_event, p1))
@@ -654,13 +658,13 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                self.setValue('result', 0)
+                self.set_value('result', 0)
             else:
-                self.setValue('result', 1)
-                self.setValue('inputstr', inputstr)
+                self.set_value('result', 1)
+                self.set_value('inputstr', inputstr)
             return
-        elif "filenamebox" == name:
-            p1 = str(self.getData(data_list[0]))
+        elif 'filenamebox' == name:
+            p1 = self.get_data_str(data_list[0])
             done_event = threading.Event()
             self.next_next_ping.root.after(
                 0, lambda: self.next_next_ping.show_filedialog(done_event, p1))
@@ -671,46 +675,47 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                self.setValue('result', 0)
+                self.set_value('result', 0)
             else:
-                self.setValue('result', 1)
-                self.setValue('inputstr', inputstr)
+                self.set_value('result', 1)
+                self.set_value('inputstr', inputstr)
             return
-        elif "listbox" == name:
-            p1 = str(self.getData(data_list[0]))
-            p2 = str(self.getData(data_list[1]))
-            p3 = str(self.getKeywordName(data_list[2]))
+        elif 'listbox' == name:
+            p1 = self.get_data_str(data_list[0])
+            p2 = self.get_data_str(data_list[1])
+            p3 = self.get_key_name(data_list[2])
+            p4 = 0
+            if 4 <= len(data_list):
+                p4 = self.get_data_int(data_list[3])
             i = 0
             list_data = []
             while True:
                 target = f"{p3}[{str(i)}]"
                 # print(f"target={target}")
-                if self.isValue(target):
-                    list_data.append(self.getData(target))
-                    i = i + 1
-                else:
+                target_value = self.get_value(target, error_stop=False)
+                if target_value is None:
                     break
+                list_data.append(target_value)
+                i = i + 1
             if len(list_data) <= 0:
-                list_data.append("None")
+                list_data.append('None')
             done_event = threading.Event()
             self.next_next_ping.root.after(
-                0, lambda: self.next_next_ping.show_listbox_dialog(done_event, p1, p2, list_data))
+                0, lambda: self.next_next_ping.show_listbox_dialog(done_event, p1, p2, list_data, pos=p4))
             # 待ち処理
             while not self.end_flag:
                 signaled = done_event.wait(timeout=1.0)
                 if signaled:
                     break
-            inputstr = self.next_next_ping.result
-            if inputstr is None:
-                # print("result is None")
-                self.setValue('inputstr', -1)
+            result = self.next_next_ping.result
+            if result is None:
+                self.set_value('result', -1)
             else:
-                # print(f"inputstr is {inputstr}")
-                self.setValue('inputstr', inputstr)
+                self.set_value('result', result)
             return
-        elif "messagebox" == name and not self.next_next_ping.init['ignore_messagebox']:
-            p1 = str(self.getData(data_list[0]))
-            p2 = str(self.getData(data_list[1]))
+        elif 'messagebox' == name and not self.next_next_ping.init['ignore_messagebox']:
+            p1 = self.get_data_str(data_list[0])
+            p2 = self.get_data_str(data_list[1])
             done_event = threading.Event()
             self.next_next_ping.root.after(
                 0, lambda: self.next_next_ping.show_messagebox_dialog(done_event, p1, p2))
@@ -720,9 +725,9 @@ class MyTtlPaserWolker(TtlPaserWolker):
                 if signaled:
                     break
             return
-        elif "yesnobox" == name:
-            p1 = str(self.getData(data_list[0]))
-            p2 = str(self.getData(data_list[1]))
+        elif 'yesnobox' == name:
+            p1 = self.get_data_str(data_list[0])
+            p2 = self.get_data_str(data_list[1])
             done_event = threading.Event()
             self.next_next_ping.root.after(
                 0, lambda: self.next_next_ping.show_yesnobox_dialog(done_event, p1, p2))
@@ -733,29 +738,32 @@ class MyTtlPaserWolker(TtlPaserWolker):
                     break
             inputstr = self.next_next_ping.result
             if inputstr is None:
-                self.setValue('result', 0)
+                self.set_value('result', 0)
             else:
-                self.setValue('result', 1)
+                self.set_value('result', 1)
             return
         #
         #
         # 未実装のコマンド表示
-        super().commandContext(name, line, data_list)
+        super().do_command_context(name, line, data_list)
         #
 
-    def setValue(self, x, y):
+    @typing.override
+    def set_value(self, x, y):
         if self.next_next_ping.init['debug']:
-            self.log_type_param['stdout'] = self.log_type_param['stdout'] + f"### x={x} value={y}\r\n"
-        super().setValue(x, y)
+            self.log_type_param['stdout'] = self.log_type_param['stdout'] + f"### x={x} value={y}{os.linesep}"
+        super().set_value(x, y)
 
-    def setTitle(self, title: str):
-        """ タイトルの設定 """
+    @typing.override
+    def set_title(self, title: str):
+        ''' タイトルの設定 '''
         # print(f"setTitle {title}")
         self.next_next_ping.root.after(
-            0, lambda: self.next_next_ping.setTitle(title))
+            0, lambda: self.next_next_ping.set_title(title))
 
-    def getTitle(self) -> str:
-        """ タイトルの取得 """
+    @typing.override
+    def get_title(self) -> str:
+        ''' タイトルの取得 '''
         title = self.next_next_ping.init['title']
         return title  # self.next_next_ping.title
 
@@ -807,7 +815,7 @@ class MyLinuxProcess():
             return False
         if self.result is not None:
             return True
-        index = child.expect([r".", pexpect.EOF, pexpect.TIMEOUT])
+        index = child.expect([r'.', pexpect.EOF, pexpect.TIMEOUT])
         if index == 0:
             self.result = child.before + child.after
             if 0 < len(self.result):
@@ -851,7 +859,7 @@ class MyThread():
         self.next_next_ping = None
         self.threading = None
         self.values_values = []
-        self.myTtlPaserWolker = None
+        self.paser = None
 
     def set_therad(self, next_next_ping, threading, values_values):
         self.next_next_ping = next_next_ping
@@ -881,13 +889,13 @@ class MyThread():
                         break
                 #
                 if flag:
-                    result = "OK"
-                    date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                    result = 'OK'
+                    date = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
                 else:
-                    if result != "NG":
+                    if result != 'NG':
                         # NGになった時間を入力し、２回目NGは時間更新しない
-                        date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                    result = "NG"
+                        date = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+                    result = 'NG'
                 if type not in self.next_next_ping.log:
                     self.next_next_ping.log[type] = {}
                 if command not in self.next_next_ping.log[type]:
@@ -907,9 +915,9 @@ class MyThread():
                     break
             #
             # loopフラグが落ちていたら終了する
-            if self.next_next_ping.init["loop"] is False:
+            if self.next_next_ping.init['loop'] is False:
                 self.stop()
-                messagebox.showinfo("Info", "ping end!")
+                messagebox.showinfo('Info', 'ping end!')
                 break
 
     def ttl_result(self, type, param):
@@ -919,33 +927,33 @@ class MyThread():
         for param_list_next_list in param_list:
             param_list_next.append(param_list_next_list.strip())
         try:
-            self.myTtlPaserWolker = MyTtlPaserWolker(self.threading, self.next_next_ping, self.next_next_ping.log[type][param])
+            self.paser = NextNextTtlPaserWolker(self.threading, self.next_next_ping, self.next_next_ping.log[type][param])
         except Exception as e:
-            self.myTtlPaserWolker.setLogInner(f"Exception create {str(e)}")
+            self.paser.set_log_inner(f"Exception create {str(e)}")
             return 0  # this is NG!
         try:
             if not os.path.isabs(filename):
                 # 相対パスなので絶対パスに変換する
-                base_dir = self.next_next_ping.init["setting"]
+                base_dir = self.next_next_ping.init['setting']
                 base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
                 base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
                 os.chdir(base_dir)  # 起動フォルダを相対後に変更する
                 filename = os.path.join(base_dir, filename)  # ファイル名を決定
             #
-            self.myTtlPaserWolker.execute(filename, param_list_next)
+            self.paser.execute(filename, param_list_next)
         except Exception as e:
-            self.myTtlPaserWolker.setLogInner(f"Exception execute {str(e)}")
+            self.paser.set_log_inner(f"Exception execute {str(e)}")
             return 0  # this is NG!
         finally:
             # なにがあろうとworkerは絶対に殺す
-            if self.myTtlPaserWolker is not None:
-                self.myTtlPaserWolker.stop()
-        return int(self.myTtlPaserWolker.getValue('result')) != 0
+            if self.paser is not None:
+                self.paser.stop()
+        return int(self.paser.get_value('result')) != 0
 
     def subprocess_result(self, type, command_dict, command):
         flag = False
         command_next = None
-        if platform.system().lower() == "linux":
+        if platform.system().lower() == 'linux':
             if 'command_linux' in command_dict:
                 command_next = command_dict['command_linux']
         else:
@@ -954,7 +962,7 @@ class MyThread():
         if command_next is None:
             for data_one in NextNextPing.INIT_DATA['data']:
                 if data_one['name'] == type:
-                    if platform.system().lower() == "linux":
+                    if platform.system().lower() == 'linux':
                         command_next = data_one['command_linux']
                     else:
                         command_next = data_one['command_windo']
@@ -979,7 +987,7 @@ class MyThread():
         process = None
         try:
             #
-            if platform.system().lower() != "linux":
+            if platform.system().lower() != 'linux':
                 process = MyWindowsProcess(command_next_list)
             else:
                 process = MyLinuxProcess(command_next)
@@ -1022,8 +1030,8 @@ class MyThread():
         return flag
 
     def stop(self):
-        if self.myTtlPaserWolker is not None:
-            self.myTtlPaserWolker.stop()
+        if self.paser is not None:
+            self.paser.stop()
         self.non_stop_flag = False
 
     def command_status_threading(self, message: str):
@@ -1041,9 +1049,9 @@ class NextNextPing():
     def __init__(self):
         self.log = {}
         self.init = {}
-        self.setting_text = ""
-        self.log_text = ""
-        self.tree = ""
+        self.setting_text = ''
+        self.log_text = ''
+        self.tree = ''
         self.tool_tree = None
         self.my_thread = None
         self.root = None
@@ -1080,34 +1088,34 @@ class NextNextPing():
             f.write(data)
 
     def save_log(self):
-        """ logを保存 """
+        ''' logを保存 '''
         self.stop()
-        base_dir = self.init["setting"]
+        base_dir = self.init['setting']
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         file_path = filedialog.asksaveasfilename(
-            defaultextension=".json",
-            filetypes=[("json files", "*.json"), ("All json", "*.*")],
+            defaultextension='.json',
+            filetypes=[('json files', '*.json'), ('All json', '*.*')],
             initialdir=base_dir,
             initialfile=NextNextPing.LOG_JSON,
-            title="Save log"
+            title='Save log'
         )
         if file_path:
             self.next_json_save(file_path, self.log)
 
     def load_log(self):
-        """ logを保存 """
+        ''' logを保存 '''
         self.stop()
-        base_dir = self.init["setting"]
+        base_dir = self.init['setting']
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         full_path = os.path.join(base_dir, NextNextPing.LOG_JSON)  # ファイル名を決定
         file_path = filedialog.askopenfilename(
-            defaultextension=".json",
-            filetypes=[("json files", "*.json"), ("All files", "*.*")],
+            defaultextension='.json',
+            filetypes=[('json files', '*.json'), ('All files', '*.*')],
             initialdir=base_dir,
             initialfile=NextNextPing.LOG_JSON,
-            title="Load log"
+            title='Load log'
         )
         if file_path:
             self.log = self.next_json_load(full_path)
@@ -1116,19 +1124,19 @@ class NextNextPing():
             self.update_setting()
 
     def save_setting(self, file_path=None):
-        """ setting と init を保存 """
+        ''' setting と init を保存 '''
         if file_path is None:
-            base_dir = self.init["setting"]
+            base_dir = self.init['setting']
             base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
             base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
             file_path = filedialog.asksaveasfilename(
-                defaultextension=".txt",
+                defaultextension='.txt',
                 initialdir=base_dir,
-                filetypes=[("txt files", "*.txt"), ("All files", "*.*")],
-                initialfile="setting.txt",
-                title="Save setting"
+                filetypes=[('txt files', '*.txt'), ('All files', '*.*')],
+                initialfile='setting.txt',
+                title='Save setting'
             )
-        setting = self.setting_text.get("1.0", tk.END)
+        setting = self.setting_text.get('1.0', tk.END)
         if not file_path:
             return  # キャンセルされた
         #
@@ -1143,15 +1151,15 @@ class NextNextPing():
 
     def load_setting(self, file_path=None):
         if file_path is None:
-            base_dir = self.init["setting"]
+            base_dir = self.init['setting']
             base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
             base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
             file_path = filedialog.askopenfilename(
-                defaultextension=".txt",
-                filetypes=[("txt files", "*.txt"), ("All files", "*.*")],
+                defaultextension='.txt',
+                filetypes=[('txt files', '*.txt'), ('All files', '*.*')],
                 initialdir=base_dir,
-                initialfile="setting.txt",
-                title="Load setting"
+                initialfile='setting.txt',
+                title='Load setting'
             )
         if not file_path:
             return  # キャンセルされた
@@ -1173,7 +1181,7 @@ class NextNextPing():
         self.command_status_threading(f"load f={file_path}")
         #
         # タイトルをファイル名にする
-        self.setTitle(file_path)
+        self.set_title(file_path)
 
     def system_exit(self):
         self.stop()
@@ -1190,7 +1198,7 @@ class NextNextPing():
             self.tree.delete(child)
         #
         # すべてのipを追加
-        setting = self.setting_text.get("1.0", tk.END)
+        setting = self.setting_text.get('1.0', tk.END)
         lines = setting.splitlines()
         for line in lines:
             line = line.strip()
@@ -1215,10 +1223,10 @@ class NextNextPing():
                     type = type.strip().lower()
                     if 2 <= len(type):
                         type = type[1:-1]  # 前後の()を消す
-                    if "trace" in type:
-                        type = "trace"
-                    if "show" in type:
-                        type = "show"
+                    if 'trace' in type:
+                        type = 'trace'
+                    if 'show' in type:
+                        type = 'show'
                     else:
                         a_flag = False
                         for data_list in self.init['data']:
@@ -1226,7 +1234,7 @@ class NextNextPing():
                             if data_list['name'] == type:
                                 a_flag = True
                         if not a_flag:
-                            type = "ping"
+                            type = 'ping'
                     # print(f"line2 p1={type} p2={display_name} p3={line}")
                 #
                 if display_name is None or '' == display_name:
@@ -1248,7 +1256,7 @@ class NextNextPing():
                     if 'date' in self.log[type][line]:
                         date = self.log[type][line]['date']
             values = (result, date, display_name, type, line)
-            self.tree.insert("", "end", values=values)
+            self.tree.insert('', 'end', values=values)
         #
         # 画面を切り替える
         self.notebook.select(1)
@@ -1260,9 +1268,9 @@ class NextNextPing():
         #
         if self.my_thread is None or not self.my_thread.non_stop_flag:
             #
-            message = "Ping start!"
+            message = 'Ping start!'
             self.command_status_threading(message)
-            messagebox.showinfo("Info", message)
+            messagebox.showinfo('Info', message)
             #
             children = self.tree.get_children()
             values_values = []
@@ -1274,9 +1282,9 @@ class NextNextPing():
             self.my_thread.set_therad(self, thread, values_values)
             thread.start()
         else:
-            message = "Ping already start! (Stop)"
+            message = 'Ping already start! (Stop)'
             self.command_status_threading(message)
-            messagebox.showinfo("Info", message)
+            messagebox.showinfo('Info', message)
             self.stop()
 
     def command_stop(self):
@@ -1284,9 +1292,9 @@ class NextNextPing():
             # スレッド側で終わったダイアログをだすので、こちらは不要
             self.stop()
             return
-        message = "Ping already stop!"
+        message = 'Ping already stop!'
         self.command_status_threading(message)
-        messagebox.showinfo("Info", message)
+        messagebox.showinfo('Info', message)
 
     def command_delete(self):
         #
@@ -1304,7 +1312,7 @@ class NextNextPing():
             my_thread.stop()
 
     def command_ping_threading(self, result, date, type, command):
-        """ 戻り処理 """
+        ''' 戻り処理 '''
         children = self.tree.get_children()
         for child in children:
             values = list(self.tree.item(child, 'values'))
@@ -1315,12 +1323,12 @@ class NextNextPing():
             self.tree.item(child, values=values)
 
     def command_status_threading(self, data: str):
-        """ 戻り処理 """
+        ''' 戻り処理 '''
         message = ''
         if self.init['debug']:
-            message = "D(True) "
+            message = 'D(True) '
         else:
-            message = "D(False) "
+            message = 'D(False) '
         if self.init['loop']:
             message = message + 'L(True) '
         else:
@@ -1338,31 +1346,31 @@ class NextNextPing():
         if not selected:
             return
         item_id = selected[0]
-        values = self.tree.item(item_id, "values")
+        values = self.tree.item(item_id, 'values')
         display_name = values[2]
         type = values[3]
         command = values[4]
-        string = "empty"
+        string = 'empty'
         self.command_status_threading(f"touch n={display_name} t={type} c=/{command}/")
         if type not in self.log:
             self.log[type] = {}
         if command not in self.log[type]:
             self.log[type][command] = {}
-        result = "--"
+        result = '--'
         if 'result' in self.log[type][command]:
             result = self.log[type][command]['result']
-        date = "--"
+        date = '--'
         if 'date' in self.log[type][command]:
             date = self.log[type][command]['date']
-        stdout = "--"
+        stdout = '--'
         if 'stdout' in self.log[type][command]:
             stdout = self.log[type][command]['stdout']
-        string = f"n={display_name} t={type} c={command}\r\n"
-        string = string + f"result={result}\r\n"
-        string = string + f"date={date}\r\n"
-        string = string + "stdout=\r\n"
+        string = f"n={display_name} t={type} c={command}{os.linesep}"
+        string = string + f"result={result}{os.linesep}"
+        string = string + f"date={date}{os.linesep}"
+        string = string + f"stdout={os.linesep}"
         string = string + stdout
-        self.log_text.delete("1.0", tk.END)
+        self.log_text.delete('1.0', tk.END)
         self.log_text.insert(1.0, string)
         #
         self.notebook.select(2)
@@ -1421,41 +1429,41 @@ class NextNextPing():
         #
         #
         self.root = tk.Tk()
-        self.root.protocol("WM_DELETE_WINDOW", self.system_exit)
+        self.root.protocol('WM_DELETE_WINDOW', self.system_exit)
         self.root.title(self.init['title'])
-        self.root.geometry("800x400")
+        self.root.geometry('800x400')
         menu_bar = tk.Menu(self.root)
         self.root.config(menu=menu_bar)
         # ファイルメニュー
         file_menu = tk.Menu(menu_bar, tearoff=False)
-        menu_bar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Save setting", command=self.save_setting)
-        file_menu.add_command(label="Load setting", command=self.load_setting)
-        file_menu.add_command(label="Save log", command=self.save_log)
-        file_menu.add_command(label="Load log", command=self.load_log)
-        file_menu.add_command(label="Setting", command=self.command_settings)
-        file_menu.add_command(label="Exit", command=self.system_exit)
+        menu_bar.add_cascade(label='File', menu=file_menu)
+        file_menu.add_command(label='Save setting', command=self.save_setting)
+        file_menu.add_command(label='Load setting', command=self.load_setting)
+        file_menu.add_command(label='Save log', command=self.save_log)
+        file_menu.add_command(label='Load log', command=self.load_log)
+        file_menu.add_command(label='Setting', command=self.command_settings)
+        file_menu.add_command(label='Exit', command=self.system_exit)
         #
         # ツールメニュー
         tool_menu = tk.Menu(menu_bar, tearoff=False)
-        menu_bar.add_cascade(label="Tool", menu=tool_menu)
-        tool_menu.add_command(label="Sheet", command=self.tool_sheet)
+        menu_bar.add_cascade(label='Tool', menu=tool_menu)
+        tool_menu.add_command(label='Sheet', command=self.tool_sheet)
         #
         # Help メニュー
         help_menu = tk.Menu(menu_bar, tearoff=False)
-        help_menu.add_command(label="Help", command=self.help_brows)
-        help_menu.add_command(label="About", command=self.help_about)
-        menu_bar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label='Help', command=self.help_brows)
+        help_menu.add_command(label='About', command=self.help_about)
+        menu_bar.add_cascade(label='Help', menu=help_menu)
         #
         self.notebook = ttk.Notebook(self.root)
         #
         # tab1
         #
         tab1 = tk.Frame(self.notebook)
-        self.notebook.add(tab1, text="setting")
+        self.notebook.add(tab1, text='setting')
         top_frame = tk.Frame(tab1)
         top_frame.pack(side=tk.TOP)
-        top_button = tk.Button(top_frame, text="Update", command=self.update_setting)
+        top_button = tk.Button(top_frame, text='Update', command=self.update_setting)
         top_button.pack(side=tk.LEFT)
         main_frame = ttk.Frame(tab1)
         self.setting_text = tk.Text(main_frame)
@@ -1473,7 +1481,7 @@ class NextNextPing():
         # tab2
         #
         tab2 = tk.Frame(self.notebook)
-        self.notebook.add(tab2, text="result")
+        self.notebook.add(tab2, text='result')
         column = [
             ['OK/NG', tk.CENTER, 60, False],
             ['Date', tk.W, 120, False],
@@ -1487,9 +1495,9 @@ class NextNextPing():
         # フレームで Treeview と Scrollbar をまとめる
         top_frame = tk.Frame(tab2)
         top_frame.pack(side=tk.TOP)
-        tk.Button(top_frame, text="Ping", command=self.command_ping).pack(side=tk.LEFT)
-        tk.Button(top_frame, text="Stop", command=self.command_stop).pack(side=tk.LEFT)
-        tk.Button(top_frame, text="Delete", command=self.command_delete).pack(side=tk.LEFT)
+        tk.Button(top_frame, text='Ping', command=self.command_ping).pack(side=tk.LEFT)
+        tk.Button(top_frame, text='Stop', command=self.command_stop).pack(side=tk.LEFT)
+        tk.Button(top_frame, text='Delete', command=self.command_delete).pack(side=tk.LEFT)
         main_frame = ttk.Frame(tab2)
         self.tree = ttk.Treeview(main_frame, columns=tree_colum)
         self.tree.column('#0', width=0, stretch='no')
@@ -1497,7 +1505,7 @@ class NextNextPing():
             self.tree.column(var[0], anchor=var[1], width=var[2], minwidth=var[2], stretch=var[3])
             self.tree.heading(var[0], text=var[0])
         self.tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
-        self.tree.bind("<Double-Button-1>", self.on_select_double)
+        self.tree.bind('<Double-Button-1>', self.on_select_double)
         # スクロールバーの設定
         vsb = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=vsb.set)
@@ -1510,11 +1518,11 @@ class NextNextPing():
         # tab3
         #
         tab3 = tk.Frame(self.notebook)
-        self.notebook.add(tab3, text="log")
+        self.notebook.add(tab3, text='log')
         #
         main_frame = ttk.Frame(tab3)
         self.log_text = tk.Text(main_frame)
-        self.log_text.insert(1.0, "Please attache table for result tag.")
+        self.log_text.insert(1.0, 'Please attache table for result tag.')
         self.log_text.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         # スクロールバーの設定
         vsb = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.log_text.yview)
@@ -1528,7 +1536,7 @@ class NextNextPing():
         # ステータスバー（Label）を下部に配置
         #
         self.status_var = tk.StringVar()
-        self.command_status_threading("This is status bar")
+        self.command_status_threading('This is status bar')
         status_bar = tk.Label(self.root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         #
@@ -1540,8 +1548,8 @@ class NextNextPing():
         self.root.mainloop()
         #
 
-    def setTitle(self, title: str):
-        """ タイトルの設定 """
+    def set_title(self, title: str):
+        ''' タイトルの設定 '''
         self.init['title'] = title
         self.root.title(title)
 
@@ -1567,7 +1575,7 @@ class NextNextPing():
         event.set()
 
     def show_dirdialog(self, event, p1):
-        base_dir = self.init["setting"]
+        base_dir = self.init['setting']
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         dialog_path = filedialog.askdirectory(
@@ -1583,7 +1591,7 @@ class NextNextPing():
         event.set()
 
     def show_filedialog(self, event, p1):
-        base_dir = self.init["setting"]
+        base_dir = self.init['setting']
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         dialog_path = filedialog.askopenfilename(
@@ -1597,13 +1605,9 @@ class NextNextPing():
         # イベントを進ませる
         event.set()
 
-    def show_listbox_dialog(self, event, message, title, options):
-        dialog = ListboxDialog(self.root, title, options, message=message)
-        self.result = None
-        if dialog.selection:
-            # 成功した！
-            self.result = dialog.selection
-            # print(f"ListboxDialog {str(self.result)}")
+    def show_listbox_dialog(self, event, message, title, options, pos=None):
+        dialog = ListboxDialog(self.root, title, options, message=message, pos=pos)
+        self.result = dialog.selection
         #
         # イベントを進ませる
         event.set()
@@ -1617,7 +1621,7 @@ class NextNextPing():
         self.result = None
         # 入力結果の処理
         if answer:
-            self.result = "OK"
+            self.result = 'OK'
         #
         # イベントを進ませる
         event.set()
@@ -1625,27 +1629,27 @@ class NextNextPing():
     def tool_sheet(self):
         # モーダルダイアログ
         dialog = tk.Toplevel(self.root)
-        dialog.title("tool_sheet")
-        dialog.geometry("1024x400")
+        dialog.title('tool_sheet')
+        dialog.geometry('1024x400')
         #
         menu_bar = tk.Menu(dialog)
         dialog.config(menu=menu_bar)
         # ファイルメニュー
         file_menu = tk.Menu(menu_bar, tearoff=False)
-        file_menu.add_command(label="Save csv", command=self.save_csv)
-        file_menu.add_command(label="Load csv", command=self.load_csv)
-        file_menu.add_command(label="Close", command=dialog.destroy)
-        menu_bar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label='Save csv', command=self.save_csv)
+        file_menu.add_command(label='Load csv', command=self.load_csv)
+        file_menu.add_command(label='Close', command=dialog.destroy)
+        menu_bar.add_cascade(label='File', menu=file_menu)
         # goメニュー
         go_menu = tk.Menu(menu_bar, tearoff=False)
-        go_menu.add_command(label="Create ttl", command=self.create_ttl)
-        menu_bar.add_cascade(label="Go", menu=go_menu)
+        go_menu.add_command(label='Create ttl', command=self.create_ttl)
+        menu_bar.add_cascade(label='Go', menu=go_menu)
         #
         top_frame = tk.Frame(dialog)
         top_frame.pack(side=tk.TOP)
-        top_button = tk.Button(top_frame, text="Create", command=self.create_tool)
+        top_button = tk.Button(top_frame, text='Create', command=self.create_tool)
         top_button.pack(side=tk.LEFT)
-        top_button = tk.Button(top_frame, text="Delete", command=self.delete_tool)
+        top_button = tk.Button(top_frame, text='Delete', command=self.delete_tool)
         top_button.pack(side=tk.LEFT)
         #
         column = []
@@ -1661,7 +1665,7 @@ class NextNextPing():
         for var in column:
             self.tool_tree.column(var, anchor=tk.W, width=20)
             self.tool_tree.heading(var, text=var)
-        self.tool_tree.bind("<Double-Button-1>", self.modify_tool)
+        self.tool_tree.bind('<Double-Button-1>', self.modify_tool)
         self.tool_tree.pack(pady=2, padx=2, fill=tk.BOTH, expand=True)
         # スクロールバーの設定
         vsb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.tool_tree.yview)
@@ -1680,11 +1684,11 @@ class NextNextPing():
         selected = self.tool_tree.selection()
         if selected:
             item_id = selected[0]
-            values = self.tool_tree.item(item_id)["values"]
+            values = self.tool_tree.item(item_id)['values']
         else:
             for x in NextNextPing.TARGET_PARAM:
                 values.append(str(x[2]))
-        item_id = self.tool_tree.insert("", "end", values=values)
+        item_id = self.tool_tree.insert('', 'end', values=values)
         self.update_tool(item_id, values)
 
     def modify_tool(self, _):
@@ -1692,24 +1696,24 @@ class NextNextPing():
         if not selected:
             return
         item_id = selected[0]
-        values = self.tool_tree.item(item_id)["values"]
+        values = self.tool_tree.item(item_id)['values']
         # print(f"values {values}")
         self.update_tool(item_id, values)
 
     TARGET_PARAM = [
-        ["file_name", "ファイル名", "dummy.ttl", ()],
-        ["target_display", "pingを打つ装置の表示名", "target_display", ()],
-        ["target_ip", "pingを打つIP", "127.0.0.1", ()],
-        ["target_type", "設定する種別", 1, ("1=ping", "2=traceroute", "3=show run")],
-        ["next_ssh", "踏台先有無", 0, ("0=Windows", "1=SSH login", "2=SSH->SSH login")],
-        ["base_type", "SSH先の種別", 2, ("1=cisco", "2=linux", "3=qx-s")],
-        ["base_display", "SSH接続する表示名", "base_display", ()],
-        ["base_ip", "SSH接続するIP", "localhost:2200", ()],
-        ["base_account", "SSH接続するアカウント", "admin", ()],
-        ["next_type", "踏み台先種別", 1, ("1=cisco", "2=linux", "3=qx-s")],
-        ["next_display", "SSHからさらに接続する装置", "next_display", ()],
-        ["next_ip", "踏み台SSHのIPアドレス", "dummy", ()],
-        ["next_account", "踏み台先のアカウント", "admin", ()]]
+        ['file_name', 'ファイル名', 'dummy.ttl', ()],
+        ['target_display', 'pingを打つ装置の表示名', 'target_display', ()],
+        ['target_ip', 'pingを打つIP', '127.0.0.1', ()],
+        ['target_type', '設定する種別', 1, ('1=ping', '2=traceroute', '3=show run')],
+        ['next_ssh', '踏台先有無', 0, ('0=Windows', '1=SSH login', '2=SSH->SSH login')],
+        ['base_type', 'SSH先の種別', 2, ('1=cisco', '2=linux', '3=qx-s')],
+        ['base_display', 'SSH接続する表示名', 'base_display', ()],
+        ['base_ip', 'SSH接続するIP', 'localhost:2200', ()],
+        ['base_account', 'SSH接続するアカウント', 'admin', ()],
+        ['next_type', '踏み台先種別', 1, ('1=cisco', '2=linux', '3=qx-s')],
+        ['next_display', 'SSHからさらに接続する装置', 'next_display', ()],
+        ['next_ip', '踏み台SSHのIPアドレス', 'dummy', ()],
+        ['next_account', '踏み台先のアカウント', 'admin', ()]]
 
     def get_japanese_flag(self) -> bool:
         current_locale = locale.getlocale()
@@ -1723,7 +1727,7 @@ class NextNextPing():
         return False
 
     def get_target_filename(self, row_index: int, values: list) -> str:
-        """ ファイル名を取得する """
+        ''' ファイル名を取得する '''
         row_index = str(1000 + row_index)
         #
         ans = ''
@@ -1735,13 +1739,13 @@ class NextNextPing():
         next_ip = values[11]
         action_name = self.get_target_type_to_action_name(target_type, target_ip)
         if next_ssh == 0:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
-            return "None"  # not required ttl name
+            return 'None'  # not required ttl name
         elif next_ssh == 1:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
             ans = f"{row_index}_ok_{base_ip}_{action_name}"
         elif next_ssh == 2:  # 0=Windows , 1=SSH login , 2=SSH->SSH login
             ans = f"{row_index}_ok_{next_ip}_{action_name}"
         else:
-            ans = "unkown_next_ssh"
+            ans = 'unkown_next_ssh'
         #
         for replace_target in [
                 '.',  # ipv4
@@ -1773,7 +1777,7 @@ class NextNextPing():
         widget = []
 
         def on_combo_select(event):
-            """ コンボ選択処理 """
+            ''' コンボ選択処理 '''
             target_type = int(name_var_list[3].get()[0])
             if target_type == 3:  # 1=ping , 2=traceroute , 3=show run
                 widget[2].config(state='disabled')
@@ -1833,11 +1837,11 @@ class NextNextPing():
         on_combo_select(None)
 
         def submit():
-            """ 入力値を取得する関数 """
+            ''' 入力値を取得する関数 '''
             values = []
             for i, name_var in enumerate(name_var_list):
                 val = name_var.get()
-                if NextNextPing.TARGET_PARAM[i][0] in ["target_type", "next_ssh", "base_type", "next_type"]:
+                if NextNextPing.TARGET_PARAM[i][0] in ['target_type', 'next_ssh', 'base_type', 'next_type']:
                     if 0 < len(val):
                         val = val[0]  # 先頭一文字を抽出する
                     else:
@@ -1858,7 +1862,7 @@ class NextNextPing():
         bottom_frame = tk.Frame(dialog)
         bottom_frame.grid(row=len(NextNextPing.TARGET_PARAM), column=0, columnspan=2, pady=10)
         # 送信ボタン
-        tk.Button(bottom_frame, text="Update", command=submit).pack(side=tk.LEFT)
+        tk.Button(bottom_frame, text='Update', command=submit).pack(side=tk.LEFT)
 
         # ダイアログが閉じられるまで待つ
         dialog.grab_set()
@@ -1874,12 +1878,12 @@ class NextNextPing():
         #
         label_text_list = []
         label_text_list.append(f"nextnextping Version {str(VERSION)} (C)2025 Toshikazu Ando")
-        label_text_list.append("")
-        label_text_list.append("Powerd by:")
-        label_text_list.append("  ANTLR 4.13.2")
+        label_text_list.append('')
+        label_text_list.append('Powerd by:')
+        label_text_list.append('  ANTLR 4.13.2')
         label_text_list.append(f"  Python {sys.version}")
-        label_text_list.append("")
-        label_text_list.append("Author: https://github.com/Tand0/nextnextping")
+        label_text_list.append('')
+        label_text_list.append('Author: https://github.com/Tand0/nextnextping')
         #
         for i, label_text in enumerate(label_text_list):
             tk.Label(dialog, text=label_text, wraplength=380).grid(row=i, column=0, padx=10, pady=1, sticky=tk.W)
@@ -1894,22 +1898,22 @@ class NextNextPing():
             self.tool_tree.delete(item)
 
     def load_csv(self):
-        """ 読み込みダイアログを表示 """
-        base_dir = self.init["setting"]
+        ''' 読み込みダイアログを表示 '''
+        base_dir = self.init['setting']
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         file_path = filedialog.askopenfilename(
-            defaultextension=".csv",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            defaultextension='.csv',
+            filetypes=[('CSV files', '*.csv'), ('All files', '*.*')],
             initialdir=base_dir,  # 設定ファイルが配置されているフォルダをベースにする
-            initialfile="setting.csv",
-            title="Load csv"
+            initialfile='setting.csv',
+            title='Load csv'
         )
         if not file_path:
             return  # ファイルが指定されなかった
         #
         file_path = os.path.abspath(file_path)  # 絶対パスに変換
-        self.init["setting"] = os.path.splitext(file_path)[0] + ".txt"  # 設定ファイルを指定
+        self.init['setting'] = os.path.splitext(file_path)[0] + '.txt'  # 設定ファイルを指定
         #
         current_encoding = ''
         if self.get_japanese_flag():
@@ -1946,22 +1950,22 @@ class NextNextPing():
             for value_one in value:
                 target_values.append(str(value_one))  # int避け
             target_values[0] = self.get_target_filename(i, target_values)
-            self.tool_tree.insert("", "end", values=target_values)
+            self.tool_tree.insert('', 'end', values=target_values)
         #
-        messagebox.showinfo("Info", "load_csv is ok")
+        messagebox.showinfo('Info', 'load_csv is ok')
         self.tool_tree.focus_set()
 
     def save_csv(self):
-        """ 保存ダイアログを表示 """
-        base_dir = self.init["setting"]
+        ''' 保存ダイアログを表示 '''
+        base_dir = self.init['setting']
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         file_path = filedialog.asksaveasfilename(
-            defaultextension=".csv",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            defaultextension='.csv',
+            filetypes=[('CSV files', '*.csv'), ('All files', '*.*')],
             initialdir=base_dir,  # 設定ファイルが配置されているフォルダをベースにする
-            initialfile="setting.csv",
-            title="Save csv"
+            initialfile='setting.csv',
+            title='Save csv'
         )
         if not file_path:
             return  # ファイルが指定されなかった
@@ -1969,47 +1973,47 @@ class NextNextPing():
         all_items = self.tool_tree.get_children()
         values_list = []
         for item_id in all_items:
-            values = self.tool_tree.item(item_id)["values"]
+            values = self.tool_tree.item(item_id)['values']
             values_list.append(values)
         #
         file_path = os.path.abspath(file_path)  # 絶対パスに変換
-        self.init["setting"] = os.path.splitext(file_path)[0] + ".txt"  # 設定ファイルを指定
+        self.init['setting'] = os.path.splitext(file_path)[0] + '.txt'  # 設定ファイルを指定
         #
-        current_encoding = ""
+        current_encoding = ''
         if self.get_japanese_flag():
-            current_encoding = "cp932"
+            current_encoding = 'cp932'
         else:
             current_encoding = locale.getpreferredencoding(False)
         #
-        with open(file_path, "w", encoding=current_encoding) as f:
+        with open(file_path, 'w', encoding=current_encoding) as f:
             writer = csv.writer(f, lineterminator="\n")
             writer.writerows(values_list)
         #
-        messagebox.showinfo("Info", "save_csv is ok")
+        messagebox.showinfo('Info', 'save_csv is ok')
         self.tool_tree.focus_set()
 
     def get_target_type_to_action_name(self, target_type: int, target_ip: str) -> str:
-        """ target_type を 1=ping , 2=trace , 3=show に変える """
+        ''' target_type を 1=ping , 2=trace , 3=show に変える '''
         if target_type == 1:
-            return f"ping_{target_ip}"
+            return f'ping_{target_ip}'
         elif target_type == 2:
-            return f"trace_{target_ip}"
+            return f'trace_{target_ip}'
         elif target_type == 3:
-            return "show"  # showの時はtarget_typeはいらない
+            return 'show'  # showの時はtarget_typeはいらない
         #
         return str(target_type)
 
     def create_ttl(self):
-        """ リストを抽出してttlを作る """
+        ''' リストを抽出してttlを作る '''
         # ベースフォルダを確定させる
-        base_dir = self.init["setting"]  # 設定ファイルを読み込み
+        base_dir = self.init['setting']  # 設定ファイルを読み込み
         base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
         base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
         #
         new_text = ''
         all_items = self.tool_tree.get_children()
         for item_id in all_items:
-            values = self.tool_tree.item(item_id)["values"]
+            values = self.tool_tree.item(item_id)['values']
             #
             file_name = values[0]
             target_display = values[1]
@@ -2049,7 +2053,7 @@ class NextNextPing():
                 new_text = new_text + "\n"
             else:
                 # sshが必要なのでttlを出力する
-                new_text = new_text + "(ttl)" + file_name + "\n"
+                new_text = new_text + '(ttl)' + file_name + "\n"
                 new_text = new_text + "\n"
                 #
                 file_head_data = ';\n' + file_head_data + ";\n\n"
@@ -2060,17 +2064,17 @@ class NextNextPing():
                         file_head_data = file_head_data + "basename file_name param1\n"
                         continue
                     file_head_data = file_head_data + NextNextPing.TARGET_PARAM[i][0]
-                    file_head_data = file_head_data + " = "
+                    file_head_data = file_head_data + ' = '
                     if isinstance(NextNextPing.TARGET_PARAM[i][2], int):
                         file_head_data = file_head_data + str(value)
                     else:
                         file_head_data = file_head_data + f"\"{str(value)}\""
                     if 0 < len(NextNextPing.TARGET_PARAM[i][3]):
-                        file_head_data = file_head_data + "  ; "
+                        file_head_data = file_head_data + '  ; '
                         flag = False
                         for data in NextNextPing.TARGET_PARAM[i][3]:
                             if flag:
-                                file_head_data = file_head_data + " , "
+                                file_head_data = file_head_data + ' , '
                             else:
                                 flag = True
                             file_head_data = file_head_data + data
@@ -2097,12 +2101,12 @@ class NextNextPing():
         self.setting_text.insert('1.0', new_text)  # 新しいテキストを挿入
         #
         # 設定シートを保存する
-        self.save_setting(self.init["setting"])
+        self.save_setting(self.init['setting'])
         #
         # resultシートを更新する
         self.update_setting()
         #
-        messagebox.showinfo("Info", "ttl is ok")
+        messagebox.showinfo('Info', 'ttl is ok')
         self.tool_tree.focus_set()
 
     SETTING_PARAM = [
@@ -2115,11 +2119,11 @@ class NextNextPing():
         ['TTL ignore log', 'logを出力しない', 'ignore_log', True]]
 
     def command_settings(self):
-        """ 設定用ダイアログを開く """
+        ''' 設定用ダイアログを開く '''
         # モーダルダイアログ
         dialog = tk.Toplevel(self.root)
-        dialog.title("tool_sheet_line")
-        dialog.geometry("400x300")
+        dialog.title('tool_sheet_line')
+        dialog.geometry('400x300')
         japanese_flag = self.get_japanese_flag()
         #
         name_var_list = []
@@ -2133,7 +2137,7 @@ class NextNextPing():
                 ans = self.init[target_param[2]]
             #
             type = target_param[3]
-            tk.Label(dialog, text=label_text).grid(row=i, column=0, padx=10, pady=5, sticky="e")
+            tk.Label(dialog, text=label_text).grid(row=i, column=0, padx=10, pady=5, sticky='e')
             name_var = tk.StringVar()
             name_var_list.append(name_var)
             if '' == target_param[2]:  # コメント行のとき
@@ -2143,7 +2147,7 @@ class NextNextPing():
                 combo_list = ('False', 'True')
                 name_var.set(str(ans))
                 combo = ttk.Combobox(dialog, textvariable=name_var)
-                combo["values"] = combo_list
+                combo['values'] = combo_list
                 if ans:
                     combo.current(1)
                 else:
@@ -2156,7 +2160,7 @@ class NextNextPing():
                 entry.grid(row=i, column=1, padx=10, pady=5, sticky='ew')
 
         def submit():
-            """ 入力値を取得する関数 """
+            ''' 入力値を取得する関数 '''
             for j, target_param2 in enumerate(NextNextPing.SETTING_PARAM):
                 if target_param2[2] not in self.init:
                     continue
@@ -2184,27 +2188,27 @@ class NextNextPing():
         bottom_frame = tk.Frame(dialog)
         bottom_frame.grid(row=len(NextNextPing.SETTING_PARAM), column=0, columnspan=2, pady=10)
         # 送信ボタン
-        tk.Button(bottom_frame, text="Update", command=submit).pack(side=tk.LEFT)
+        tk.Button(bottom_frame, text='Update', command=submit).pack(side=tk.LEFT)
 
         # ダイアログが閉じられるまで待つ
         dialog.grab_set()
         self.root.wait_window(dialog)
 
     def help_brows(self):
-        base_file = "_internal/README.html"
+        base_file = '_internal/README.html'
         full_path = os.path.join(self.current_dir, base_file)
         path = os.path.abspath(full_path)
         webbrowser.open(path)
 
 
 class PasswordDialog(simpledialog.Dialog):
-    def __init__(self, parent, title="PasswordDialog", message="Enter Password"):
+    def __init__(self, parent, title='PasswordDialog', message='Enter Password'):
         self.message = message
         super().__init__(parent, title)
 
     def body(self, master):
         tk.Label(master, text=self.message).grid(row=0, column=0, padx=10, pady=10)
-        self.entry = tk.Entry(master, show="*")
+        self.entry = tk.Entry(master, show='*')
         self.entry.grid(row=1, column=0, padx=10)
         return self.entry  # 初期フォーカス
 
@@ -2213,10 +2217,11 @@ class PasswordDialog(simpledialog.Dialog):
 
 
 class ListboxDialog(simpledialog.Dialog):
-    def __init__(self, parent, title, options, message="Plrease select"):
+    def __init__(self, parent, title, options, message='Plrease select', pos=None):
         self.options = options
         self.selection = None
         self.message = message
+        self.pos = pos
         super().__init__(parent, title)
 
     def body(self, master):
@@ -2224,15 +2229,24 @@ class ListboxDialog(simpledialog.Dialog):
         self.listbox = tk.Listbox(master, selectmode=tk.SINGLE)
         for item in self.options:
             self.listbox.insert(tk.END, item)
+        if self.pos is not None:
+            length = len(self.options)
+            if 0 <= self.pos and self.pos < length:
+                self.listbox.activate(self.pos)
+                self.listbox.selection_set(self.pos)
+                self.listbox.focus_set()
+            pass
         self.listbox.pack(padx=10, pady=5)
         return self.listbox
 
     def apply(self):
         selected = self.listbox.curselection()
-        # print("apply")
+        # print('apply')
         if selected:
-            self.selection = self.listbox.get(selected[0])
-            # print(f"選択されている {self.selection}")
+            self.selection = selected[0]
+            # print(f'選択されている {self.selection}')
+        else:
+            self.selection = None
 
 
 def main():
@@ -2240,7 +2254,7 @@ def main():
     next_next_ping.next_next_ping()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 
 #

@@ -1,5 +1,5 @@
 - name: test-1 0000_ok_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0000_ok_test.ttl
     chdir: ../test
     ignore_result: False
@@ -14,7 +14,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-2 0000_ok_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       assert 1 'abc'
       x=    123
@@ -72,7 +72,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-3 0000_ok_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0000_ok_test.ttl
     chdir: ../test
     ignore_result: False
@@ -87,7 +87,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-4 0000_ok_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       assert 1 'abc'
       x=    123
@@ -145,7 +145,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-5 0001_ng_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0001_ng_test.ttl
     chdir: ../test
     ignore_result: False
@@ -156,7 +156,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-6 0001_ng_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 結果に 0 を返すとエラー系になる
       result = 0
@@ -169,7 +169,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-7 0001_ng_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0001_ng_test.ttl
     chdir: ../test
     ignore_result: False
@@ -177,7 +177,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-8 0001_ng_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 結果に 0 を返すとエラー系になる
       result = 0
@@ -187,7 +187,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-9 0002_ok_call.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0002_ok_call.ttl
     chdir: ../test
     ignore_result: False
@@ -202,7 +202,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-10 0002_ok_call.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       call labelAAA
       i = 11
@@ -230,7 +230,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-11 0002_ok_call.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0002_ok_call.ttl
     chdir: ../test
     ignore_result: False
@@ -245,7 +245,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-12 0002_ok_call.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       call labelAAA
       i = 11
@@ -273,7 +273,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-13 0003_ok_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0003_ok_for.ttl
     chdir: ../test
     ignore_result: False
@@ -288,7 +288,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-14 0003_ok_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 10回繰り返す。
       for i 1 10
@@ -314,7 +314,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-15 0003_ok_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0003_ok_for.ttl
     chdir: ../test
     ignore_result: False
@@ -329,7 +329,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-16 0003_ok_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 10回繰り返す。
       for i 1 10
@@ -355,7 +355,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-17 0004_ok_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0004_ok_while.ttl
     chdir: ../test
     ignore_result: False
@@ -370,7 +370,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-18 0004_ok_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       j = 0
       i = 10
@@ -404,7 +404,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-19 0004_ok_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0004_ok_while.ttl
     chdir: ../test
     ignore_result: False
@@ -419,7 +419,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-20 0004_ok_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       j = 0
       i = 10
@@ -453,7 +453,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-21 0005_ok_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0005_ok_untile.ttl
     chdir: ../test
     ignore_result: False
@@ -468,7 +468,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-22 0005_ok_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       j = 0
       i = 10
@@ -502,7 +502,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-23 0005_ok_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0005_ok_untile.ttl
     chdir: ../test
     ignore_result: False
@@ -517,7 +517,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-24 0005_ok_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       j = 0
       i = 10
@@ -551,7 +551,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-25 0006_ok_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0006_ok_do.ttl
     chdir: ../test
     ignore_result: False
@@ -566,7 +566,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-26 0006_ok_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       i = 0
       do i<10
@@ -608,7 +608,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-27 0006_ok_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0006_ok_do.ttl
     chdir: ../test
     ignore_result: False
@@ -623,7 +623,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-28 0006_ok_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       i = 0
       do i<10
@@ -665,7 +665,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-29 0007_ok_str.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0007_ok_str.ttl
     chdir: ../test
     ignore_result: False
@@ -680,7 +680,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-30 0007_ok_str.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 文字列の接続
       x = "aaa"'bbb'
@@ -747,15 +747,22 @@
       strmsg[0] = 'バナナ'
       strmsg[1] = 'りんご'
       strmsg[2] = 'みかん'
-      assert 1 strmsg[0]
-      assert 1 strmsg[1]
-      assert 1 strmsg[2]
-      assert 1 strmsg[3]
-      strdim intmsg 2
+      strcompare strmsg[0] 'バナナ'
+      assert result = 0 strmsg[0] result
+      strcompare strmsg[1] 'りんご'
+      assert result = 0 strmsg[1] result
+      strcompare strmsg[2] 'みかん'
+      assert result = 0 strmsg[2] result
+      strcompare strmsg[3] ''
+      assert result = 0 strmsg[3] result
+      intdim intmsg 1
+      assert intmsg[0] == 0 intmsg[0]
+      intdim intmsg 3
       intmsg[0] = 1
       intmsg[1] = 2
-      assert 1 intmsg[0]
-      assert 1 intmsg[1]
+      assert intmsg[0] == 1 intmsg[0]
+      assert intmsg[1] == 2 intmsg[1]
+      assert intmsg[2] == 0 intmsg[2]
       ; valstrに '123' を代入
       int2str valstr 123
       messagebox valstr "str"     ; 123
@@ -1017,7 +1024,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-31 0007_ok_str.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0007_ok_str.ttl
     chdir: ../test
     ignore_result: False
@@ -1032,7 +1039,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-32 0007_ok_str.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 文字列の接続
       x = "aaa"'bbb'
@@ -1099,15 +1106,22 @@
       strmsg[0] = 'バナナ'
       strmsg[1] = 'りんご'
       strmsg[2] = 'みかん'
-      assert 1 strmsg[0]
-      assert 1 strmsg[1]
-      assert 1 strmsg[2]
-      assert 1 strmsg[3]
-      strdim intmsg 2
+      strcompare strmsg[0] 'バナナ'
+      assert result = 0 strmsg[0] result
+      strcompare strmsg[1] 'りんご'
+      assert result = 0 strmsg[1] result
+      strcompare strmsg[2] 'みかん'
+      assert result = 0 strmsg[2] result
+      strcompare strmsg[3] ''
+      assert result = 0 strmsg[3] result
+      intdim intmsg 1
+      assert intmsg[0] == 0 intmsg[0]
+      intdim intmsg 3
       intmsg[0] = 1
       intmsg[1] = 2
-      assert 1 intmsg[0]
-      assert 1 intmsg[1]
+      assert intmsg[0] == 1 intmsg[0]
+      assert intmsg[1] == 2 intmsg[1]
+      assert intmsg[2] == 0 intmsg[2]
       ; valstrに '123' を代入
       int2str valstr 123
       messagebox valstr "str"     ; 123
@@ -1369,7 +1383,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-33 0008_ng_statement.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0008_ng_statement.ttl
     chdir: ../test
     ignore_result: False
@@ -1380,7 +1394,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-34 0008_ng_statement.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ステートメントがおかしい系
       if 1 then
@@ -1396,7 +1410,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-35 0008_ng_statement.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0008_ng_statement.ttl
     chdir: ../test
     ignore_result: False
@@ -1404,7 +1418,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-36 0008_ng_statement.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ステートメントがおかしい系
       if 1 then
@@ -1417,7 +1431,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-37 0009_ok_pause.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0009_ok_pause.ttl
     chdir: ../test
     ignore_result: False
@@ -1432,7 +1446,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-38 0009_ok_pause.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       pause 1
       mpause 500
@@ -1450,7 +1464,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-39 0009_ok_pause.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0009_ok_pause.ttl
     chdir: ../test
     ignore_result: False
@@ -1465,7 +1479,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-40 0009_ok_pause.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       pause 1
       mpause 500
@@ -1483,7 +1497,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-41 0010_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0010_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -1498,7 +1512,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-42 0010_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; testlink
       testlink
@@ -1578,7 +1592,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-43 0010_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0010_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -1593,7 +1607,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-44 0010_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; testlink
       testlink
@@ -1673,7 +1687,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-45 0011_ok_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0011_ok_sendln.ttl
     chdir: ../test
     ignore_result: False
@@ -1688,7 +1702,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-46 0011_ok_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; なんかいたら消す
       testlink
@@ -1745,7 +1759,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-47 0011_ok_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0011_ok_sendln.ttl
     chdir: ../test
     ignore_result: False
@@ -1760,7 +1774,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-48 0011_ok_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; なんかいたら消す
       testlink
@@ -1817,7 +1831,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-49 0012_ng_unspport_command.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0012_ng_unspport_command.ttl
     chdir: ../test
     ignore_result: False
@@ -1828,7 +1842,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-50 0012_ng_unspport_command.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 未実装コマンドを入れてエラーになる例
       kmtrecv
@@ -1842,7 +1856,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-51 0012_ng_unspport_command.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0012_ng_unspport_command.ttl
     chdir: ../test
     ignore_result: False
@@ -1850,7 +1864,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-52 0012_ng_unspport_command.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 未実装コマンドを入れてエラーになる例
       kmtrecv
@@ -1861,7 +1875,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-53 0013_ok_cmd_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0013_ok_cmd_sendln.ttl
     chdir: ../test
     ignore_result: False
@@ -1876,7 +1890,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-54 0013_ok_cmd_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;
       testlink
@@ -1930,6 +1944,7 @@
       recvln
       recvln
       pause 1
+      flushrecv
       ; text
       command = 'dir'
       sendln command
@@ -1970,7 +1985,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-55 0013_ok_cmd_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0013_ok_cmd_sendln.ttl
     chdir: ../test
     ignore_result: False
@@ -1985,7 +2000,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-56 0013_ok_cmd_sendln.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;
       testlink
@@ -2039,6 +2054,7 @@
       recvln
       recvln
       pause 1
+      flushrecv
       ; text
       command = 'dir'
       sendln command
@@ -2079,7 +2095,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-57 0014_ok_exec.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0014_ok_exec.ttl
     chdir: ../test
     ignore_result: False
@@ -2094,7 +2110,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-58 0014_ok_exec.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       assert 1  "aaa"
       ; 「メモ帳」を起動
@@ -2139,7 +2155,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-59 0014_ok_exec.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0014_ok_exec.ttl
     chdir: ../test
     ignore_result: False
@@ -2154,7 +2170,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-60 0014_ok_exec.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       assert 1  "aaa"
       ; 「メモ帳」を起動
@@ -2199,7 +2215,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-61 0015_ng_zerodev.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0015_ng_zerodev.ttl
     chdir: ../test
     ignore_result: False
@@ -2210,7 +2226,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-62 0015_ng_zerodev.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ゼロ除算エラー
       a = 1 / 0
@@ -2224,7 +2240,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-63 0015_ng_zerodev.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0015_ng_zerodev.ttl
     chdir: ../test
     ignore_result: False
@@ -2232,7 +2248,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-64 0015_ng_zerodev.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ゼロ除算エラー
       a = 1 / 0
@@ -2243,7 +2259,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-65 0016_ok_getdate.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0016_ok_getdate.ttl
     chdir: ../test
     ignore_result: False
@@ -2258,7 +2274,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-66 0016_ok_getdate.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;現在の日付をdatestrに格納。形式はYYYY-MM-DD。
       getdate datestr
@@ -2301,7 +2317,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-67 0016_ok_getdate.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0016_ok_getdate.ttl
     chdir: ../test
     ignore_result: False
@@ -2316,7 +2332,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-68 0016_ok_getdate.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;現在の日付をdatestrに格納。形式はYYYY-MM-DD。
       getdate datestr
@@ -2359,7 +2375,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-69 0017_ok_env.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0017_ok_env.ttl
     chdir: ../test
     ignore_result: False
@@ -2374,7 +2390,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-70 0017_ok_env.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ディレクトリを作る
       userprof = 'user profiele'
@@ -2399,7 +2415,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-71 0017_ok_env.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0017_ok_env.ttl
     chdir: ../test
     ignore_result: False
@@ -2414,7 +2430,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-72 0017_ok_env.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ディレクトリを作る
       userprof = 'user profiele'
@@ -2439,7 +2455,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-73 0018_ok_getdir.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0018_ok_getdir.ttl
     chdir: ../test
     ignore_result: False
@@ -2454,7 +2470,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-74 0018_ok_getdir.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       getdir xxx
       assert 1  xxx
@@ -2479,7 +2495,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-75 0018_ok_getdir.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0018_ok_getdir.ttl
     chdir: ../test
     ignore_result: False
@@ -2494,7 +2510,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-76 0018_ok_getdir.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       getdir xxx
       assert 1  xxx
@@ -2519,7 +2535,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-77 0019_ok_execcomand.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0019_ok_execcomand.ttl
     chdir: ../test
     ignore_result: False
@@ -2534,7 +2550,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-78 0019_ok_execcomand.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       execcmnd "a = 1 + 1"
       assert a == 2 "1 + 1" a
@@ -2552,7 +2568,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-79 0019_ok_execcomand.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0019_ok_execcomand.ttl
     chdir: ../test
     ignore_result: False
@@ -2567,7 +2583,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-80 0019_ok_execcomand.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       execcmnd "a = 1 + 1"
       assert a == 2 "1 + 1" a
@@ -2585,7 +2601,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-81 0020_ok_box.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0020_ok_box.ttl
     chdir: ../test
     ignore_result: False
@@ -2600,17 +2616,43 @@
      var: ttl_output.stdout_lines
 
 - name: test-82 0020_ok_box.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
-      strdim msg 3
-      msg[0] = 'バナナ'
-      msg[1] = 'りんご'
-      msg[2] = 'みかん'
-      listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
-      strlen inputstr
-      assert 0 <= result "listbox len test" inputstr
-      yesnobox 'もう一回やりますか?' 'Tera Term'
-      assert result == 1 "yesnobox test" result
+      ;
+      passwordbox "message" "title"
+      assert 1 result inputstr
+      inputbox "message" "title"
+      assert 1 result inputstr
+      dirnamebox "dirnamebox"
+      assert 1 result inputstr
+      dirnamebox "filenamebox"
+      assert 1 result inputstr
+      strdim msg 4
+      msg[0] = 'banana'
+      msg[1] = 'ringo'
+      msg[2] = 'apple'
+      listbox 'Select your favorite food.' 'Confirmation' msg
+      assert 1 result
+      if 0 <= result then
+      assert 1 result msg[result]
+      messagebox msg[result] "result"
+      endif
+      strdim msg 7
+      msg[0] = 'Monday'
+      msg[1] = 'Tuesday'
+      msg[2] = 'Wednesday'
+      msg[3] = 'Thursday'
+      msg[4] = 'Friday'
+      msg[5] = 'Saturday'
+      msg[6] = 'Sunday'
+      listbox "How's today's Week?" 'Confirmation' msg 3
+      assert 1 result
+      if 0 <= result then
+      assert 1 result msg[result]
+      messagebox msg[result] "result"
+      endif
+      yesnobox "yesnobox" "title"
+      assert result==1 "yesnobox is YES"
       settitle "nextnextping test"
       gettitle titletext
       strcompare "nextnextping test" titletext
@@ -2667,7 +2709,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-83 0020_ok_box.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0020_ok_box.ttl
     chdir: ../test
     ignore_result: False
@@ -2682,17 +2724,43 @@
      var: ttl_output.stdout_lines
 
 - name: test-84 0020_ok_box.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
-      strdim msg 3
-      msg[0] = 'バナナ'
-      msg[1] = 'りんご'
-      msg[2] = 'みかん'
-      listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
-      strlen inputstr
-      assert 0 <= result "listbox len test" inputstr
-      yesnobox 'もう一回やりますか?' 'Tera Term'
-      assert result == 1 "yesnobox test" result
+      ;
+      passwordbox "message" "title"
+      assert 1 result inputstr
+      inputbox "message" "title"
+      assert 1 result inputstr
+      dirnamebox "dirnamebox"
+      assert 1 result inputstr
+      dirnamebox "filenamebox"
+      assert 1 result inputstr
+      strdim msg 4
+      msg[0] = 'banana'
+      msg[1] = 'ringo'
+      msg[2] = 'apple'
+      listbox 'Select your favorite food.' 'Confirmation' msg
+      assert 1 result
+      if 0 <= result then
+      assert 1 result msg[result]
+      messagebox msg[result] "result"
+      endif
+      strdim msg 7
+      msg[0] = 'Monday'
+      msg[1] = 'Tuesday'
+      msg[2] = 'Wednesday'
+      msg[3] = 'Thursday'
+      msg[4] = 'Friday'
+      msg[5] = 'Saturday'
+      msg[6] = 'Sunday'
+      listbox "How's today's Week?" 'Confirmation' msg 3
+      assert 1 result
+      if 0 <= result then
+      assert 1 result msg[result]
+      messagebox msg[result] "result"
+      endif
+      yesnobox "yesnobox" "title"
+      assert result==1 "yesnobox is YES"
       settitle "nextnextping test"
       gettitle titletext
       strcompare "nextnextping test" titletext
@@ -2749,7 +2817,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-85 0021_ok_n.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0021_ok_n.ttl
     chdir: ../test
     ignore_result: False
@@ -2764,7 +2832,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-86 0021_ok_n.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       a = '/\n/'
       b = '/'#10'/'
@@ -2783,7 +2851,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-87 0021_ok_n.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0021_ok_n.ttl
     chdir: ../test
     ignore_result: False
@@ -2798,7 +2866,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-88 0021_ok_n.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       a = '/\n/'
       b = '/'#10'/'
@@ -2817,7 +2885,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-89 0022_ok_passwd.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0022_ok_passwd.ttl
     chdir: ../test
     ignore_result: False
@@ -2832,7 +2900,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-90 0022_ok_passwd.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       filename1 = 'build/password1.key'
       filename2 = 'build/password2.key'
@@ -2912,7 +2980,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-91 0022_ok_passwd.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0022_ok_passwd.ttl
     chdir: ../test
     ignore_result: False
@@ -2927,7 +2995,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-92 0022_ok_passwd.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       filename1 = 'build/password1.key'
       filename2 = 'build/password2.key'
@@ -3007,7 +3075,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-93 0023_ok_file_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0023_ok_file_etc.ttl
     chdir: ../test
     ignore_result: False
@@ -3022,7 +3090,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-94 0023_ok_file_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       basename fname 'c:\teraterm\test.txt'
       strcompare fname "test.txt"
@@ -3123,7 +3191,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-95 0023_ok_file_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0023_ok_file_etc.ttl
     chdir: ../test
     ignore_result: False
@@ -3138,7 +3206,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-96 0023_ok_file_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       basename fname 'c:\teraterm\test.txt'
       strcompare fname "test.txt"
@@ -3239,7 +3307,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-97 0024_ok_ipv4.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0024_ok_ipv4.ttl
     chdir: ../test
     ignore_result: False
@@ -3254,7 +3322,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-98 0024_ok_ipv4.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       getipv4addr stringarray ipaddr_size
       for i 0  (ipaddr_size - 1)
@@ -3277,7 +3345,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-99 0024_ok_ipv4.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0024_ok_ipv4.ttl
     chdir: ../test
     ignore_result: False
@@ -3292,7 +3360,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-100 0024_ok_ipv4.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       getipv4addr stringarray ipaddr_size
       for i 0  (ipaddr_size - 1)
@@ -3315,7 +3383,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-101 0025_ok_getver.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0025_ok_getver.ttl
     chdir: ../test
     ignore_result: False
@@ -3330,7 +3398,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-102 0025_ok_getver.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       getver ver
       strlen ver
@@ -3352,7 +3420,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-103 0025_ok_getver.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0025_ok_getver.ttl
     chdir: ../test
     ignore_result: False
@@ -3367,7 +3435,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-104 0025_ok_getver.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       getver ver
       strlen ver
@@ -3389,7 +3457,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-105 0026_ok_ifdefind.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0026_ok_ifdefind.ttl
     chdir: ../test
     ignore_result: False
@@ -3404,7 +3472,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-106 0026_ok_ifdefind.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ifdefined data
       assert 0==result result "ifdefined test"
@@ -3443,7 +3511,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-107 0026_ok_ifdefind.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0026_ok_ifdefind.ttl
     chdir: ../test
     ignore_result: False
@@ -3458,7 +3526,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-108 0026_ok_ifdefind.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ifdefined data
       assert 0==result result "ifdefined test"
@@ -3497,7 +3565,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-109 0027_ok_intetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0027_ok_intetc.ttl
     chdir: ../test
     ignore_result: False
@@ -3512,7 +3580,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-110 0027_ok_intetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       for i 0 100
       ; 0から10までの乱数を変数valへ格納する
@@ -3535,7 +3603,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-111 0027_ok_intetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0027_ok_intetc.ttl
     chdir: ../test
     ignore_result: False
@@ -3550,7 +3618,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-112 0027_ok_intetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       for i 0 100
       ; 0から10までの乱数を変数valへ格納する
@@ -3573,7 +3641,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-113 0028_ok_logetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0028_ok_logetc.ttl
     chdir: ../test
     ignore_result: False
@@ -3588,7 +3656,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-114 0028_ok_logetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       assert 1 "log test"
       filename = "build/log001.txt"
@@ -3687,7 +3755,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-115 0028_ok_logetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0028_ok_logetc.ttl
     chdir: ../test
     ignore_result: False
@@ -3702,7 +3770,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-116 0028_ok_logetc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       assert 1 "log test"
       filename = "build/log001.txt"
@@ -3801,7 +3869,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-117 0029_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0029_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -3816,7 +3884,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-118 0029_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -4346,7 +4414,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-119 0029_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0029_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -4361,7 +4429,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-120 0029_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -4891,7 +4959,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-121 0030_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0030_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -4906,7 +4974,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-122 0030_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -4940,7 +5008,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-123 0030_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0030_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -4955,7 +5023,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-124 0030_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -4989,7 +5057,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-125 0031_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0031_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -5004,7 +5072,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-126 0031_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -5038,7 +5106,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-127 0031_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0031_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -5053,7 +5121,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-128 0031_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -5087,7 +5155,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-129 0032_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0032_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -5102,7 +5170,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-130 0032_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -5136,7 +5204,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-131 0032_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0032_ok_connect.ttl
     chdir: ../test
     ignore_result: False
@@ -5151,7 +5219,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-132 0032_ok_connect.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
       ;file_name = "029c1_ok_connect.ttl"
@@ -5185,7 +5253,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-133 0033_ok_connect_esxcli.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0033_ok_connect_esxcli.ttl
     chdir: ../test
     ignore_result: False
@@ -5200,10 +5268,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-134 0033_ok_connect_esxcli.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5237,7 +5305,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-135 0033_ok_connect_esxcli.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0033_ok_connect_esxcli.ttl
     chdir: ../test
     ignore_result: False
@@ -5252,10 +5320,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-136 0033_ok_connect_esxcli.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5289,7 +5357,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-137 0034_ng_password.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0034_ng_password.ttl
     chdir: ../test
     ignore_result: False
@@ -5300,7 +5368,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-138 0034_ng_password.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       file_name = "029c1_ok_connect.ttl"
       target_display = "pingを打つ装置"
@@ -5328,7 +5396,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-139 0034_ng_password.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0034_ng_password.ttl
     chdir: ../test
     ignore_result: False
@@ -5336,7 +5404,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-140 0034_ng_password.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       file_name = "029c1_ok_connect.ttl"
       target_display = "pingを打つ装置"
@@ -5361,7 +5429,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-141 0035_ok_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0035_ok_label.ttl
     chdir: ../test
     ignore_result: False
@@ -5376,8 +5444,9 @@
      var: ttl_output.stdout_lines
 
 - name: test-142 0035_ok_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
+      :label
       a = 1
       result = 1
       call call_test
@@ -5405,7 +5474,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-143 0035_ok_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0035_ok_label.ttl
     chdir: ../test
     ignore_result: False
@@ -5420,8 +5489,9 @@
      var: ttl_output.stdout_lines
 
 - name: test-144 0035_ok_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
+      :label
       a = 1
       result = 1
       call call_test
@@ -5449,7 +5519,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-145 0036_ng_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0036_ng_label.ttl
     chdir: ../test
     ignore_result: False
@@ -5460,7 +5530,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-146 0036_ng_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ラベルに値を代入しようとした
       call_test = 1
@@ -5476,7 +5546,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-147 0036_ng_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0036_ng_label.ttl
     chdir: ../test
     ignore_result: False
@@ -5484,7 +5554,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-148 0036_ng_label.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ラベルに値を代入しようとした
       call_test = 1
@@ -5497,7 +5567,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-149 0037_ng_label_none.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0037_ng_label_none.ttl
     chdir: ../test
     ignore_result: False
@@ -5508,7 +5578,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-150 0037_ng_label_none.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; そんなラベルはないエラーが出ればOK
       call call_abc
@@ -5523,7 +5593,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-151 0037_ng_label_none.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0037_ng_label_none.ttl
     chdir: ../test
     ignore_result: False
@@ -5531,7 +5601,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-152 0037_ng_label_none.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; そんなラベルはないエラーが出ればOK
       call call_abc
@@ -5543,7 +5613,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-153 0038_ng_label_vale.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0038_ng_label_vale.ttl
     chdir: ../test
     ignore_result: False
@@ -5554,7 +5624,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-154 0038_ng_label_vale.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       value = 1
       ; 変数をコールしようとしたエラーが出ればOK
@@ -5570,7 +5640,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-155 0038_ng_label_vale.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0038_ng_label_vale.ttl
     chdir: ../test
     ignore_result: False
@@ -5578,7 +5648,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-156 0038_ng_label_vale.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       value = 1
       ; 変数をコールしようとしたエラーが出ればOK
@@ -5591,7 +5661,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-157 0039_ok_param.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0039_ok_param.ttl
     chdir: ../test
     ignore_result: False
@@ -5606,7 +5676,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-158 0039_ok_param.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       basename fname param1
       strcompare fname '0039_ok_param.ttl'
@@ -5647,7 +5717,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-159 0039_ok_param.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0039_ok_param.ttl
     chdir: ../test
     ignore_result: False
@@ -5662,7 +5732,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-160 0039_ok_param.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       basename fname param1
       strcompare fname '0039_ok_param.ttl'
@@ -5703,7 +5773,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-161 0040_ok_qx_undo_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0040_ok_qx_undo_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -5718,10 +5788,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-162 0040_ok_qx_undo_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5729,15 +5799,15 @@
       base_account = "boo"
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
-      next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_ip  = "xx"  ; 踏み台SSHのIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'system-view'
       my_command[ 1] = 'interface gigabitethernet 1/0/1'
       my_command[ 2] = 'undo shutdown'
-      my_command[ 3] = 'quit'
-      my_command[ 4] = 'quit'
+      my_command[ 3] = 'exit'
+      my_command[ 4] = 'exit'
       ; 特殊コマンドの終了
       getdir include_dir
       strconcat include_dir "/base.ttl"
@@ -5756,7 +5826,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-163 0040_ok_qx_undo_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0040_ok_qx_undo_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -5771,10 +5841,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-164 0040_ok_qx_undo_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5782,15 +5852,15 @@
       base_account = "boo"
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
-      next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_ip  = "xx"  ; 踏み台SSHのIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'system-view'
       my_command[ 1] = 'interface gigabitethernet 1/0/1'
       my_command[ 2] = 'undo shutdown'
-      my_command[ 3] = 'quit'
-      my_command[ 4] = 'quit'
+      my_command[ 3] = 'exit'
+      my_command[ 4] = 'exit'
       ; 特殊コマンドの終了
       getdir include_dir
       strconcat include_dir "/base.ttl"
@@ -5809,7 +5879,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-165 0041_ok_qx_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0041_ok_qx_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -5824,10 +5894,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-166 0041_ok_qx_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5836,7 +5906,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'system-view'
@@ -5862,7 +5932,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-167 0041_ok_qx_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0041_ok_qx_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -5877,10 +5947,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-168 0041_ok_qx_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5889,7 +5959,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'system-view'
@@ -5915,7 +5985,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-169 0042_ok_qx_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0042_ok_qx_polcing.ttl
     chdir: ../test
     ignore_result: False
@@ -5930,10 +6000,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-170 0042_ok_qx_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -5942,7 +6012,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 14
       my_command[ 0] = 'system-view'
@@ -5977,7 +6047,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-171 0042_ok_qx_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0042_ok_qx_polcing.ttl
     chdir: ../test
     ignore_result: False
@@ -5992,10 +6062,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-172 0042_ok_qx_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6004,7 +6074,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 14
       my_command[ 0] = 'system-view'
@@ -6039,7 +6109,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-173 0043_ok_qx_undo_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0043_ok_qx_undo_polcing.ttl
     chdir: ../test
     ignore_result: False
@@ -6054,10 +6124,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-174 0043_ok_qx_undo_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6066,7 +6136,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 9
       my_command[ 0] = 'system-view'
@@ -6096,7 +6166,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-175 0043_ok_qx_undo_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0043_ok_qx_undo_polcing.ttl
     chdir: ../test
     ignore_result: False
@@ -6111,10 +6181,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-176 0043_ok_qx_undo_polcing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6123,7 +6193,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "qx"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 9
       my_command[ 0] = 'system-view'
@@ -6153,7 +6223,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-177 0044_ok_cisco_no_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0044_ok_cisco_no_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -6168,10 +6238,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-178 0044_ok_cisco_no_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6180,7 +6250,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'configure terminal'
@@ -6206,7 +6276,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-179 0044_ok_cisco_no_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0044_ok_cisco_no_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -6221,10 +6291,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-180 0044_ok_cisco_no_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6233,7 +6303,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'configure terminal'
@@ -6259,7 +6329,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-181 0045_ok_cisco_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0045_ok_cisco_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -6274,10 +6344,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-182 0045_ok_cisco_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6286,7 +6356,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'configure terminal'
@@ -6312,7 +6382,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-183 0045_ok_cisco_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0045_ok_cisco_shutdown.ttl
     chdir: ../test
     ignore_result: False
@@ -6327,10 +6397,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-184 0045_ok_cisco_shutdown.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6339,7 +6409,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 5
       my_command[ 0] = 'configure terminal'
@@ -6365,7 +6435,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-185 0046_ok_cisco_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0046_ok_cisco_policing.ttl
     chdir: ../test
     ignore_result: False
@@ -6380,10 +6450,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-186 0046_ok_cisco_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6392,7 +6462,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 10
       my_command[ 0] = 'configure terminal'
@@ -6423,7 +6493,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-187 0046_ok_cisco_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0046_ok_cisco_policing.ttl
     chdir: ../test
     ignore_result: False
@@ -6438,10 +6508,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-188 0046_ok_cisco_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6450,7 +6520,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 10
       my_command[ 0] = 'configure terminal'
@@ -6481,7 +6551,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-189 0047_ok_cisco_no_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0047_ok_cisco_no_policing.ttl
     chdir: ../test
     ignore_result: False
@@ -6496,10 +6566,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-190 0047_ok_cisco_no_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6508,7 +6578,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 7
       my_command[ 0] = 'configure terminal'
@@ -6536,7 +6606,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-191 0047_ok_cisco_no_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0047_ok_cisco_no_policing.ttl
     chdir: ../test
     ignore_result: False
@@ -6551,10 +6621,10 @@
      var: ttl_output.stdout_lines
 
 - name: test-192 0047_ok_cisco_no_policing.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ;INPUT_START
-      basename file_name param1
+      ; basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -6563,7 +6633,7 @@
       next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
       next_display = "SSHからさらに接続する装置"
       next_ip  = "c2"  ; 踏み台SSHのIPアドレス
-      next_account = "xxx"  ; 踏み台先のIPアドレス
+      next_account = "c2"  ; 踏み台先のIPアドレス
       ; 特殊コマンドの開始
       my_command_int = 7
       my_command[ 0] = 'configure terminal'
@@ -6591,7 +6661,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-193 0048_ok_scp.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0048_ok_scp.ttl
     chdir: ../test
     ignore_result: False
@@ -6606,7 +6676,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-194 0048_ok_scp.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 接続する
       connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
@@ -6636,7 +6706,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-195 0048_ok_scp.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0048_ok_scp.ttl
     chdir: ../test
     ignore_result: False
@@ -6651,7 +6721,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-196 0048_ok_scp.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 接続する
       connect 'localhost:2200 /ssh /auth=password /user=aaa /passwd=bbb'
@@ -6681,7 +6751,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-197 0049_ok_crc_checksum.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0049_ok_crc_checksum.ttl
     chdir: ../test
     ignore_result: False
@@ -6696,7 +6766,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-198 0049_ok_crc_checksum.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       str = #01#02
       checksum8 x str
@@ -6775,7 +6845,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-199 0049_ok_crc_checksum.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0049_ok_crc_checksum.ttl
     chdir: ../test
     ignore_result: False
@@ -6790,7 +6860,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-200 0049_ok_crc_checksum.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       str = #01#02
       checksum8 x str
@@ -6869,7 +6939,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-201 0050_ok_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0050_ok_etc.ttl
     chdir: ../test
     ignore_result: False
@@ -6884,15 +6954,11 @@
      var: ttl_output.stdout_lines
 
 - name: test-202 0050_ok_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 実装していないが、エラーが出ないことを確認する
       ; 呼べればOK
       enablekeyb 0
-      ; 必ず失敗
-      getmodemstatus intvar
-      assert intvar == 0
-      assert result != 0
       result = 1
       end
       ;
@@ -6909,7 +6975,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-203 0050_ok_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0050_ok_etc.ttl
     chdir: ../test
     ignore_result: False
@@ -6924,15 +6990,11 @@
      var: ttl_output.stdout_lines
 
 - name: test-204 0050_ok_etc.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; 実装していないが、エラーが出ないことを確認する
       ; 呼べればOK
       enablekeyb 0
-      ; 必ず失敗
-      getmodemstatus intvar
-      assert intvar == 0
-      assert result != 0
       result = 1
       end
       ;
@@ -6949,7 +7011,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-205 0051_ok_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0051_ok_setexitcode.ttl
     chdir: ../test
     ignore_result: False
@@ -6964,7 +7026,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-206 0051_ok_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; この場合成功になる
       ; 失敗
@@ -6988,7 +7050,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-207 0051_ok_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0051_ok_setexitcode.ttl
     chdir: ../test
     ignore_result: False
@@ -7003,7 +7065,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-208 0051_ok_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; この場合成功になる
       ; 失敗
@@ -7027,7 +7089,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-209 0052_ng_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0052_ng_setexitcode.ttl
     chdir: ../test
     ignore_result: False
@@ -7038,7 +7100,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-210 0052_ng_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; この場合失敗になる
       ; 成功
@@ -7058,7 +7120,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-211 0052_ng_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0052_ng_setexitcode.ttl
     chdir: ../test
     ignore_result: False
@@ -7066,7 +7128,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-212 0052_ng_setexitcode.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; この場合失敗になる
       ; 成功
@@ -7083,7 +7145,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-213 0053_ok_findfirst.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0053_ok_findfirst.ttl
     chdir: ../test
     ignore_result: False
@@ -7098,7 +7160,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-214 0053_ok_findfirst.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ファイル検索
       extpat = '*.ttl'
@@ -7127,7 +7189,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-215 0053_ok_findfirst.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0053_ok_findfirst.ttl
     chdir: ../test
     ignore_result: False
@@ -7142,7 +7204,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-216 0053_ok_findfirst.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; ファイル検索
       extpat = '*.ttl'
@@ -7171,7 +7233,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-217 0054_ok_filetrancate.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0054_ok_filetrancate.ttl
     chdir: ../test
     ignore_result: False
@@ -7186,7 +7248,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-218 0054_ok_filetrancate.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       filename = "build/work.key"
       ; 新規作成
@@ -7217,7 +7279,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-219 0054_ok_filetrancate.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0054_ok_filetrancate.ttl
     chdir: ../test
     ignore_result: False
@@ -7232,7 +7294,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-220 0054_ok_filetrancate.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       filename = "build/work.key"
       ; 新規作成
@@ -7263,7 +7325,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-221 0055_ok_sudo_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0055_ok_sudo_test.ttl
     chdir: ../test
     ignore_result: False
@@ -7278,10 +7340,9 @@
      var: ttl_output.stdout_lines
 
 - name: test-222 0055_ok_sudo_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       filename = "build/work.key"
-      basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -7312,7 +7373,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-223 0055_ok_sudo_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0055_ok_sudo_test.ttl
     chdir: ../test
     ignore_result: False
@@ -7327,10 +7388,9 @@
      var: ttl_output.stdout_lines
 
 - name: test-224 0055_ok_sudo_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       filename = "build/work.key"
-      basename file_name param1
       target_display = "pingを打つ装置"
       target_type = 3  ; 1=ping, 2=traceroute, 3=show run
       base_display = "SSH接続する装置"
@@ -7361,7 +7421,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-225 0056_ok_sum.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0056_ok_sum.ttl
     chdir: ../test
     ignore_result: False
@@ -7376,7 +7436,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-226 0056_ok_sum.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       a = not 1
       assert a == 0 a
@@ -7536,7 +7596,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-227 0056_ok_sum.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0056_ok_sum.ttl
     chdir: ../test
     ignore_result: False
@@ -7551,7 +7611,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-228 0056_ok_sum.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       a = not 1
       assert a == 0 a
@@ -7711,7 +7771,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-229 0057_ok_expandenv.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0057_ok_expandenv.ttl
     chdir: ../test
     ignore_result: False
@@ -7726,7 +7786,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-230 0057_ok_expandenv.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       str = "%WINDIR%\notepad.exe"
       expandenv str
@@ -7824,7 +7884,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-231 0057_ok_expandenv.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0057_ok_expandenv.ttl
     chdir: ../test
     ignore_result: False
@@ -7839,7 +7899,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-232 0057_ok_expandenv.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       str = "%WINDIR%\notepad.exe"
       expandenv str
@@ -7937,7 +7997,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-233 0058_ok_linux_serial_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0058_ok_linux_serial_test.ttl
     chdir: ../test
     ignore_result: False
@@ -7952,7 +8012,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-234 0058_ok_linux_serial_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       command = "%systemroot%"
       expandenv str command
@@ -7962,6 +8022,8 @@
       result = 1
       end
       endif
+      getmodemstatus intvar
+      assert result == 0 "getmodemstatus default is 0" result intvar
       ; test for speed
       setbaud  921600
       setspeed 460800
@@ -7987,6 +8049,8 @@
       strconcat command ttl_filename
       connect command
       assert result == 2 "connect serial fail test" command
+      getmodemstatus intvar
+      assert result != 0 "getmodemstatus default is 0" result intvar
       command = "ping localhost"
       sendln command
       wait command
@@ -7996,6 +8060,11 @@
       closett
       assert 1 "OK"
       retult = 1
+      ; テストサーバ側の制限で、
+      ; １回シリアル接続してから、
+      ; 次の接続がOKになるまでに時間が掛かるので、
+      ; 待ちを入れる
+      pause 2
       end
     chdir: ../test
     ignore_result: False
@@ -8010,7 +8079,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-235 0058_ok_linux_serial_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0058_ok_linux_serial_test.ttl
     chdir: ../test
     ignore_result: False
@@ -8025,7 +8094,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-236 0058_ok_linux_serial_test.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       command = "%systemroot%"
       expandenv str command
@@ -8035,6 +8104,8 @@
       result = 1
       end
       endif
+      getmodemstatus intvar
+      assert result == 0 "getmodemstatus default is 0" result intvar
       ; test for speed
       setbaud  921600
       setspeed 460800
@@ -8060,6 +8131,8 @@
       strconcat command ttl_filename
       connect command
       assert result == 2 "connect serial fail test" command
+      getmodemstatus intvar
+      assert result != 0 "getmodemstatus default is 0" result intvar
       command = "ping localhost"
       sendln command
       wait command
@@ -8069,6 +8142,11 @@
       closett
       assert 1 "OK"
       retult = 1
+      ; テストサーバ側の制限で、
+      ; １回シリアル接続してから、
+      ; 次の接続がOKになるまでに時間が掛かるので、
+      ; 待ちを入れる
+      pause 2
       end
     chdir: ../test
     ignore_result: False
@@ -8083,7 +8161,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-237 0059_ok_sendln_telnet_t0.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0059_ok_sendln_telnet_t0.ttl
     chdir: ../test
     ignore_result: False
@@ -8098,7 +8176,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-238 0059_ok_sendln_telnet_t0.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; なんかいたら消す
       testlink
@@ -8155,7 +8233,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-239 0059_ok_sendln_telnet_t0.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0059_ok_sendln_telnet_t0.ttl
     chdir: ../test
     ignore_result: False
@@ -8170,7 +8248,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-240 0059_ok_sendln_telnet_t0.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; なんかいたら消す
       testlink
@@ -8227,7 +8305,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-241 0060_ok_sendln_telnet_t1.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0060_ok_sendln_telnet_t1.ttl
     chdir: ../test
     ignore_result: False
@@ -8242,7 +8320,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-242 0060_ok_sendln_telnet_t1.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; なんかいたら消す
       testlink
@@ -8308,7 +8386,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-243 0060_ok_sendln_telnet_t1.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0060_ok_sendln_telnet_t1.ttl
     chdir: ../test
     ignore_result: False
@@ -8323,7 +8401,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-244 0060_ok_sendln_telnet_t1.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; なんかいたら消す
       testlink
@@ -8389,7 +8467,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-245 0061_ok_goto.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0061_ok_goto.ttl
     chdir: ../test
     ignore_result: False
@@ -8404,7 +8482,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-246 0061_ok_goto.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Jump to the next line of the ':label'.
       goto Label
@@ -8429,7 +8507,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-247 0061_ok_goto.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0061_ok_goto.ttl
     chdir: ../test
     ignore_result: False
@@ -8444,7 +8522,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-248 0061_ok_goto.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Jump to the next line of the ':label'.
       goto Label
@@ -8469,7 +8547,7 @@
      var: ttl_output.stdout_lines
 
 - name: test-249 0062_ng_goto_return.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0062_ng_goto_return.ttl
     chdir: ../test
     ignore_result: False
@@ -8480,7 +8558,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-250 0062_ng_goto_return.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       goto Label
       assert 0 "Goto error test"
@@ -8499,7 +8577,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-251 0062_ng_goto_return.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0062_ng_goto_return.ttl
     chdir: ../test
     ignore_result: False
@@ -8507,7 +8585,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-252 0062_ng_goto_return.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       goto Label
       assert 0 "Goto error test"
@@ -8523,7 +8601,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-253 0063_ng_goto_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0063_ng_goto_for.ttl
     chdir: ../test
     ignore_result: False
@@ -8534,7 +8612,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-254 0063_ng_goto_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       for i 5 1
@@ -8552,7 +8630,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-255 0063_ng_goto_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0063_ng_goto_for.ttl
     chdir: ../test
     ignore_result: False
@@ -8560,7 +8638,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-256 0063_ng_goto_for.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       for i 5 1
@@ -8575,7 +8653,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-257 0064_ng_goto_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0064_ng_goto_while.ttl
     chdir: ../test
     ignore_result: False
@@ -8586,7 +8664,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-258 0064_ng_goto_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       while 1
@@ -8604,7 +8682,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-259 0064_ng_goto_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0064_ng_goto_while.ttl
     chdir: ../test
     ignore_result: False
@@ -8612,7 +8690,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-260 0064_ng_goto_while.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       while 1
@@ -8627,7 +8705,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-261 0065_ng_goto_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0065_ng_goto_untile.ttl
     chdir: ../test
     ignore_result: False
@@ -8638,7 +8716,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-262 0065_ng_goto_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       i = 1
@@ -8659,7 +8737,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-263 0065_ng_goto_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0065_ng_goto_untile.ttl
     chdir: ../test
     ignore_result: False
@@ -8667,7 +8745,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-264 0065_ng_goto_untile.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       i = 1
@@ -8685,7 +8763,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-265 0066_ng_goto_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0066_ng_goto_do.ttl
     chdir: ../test
     ignore_result: False
@@ -8696,7 +8774,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-266 0066_ng_goto_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       do 1
@@ -8714,7 +8792,7 @@
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == False)
 - name: test-267 0066_ng_goto_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     filename: 0066_ng_goto_do.ttl
     chdir: ../test
     ignore_result: False
@@ -8722,7 +8800,7 @@
   register: ttl_output
   ignore_errors: True
 - name: test-268 0066_ng_goto_do.ttl
-  ttl:
+  tand0.ttl.ttl:
     cmd: |
       ; Please use break or continue!
       do 1
@@ -8736,23 +8814,853 @@
   check_mode: True
   register: ttl_output
   ignore_errors: True
-- name: test-269 1008_ok_localhost-2200_ping_127-0-0-1.ttl
-  ttl:
+- name: test-269 0067_ok_echo0.ttl
+  tand0.ttl.ttl:
+    filename: 0067_ok_echo0.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-269 True 0067_ok_echo0.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0067_ok_echo0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-270 0067_ok_echo0.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      setecho 0
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-270 True 0067_ok_echo0.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0067_ok_echo0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-271 0067_ok_echo0.ttl
+  tand0.ttl.ttl:
+    filename: 0067_ok_echo0.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-271 True 0067_ok_echo0.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0067_ok_echo0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-272 0067_ok_echo0.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      setecho 0
+      result = 1
+      ;
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-272 True 0067_ok_echo0.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0067_ok_echo0.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-273 0068_ng_echo1.ttl
+  tand0.ttl.ttl:
+    filename: 0068_ng_echo1.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-273 False 0068_ng_echo1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-274 0068_ng_echo1.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      setecho 1
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-274 False 0068_ng_echo1.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-275 0068_ng_echo1.ttl
+  tand0.ttl.ttl:
+    filename: 0068_ng_echo1.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-276 0068_ng_echo1.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      setecho 1
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-277 0069_ok_one_label.ttl
+  tand0.ttl.ttl:
+    filename: 0069_ok_one_label.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-277 True 0069_ok_one_label.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0069_ok_one_label.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-278 0069_ok_one_label.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      result = 0
+      :label
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-278 True 0069_ok_one_label.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0069_ok_one_label.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-279 0069_ok_one_label.ttl
+  tand0.ttl.ttl:
+    filename: 0069_ok_one_label.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-279 True 0069_ok_one_label.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0069_ok_one_label.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-280 0069_ok_one_label.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      result = 0
+      :label
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-280 True 0069_ok_one_label.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0069_ok_one_label.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-281 0070_ok_re_serial.ttl
+  tand0.ttl.ttl:
+    filename: 0070_ok_re_serial.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-281 True 0070_ok_re_serial.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0070_ok_re_serial.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-282 0070_ok_re_serial.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      include '0058_ok_linux_serial_test.ttl'
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-282 True 0070_ok_re_serial.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0070_ok_re_serial.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-283 0070_ok_re_serial.ttl
+  tand0.ttl.ttl:
+    filename: 0070_ok_re_serial.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-283 True 0070_ok_re_serial.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0070_ok_re_serial.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-284 0070_ok_re_serial.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      include '0058_ok_linux_serial_test.ttl'
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-284 True 0070_ok_re_serial.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0070_ok_re_serial.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-285 0071_ng_outofrange.ttl
+  tand0.ttl.ttl:
+    filename: 0071_ng_outofrange.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-285 False 0071_ng_outofrange.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-286 0071_ng_outofrange.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      strdim msg 4
+      assert 1 == msg[5] msg
+      intdim msg6
+      assert 0 == msg[5] msg
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-286 False 0071_ng_outofrange.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-287 0071_ng_outofrange.ttl
+  tand0.ttl.ttl:
+    filename: 0071_ng_outofrange.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-288 0071_ng_outofrange.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      strdim msg 4
+      assert 1 == msg[5] msg
+      intdim msg6
+      assert 0 == msg[5] msg
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-289 0072_ng_zero_dev.ttl
+  tand0.ttl.ttl:
+    filename: 0072_ng_zero_dev.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-289 False 0072_ng_zero_dev.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-290 0072_ng_zero_dev.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      a = 1 / 0
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-290 False 0072_ng_zero_dev.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-291 0072_ng_zero_dev.ttl
+  tand0.ttl.ttl:
+    filename: 0072_ng_zero_dev.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-292 0072_ng_zero_dev.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      a = 1 / 0
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-293 0073_ng_zero_dev_amari.ttl
+  tand0.ttl.ttl:
+    filename: 0073_ng_zero_dev_amari.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-293 False 0073_ng_zero_dev_amari.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-294 0073_ng_zero_dev_amari.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      a = 1 % 0
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: True
+- name: assert-failed-294 False 0073_ng_zero_dev_amari.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == False)
+- name: test-295 0073_ng_zero_dev_amari.ttl
+  tand0.ttl.ttl:
+    filename: 0073_ng_zero_dev_amari.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-296 0073_ng_zero_dev_amari.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      a = 1 % 0
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: True
+- name: test-297 0074_ok_ix_router.ttl
+  tand0.ttl.ttl:
+    filename: 0074_ok_ix_router.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-297 True 0074_ok_ix_router.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0074_ok_ix_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-298 0074_ok_ix_router.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=ix /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      wait 'Router#'
+      assert result == 1 result
+      sendln 'configure'
+      wait 'configure'
+      assert result == 1 result
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'interface GigaEthernet0.0'
+      wait 'Router(config-if)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'vlan 208'
+      wait 'Router(config-vlan)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'svinterface name'
+      wait 'Router(svintr-config)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'device name'
+      wait 'Router(device-config)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'router ospf'
+      wait 'Router(config-ospf)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'router bgp 1'
+      wait 'Router(config-bgp)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'pppoe-client name'
+      wait 'Router(config-pppoe)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router#'
+      assert result == 1 result
+      closett
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-298 True 0074_ok_ix_router.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0074_ok_ix_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-299 0074_ok_ix_router.ttl
+  tand0.ttl.ttl:
+    filename: 0074_ok_ix_router.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-299 True 0074_ok_ix_router.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0074_ok_ix_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-300 0074_ok_ix_router.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=ix /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      wait 'Router#'
+      assert result == 1 result
+      sendln 'configure'
+      wait 'configure'
+      assert result == 1 result
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'interface GigaEthernet0.0'
+      wait 'Router(config-if)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'vlan 208'
+      wait 'Router(config-vlan)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'svinterface name'
+      wait 'Router(svintr-config)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'device name'
+      wait 'Router(device-config)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'router ospf'
+      wait 'Router(config-ospf)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'router bgp 1'
+      wait 'Router(config-bgp)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'pppoe-client name'
+      wait 'Router(config-pppoe)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router#'
+      assert result == 1 result
+      closett
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-300 True 0074_ok_ix_router.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0074_ok_ix_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-301 0075_ok_qx_router.ttl
+  tand0.ttl.ttl:
+    filename: 0075_ok_qx_router.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-301 True 0075_ok_qx_router.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0075_ok_qx_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-302 0075_ok_qx_router.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=qx /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      timeout = 5
+      wait '<Switch>'
+      sendln 'system-view'
+      wait 'system-view'
+      assert result == 1 result
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'interface GigabitEthernet0.0.0'
+      wait '[Switch-GigabitEthernet]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'interface vlan201'
+      wait '[Switch-Vlan-interface]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'traffic classifier xxxx'
+      wait '[Switch-classifier]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'qos policy xxxx'
+      wait '[Switch-qospolicy]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'traffic behavior xxxx'
+      wait '[Switch-behavior]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      closett
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-302 True 0075_ok_qx_router.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0075_ok_qx_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-303 0075_ok_qx_router.ttl
+  tand0.ttl.ttl:
+    filename: 0075_ok_qx_router.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-303 True 0075_ok_qx_router.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0075_ok_qx_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-304 0075_ok_qx_router.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=qx /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      timeout = 5
+      wait '<Switch>'
+      sendln 'system-view'
+      wait 'system-view'
+      assert result == 1 result
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'interface GigabitEthernet0.0.0'
+      wait '[Switch-GigabitEthernet]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'interface vlan201'
+      wait '[Switch-Vlan-interface]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'traffic classifier xxxx'
+      wait '[Switch-classifier]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'qos policy xxxx'
+      wait '[Switch-qospolicy]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      sendln 'traffic behavior xxxx'
+      wait '[Switch-behavior]'
+      assert result == 1 result
+      sendln 'exit'
+      wait '[Switch]'
+      assert result == 1 result
+      closett
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-304 True 0075_ok_qx_router.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0075_ok_qx_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-305 0076_ok_cisco_router.ttl
+  tand0.ttl.ttl:
+    filename: 0076_ok_cisco_router.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-305 True 0076_ok_cisco_router.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0076_ok_cisco_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-306 0076_ok_cisco_router.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=cisco2 /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      wait 'Router#'
+      assert result == 1 result
+      sendln 'configure terminal'
+      wait 'configure terminal'
+      assert result == 1 result
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'vlan 208'
+      wait 'Router(config-vlan)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'interface GigaEthernet0.0'
+      wait 'Router(config-if)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'class-map xxxx'
+      wait 'Router(config-cmap)'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'policy-map xxxx'
+      wait 'Router(config-pmap)#'
+      assert result == 1 result
+      sendln 'class xxx'
+      wait 'Router(config-pmap-c)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config-pmap)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      closett
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: False
+  register: ttl_output
+  ignore_errors: False
+- name: assert-failed-306 True 0076_ok_cisco_router.ttl
+  fail:
+  when: (not ansible_check_mode) and (ttl_output.failed == True)
+- name: debug-stdout 0076_ok_cisco_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-307 0076_ok_cisco_router.ttl
+  tand0.ttl.ttl:
+    filename: 0076_ok_cisco_router.ttl
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-307 True 0076_ok_cisco_router.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0076_ok_cisco_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-308 0076_ok_cisco_router.ttl
+  tand0.ttl.ttl:
+    cmd: |
+      error=''
+      assert 1  "connect start"
+      connect 'localhost:2200 /ssh /auth=password /user=cisco2 /passwd=bbb'
+      assert result == 2  "connect" result  ; 接続できている
+      wait 'Router#'
+      assert result == 1 result
+      sendln 'configure terminal'
+      wait 'configure terminal'
+      assert result == 1 result
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'vlan 208'
+      wait 'Router(config-vlan)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'interface GigaEthernet0.0'
+      wait 'Router(config-if)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'class-map xxxx'
+      wait 'Router(config-cmap)'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      sendln 'policy-map xxxx'
+      wait 'Router(config-pmap)#'
+      assert result == 1 result
+      sendln 'class xxx'
+      wait 'Router(config-pmap-c)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config-pmap)#'
+      assert result == 1 result
+      sendln 'exit'
+      wait 'Router(config)#'
+      assert result == 1 result
+      closett
+      result = 1
+    chdir: ../test
+    ignore_result: False
+  check_mode: True
+  register: ttl_output
+  ignore_errors: False
+- name: assert-changed-308 True 0076_ok_cisco_router.ttl
+  fail:
+  when: ttl_output.changed == True
+- name: debug-stdout 0076_ok_cisco_router.ttl
+  debug:
+     var: ttl_output.stdout_lines
+
+- name: test-309 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     filename: 1008_ok_localhost-2200_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-269 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-failed-309 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-270 1008_ok_localhost-2200_ping_127-0-0-1.ttl
-  ttl:
+- name: test-310 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
       ; SSH接続先IP(localhost:2200) ping_SSH接続/ping(127.0.0.1)
@@ -8776,30 +9684,30 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-270 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-failed-310 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-271 1008_ok_localhost-2200_ping_127-0-0-1.ttl
-  ttl:
+- name: test-311 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     filename: 1008_ok_localhost-2200_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-271 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-changed-311 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-272 1008_ok_localhost-2200_ping_127-0-0-1.ttl
-  ttl:
+- name: test-312 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
       ; SSH接続先IP(localhost:2200) ping_SSH接続/ping(127.0.0.1)
@@ -8823,30 +9731,30 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-272 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
+- name: assert-changed-312 True 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1008_ok_localhost-2200_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-273 1009_ok_localhost-2200_trace_127-0-0-1.ttl
-  ttl:
+- name: test-313 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     filename: 1009_ok_localhost-2200_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-273 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-failed-313 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-274 1009_ok_localhost-2200_trace_127-0-0-1.ttl
-  ttl:
+- name: test-314 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
       ; SSH接続先IP(localhost:2200) trace_SSH接続/trace(127.0.0.1)
@@ -8870,30 +9778,30 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-274 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-failed-314 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-275 1009_ok_localhost-2200_trace_127-0-0-1.ttl
-  ttl:
+- name: test-315 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     filename: 1009_ok_localhost-2200_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-275 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-changed-315 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-276 1009_ok_localhost-2200_trace_127-0-0-1.ttl
-  ttl:
+- name: test-316 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
       ; SSH接続先IP(localhost:2200) trace_SSH接続/trace(127.0.0.1)
@@ -8917,30 +9825,30 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-276 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
+- name: assert-changed-316 True 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1009_ok_localhost-2200_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-277 1010_ok_localhost-2200_show.ttl
-  ttl:
+- name: test-317 1010_ok_localhost-2200_show.ttl
+  tand0.ttl.ttl:
     filename: 1010_ok_localhost-2200_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-277 True 1010_ok_localhost-2200_show.ttl
+- name: assert-failed-317 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-278 1010_ok_localhost-2200_show.ttl
-  ttl:
+- name: test-318 1010_ok_localhost-2200_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
       ; SSH接続先IP(localhost:2200) show
@@ -8964,30 +9872,30 @@
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-278 True 1010_ok_localhost-2200_show.ttl
+- name: assert-failed-318 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-279 1010_ok_localhost-2200_show.ttl
-  ttl:
+- name: test-319 1010_ok_localhost-2200_show.ttl
+  tand0.ttl.ttl:
     filename: 1010_ok_localhost-2200_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-279 True 1010_ok_localhost-2200_show.ttl
+- name: assert-changed-319 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-280 1010_ok_localhost-2200_show.ttl
-  ttl:
+- name: test-320 1010_ok_localhost-2200_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
       ; SSH接続先IP(localhost:2200) show
@@ -9011,33 +9919,33 @@
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-280 True 1010_ok_localhost-2200_show.ttl
+- name: assert-changed-320 True 1010_ok_localhost-2200_show.ttl
   fail:
   when: ttl_output.changed == True
 - name: debug-stdout 1010_ok_localhost-2200_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-281 1011_ok_cisco1_ping_127-0-0-1.ttl
-  ttl:
-    filename: 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: test-321 1011_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1011_ok_dummy_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-281 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-failed-321 True 1011_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: debug-stdout 1011_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-282 1011_ok_cisco1_ping_127-0-0-1.ttl
-  ttl:
+- name: test-322 1011_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) ping_SSH踏み台/ping(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) ping_SSH踏み台/ping(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/ping"
@@ -9050,41 +9958,41 @@
       base_account = "admin"
       next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco1"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco1"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-282 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-failed-322 True 1011_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: debug-stdout 1011_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-283 1011_ok_cisco1_ping_127-0-0-1.ttl
-  ttl:
-    filename: 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: test-323 1011_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1011_ok_dummy_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-283 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-changed-323 True 1011_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: debug-stdout 1011_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-284 1011_ok_cisco1_ping_127-0-0-1.ttl
-  ttl:
+- name: test-324 1011_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) ping_SSH踏み台/ping(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) ping_SSH踏み台/ping(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/ping"
@@ -9097,41 +10005,41 @@
       base_account = "admin"
       next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco1"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco1"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-284 True 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: assert-changed-324 True 1011_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1011_ok_cisco1_ping_127-0-0-1.ttl
+- name: debug-stdout 1011_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-285 1012_ok_cisco1_trace_127-0-0-1.ttl
-  ttl:
-    filename: 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: test-325 1012_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1012_ok_dummy_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-285 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-failed-325 True 1012_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: debug-stdout 1012_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-286 1012_ok_cisco1_trace_127-0-0-1.ttl
-  ttl:
+- name: test-326 1012_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台/trace(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) trace_SSH踏み台/trace(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/trace"
@@ -9144,41 +10052,41 @@
       base_account = "admin"
       next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco1"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco1"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-286 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-failed-326 True 1012_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: debug-stdout 1012_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-287 1012_ok_cisco1_trace_127-0-0-1.ttl
-  ttl:
-    filename: 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: test-327 1012_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1012_ok_dummy_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-287 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-changed-327 True 1012_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: debug-stdout 1012_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-288 1012_ok_cisco1_trace_127-0-0-1.ttl
-  ttl:
+- name: test-328 1012_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) trace_SSH踏み台/trace(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) trace_SSH踏み台/trace(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/trace"
@@ -9191,41 +10099,41 @@
       base_account = "admin"
       next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco1"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco1"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-288 True 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: assert-changed-328 True 1012_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1012_ok_cisco1_trace_127-0-0-1.ttl
+- name: debug-stdout 1012_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-289 1013_ok_cisco1_show.ttl
-  ttl:
-    filename: 1013_ok_cisco1_show.ttl
+- name: test-329 1013_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1013_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-289 True 1013_ok_cisco1_show.ttl
+- name: assert-failed-329 True 1013_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1013_ok_cisco1_show.ttl
+- name: debug-stdout 1013_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-290 1013_ok_cisco1_show.ttl
-  ttl:
+- name: test-330 1013_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) show
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) show
       ;
       basename file_name param1
       target_display = "SSH踏み台/show"
@@ -9238,41 +10146,41 @@
       base_account = "admin"
       next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco1"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco1"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-290 True 1013_ok_cisco1_show.ttl
+- name: assert-failed-330 True 1013_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1013_ok_cisco1_show.ttl
+- name: debug-stdout 1013_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-291 1013_ok_cisco1_show.ttl
-  ttl:
-    filename: 1013_ok_cisco1_show.ttl
+- name: test-331 1013_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1013_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-291 True 1013_ok_cisco1_show.ttl
+- name: assert-changed-331 True 1013_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1013_ok_cisco1_show.ttl
+- name: debug-stdout 1013_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-292 1013_ok_cisco1_show.ttl
-  ttl:
+- name: test-332 1013_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco1) show
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) show
       ;
       basename file_name param1
       target_display = "SSH踏み台/show"
@@ -9285,41 +10193,41 @@
       base_account = "admin"
       next_type = 1  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco1"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco1"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-292 True 1013_ok_cisco1_show.ttl
+- name: assert-changed-332 True 1013_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1013_ok_cisco1_show.ttl
+- name: debug-stdout 1013_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-293 1014_ok_cisco2_ping_127-0-0-1.ttl
-  ttl:
-    filename: 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: test-333 1014_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1014_ok_dummy_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-293 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-failed-333 True 1014_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: debug-stdout 1014_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-294 1014_ok_cisco2_ping_127-0-0-1.ttl
-  ttl:
+- name: test-334 1014_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) ping_SSH踏み台/ping(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) ping_SSH踏み台/ping(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/ping"
@@ -9332,41 +10240,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco2"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco2"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-294 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-failed-334 True 1014_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: debug-stdout 1014_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-295 1014_ok_cisco2_ping_127-0-0-1.ttl
-  ttl:
-    filename: 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: test-335 1014_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1014_ok_dummy_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-295 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-changed-335 True 1014_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: debug-stdout 1014_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-296 1014_ok_cisco2_ping_127-0-0-1.ttl
-  ttl:
+- name: test-336 1014_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) ping_SSH踏み台/ping(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) ping_SSH踏み台/ping(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/ping"
@@ -9379,41 +10287,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco2"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco2"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-296 True 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: assert-changed-336 True 1014_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1014_ok_cisco2_ping_127-0-0-1.ttl
+- name: debug-stdout 1014_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-297 1015_ok_cisco2_trace_127-0-0-1.ttl
-  ttl:
-    filename: 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: test-337 1015_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1015_ok_dummy_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-297 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-failed-337 True 1015_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: debug-stdout 1015_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-298 1015_ok_cisco2_trace_127-0-0-1.ttl
-  ttl:
+- name: test-338 1015_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台/trace(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) trace_SSH踏み台/trace(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/trace"
@@ -9426,41 +10334,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco2"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco2"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-298 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-failed-338 True 1015_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: debug-stdout 1015_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-299 1015_ok_cisco2_trace_127-0-0-1.ttl
-  ttl:
-    filename: 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: test-339 1015_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1015_ok_dummy_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-299 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-changed-339 True 1015_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: debug-stdout 1015_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-300 1015_ok_cisco2_trace_127-0-0-1.ttl
-  ttl:
+- name: test-340 1015_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) trace_SSH踏み台/trace(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) trace_SSH踏み台/trace(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/trace"
@@ -9473,41 +10381,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco2"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco2"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-300 True 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: assert-changed-340 True 1015_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1015_ok_cisco2_trace_127-0-0-1.ttl
+- name: debug-stdout 1015_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-301 1016_ok_cisco2_show.ttl
-  ttl:
-    filename: 1016_ok_cisco2_show.ttl
+- name: test-341 1016_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1016_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-301 True 1016_ok_cisco2_show.ttl
+- name: assert-failed-341 True 1016_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1016_ok_cisco2_show.ttl
+- name: debug-stdout 1016_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-302 1016_ok_cisco2_show.ttl
-  ttl:
+- name: test-342 1016_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) show
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) show
       ;
       basename file_name param1
       target_display = "SSH踏み台/show"
@@ -9520,41 +10428,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco2"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco2"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-302 True 1016_ok_cisco2_show.ttl
+- name: assert-failed-342 True 1016_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1016_ok_cisco2_show.ttl
+- name: debug-stdout 1016_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-303 1016_ok_cisco2_show.ttl
-  ttl:
-    filename: 1016_ok_cisco2_show.ttl
+- name: test-343 1016_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1016_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-303 True 1016_ok_cisco2_show.ttl
+- name: assert-changed-343 True 1016_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1016_ok_cisco2_show.ttl
+- name: debug-stdout 1016_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-304 1016_ok_cisco2_show.ttl
-  ttl:
+- name: test-344 1016_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay(cisco2) show
+      ; SSH接続先IP(localhost:2200)->次のdisplay(dummy) show
       ;
       basename file_name param1
       target_display = "SSH踏み台/show"
@@ -9567,41 +10475,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay"
-      next_ip = "cisco2"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "cisco2"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-304 True 1016_ok_cisco2_show.ttl
+- name: assert-changed-344 True 1016_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1016_ok_cisco2_show.ttl
+- name: debug-stdout 1016_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-305 1017_ok_qx_ping_127-0-0-1.ttl
-  ttl:
-    filename: 1017_ok_qx_ping_127-0-0-1.ttl
+- name: test-345 1017_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1017_ok_dummy_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-305 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-failed-345 True 1017_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
+- name: debug-stdout 1017_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-306 1017_ok_qx_ping_127-0-0-1.ttl
-  ttl:
+- name: test-346 1017_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) ping_SSH踏み台/ping(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(dummy) ping_SSH踏み台/ping(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/ping"
@@ -9614,41 +10522,41 @@
       base_account = "admin"
       next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay_qx"
-      next_ip = "qx"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "qx"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-306 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-failed-346 True 1017_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
+- name: debug-stdout 1017_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-307 1017_ok_qx_ping_127-0-0-1.ttl
-  ttl:
-    filename: 1017_ok_qx_ping_127-0-0-1.ttl
+- name: test-347 1017_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1017_ok_dummy_ping_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-307 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-changed-347 True 1017_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
+- name: debug-stdout 1017_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-308 1017_ok_qx_ping_127-0-0-1.ttl
-  ttl:
+- name: test-348 1017_ok_dummy_ping_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) ping_SSH踏み台/ping(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(dummy) ping_SSH踏み台/ping(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/ping"
@@ -9661,41 +10569,41 @@
       base_account = "admin"
       next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay_qx"
-      next_ip = "qx"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "qx"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-308 True 1017_ok_qx_ping_127-0-0-1.ttl
+- name: assert-changed-348 True 1017_ok_dummy_ping_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1017_ok_qx_ping_127-0-0-1.ttl
+- name: debug-stdout 1017_ok_dummy_ping_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-309 1018_ok_qx_trace_127-0-0-1.ttl
-  ttl:
-    filename: 1018_ok_qx_trace_127-0-0-1.ttl
+- name: test-349 1018_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1018_ok_dummy_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-309 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-failed-349 True 1018_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
+- name: debug-stdout 1018_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-310 1018_ok_qx_trace_127-0-0-1.ttl
-  ttl:
+- name: test-350 1018_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) trace_SSH踏み台/trace(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(dummy) trace_SSH踏み台/trace(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/trace"
@@ -9708,41 +10616,41 @@
       base_account = "admin"
       next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay_qx"
-      next_ip = "qx"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "qx"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-310 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-failed-350 True 1018_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
+- name: debug-stdout 1018_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-311 1018_ok_qx_trace_127-0-0-1.ttl
-  ttl:
-    filename: 1018_ok_qx_trace_127-0-0-1.ttl
+- name: test-351 1018_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
+    filename: 1018_ok_dummy_trace_127-0-0-1.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-311 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-changed-351 True 1018_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
+- name: debug-stdout 1018_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-312 1018_ok_qx_trace_127-0-0-1.ttl
-  ttl:
+- name: test-352 1018_ok_dummy_trace_127-0-0-1.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) trace_SSH踏み台/trace(127.0.0.1)
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(dummy) trace_SSH踏み台/trace(127.0.0.1)
       ;
       basename file_name param1
       target_display = "SSH踏み台/trace"
@@ -9755,41 +10663,41 @@
       base_account = "admin"
       next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay_qx"
-      next_ip = "qx"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "qx"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-312 True 1018_ok_qx_trace_127-0-0-1.ttl
+- name: assert-changed-352 True 1018_ok_dummy_trace_127-0-0-1.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1018_ok_qx_trace_127-0-0-1.ttl
+- name: debug-stdout 1018_ok_dummy_trace_127-0-0-1.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-313 1019_ok_qx_show.ttl
-  ttl:
-    filename: 1019_ok_qx_show.ttl
+- name: test-353 1019_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1019_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-313 True 1019_ok_qx_show.ttl
+- name: assert-failed-353 True 1019_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1019_ok_qx_show.ttl
+- name: debug-stdout 1019_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-314 1019_ok_qx_show.ttl
-  ttl:
+- name: test-354 1019_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) show
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(dummy) show
       ;
       basename file_name param1
       target_display = "SSH踏み台/show"
@@ -9802,41 +10710,41 @@
       base_account = "admin"
       next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay_qx"
-      next_ip = "qx"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "qx"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-314 True 1019_ok_qx_show.ttl
+- name: assert-failed-354 True 1019_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1019_ok_qx_show.ttl
+- name: debug-stdout 1019_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-315 1019_ok_qx_show.ttl
-  ttl:
-    filename: 1019_ok_qx_show.ttl
+- name: test-355 1019_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1019_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-315 True 1019_ok_qx_show.ttl
+- name: assert-changed-355 True 1019_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1019_ok_qx_show.ttl
+- name: debug-stdout 1019_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-316 1019_ok_qx_show.ttl
-  ttl:
+- name: test-356 1019_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(qx) show
+      ; SSH接続先IP(localhost:2200)->次のdisplay_qx(dummy) show
       ;
       basename file_name param1
       target_display = "SSH踏み台/show"
@@ -9849,41 +10757,41 @@
       base_account = "admin"
       next_type = 3  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "次のdisplay_qx"
-      next_ip = "qx"
-      next_account = "nextadmin"
+      next_ip = "dummy"
+      next_account = "qx"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-316 True 1019_ok_qx_show.ttl
+- name: assert-changed-356 True 1019_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1019_ok_qx_show.ttl
+- name: debug-stdout 1019_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-317 1020_ok_vmware_show.ttl
-  ttl:
-    filename: 1020_ok_vmware_show.ttl
+- name: test-357 1020_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1020_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-317 True 1020_ok_vmware_show.ttl
+- name: assert-failed-357 True 1020_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1020_ok_vmware_show.ttl
+- name: debug-stdout 1020_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-318 1020_ok_vmware_show.ttl
-  ttl:
+- name: test-358 1020_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->vmwareテスト(vmware) show
+      ; SSH接続先IP(localhost:2200)->vmwareテスト(dummy) show
       ;
       basename file_name param1
       target_display = "vmwareのテスト"
@@ -9896,41 +10804,41 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "vmwareテスト"
-      next_ip = "vmware"
-      next_account = "root"
+      next_ip = "dummy"
+      next_account = "vmware"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: False
   register: ttl_output
   ignore_errors: False
-- name: assert-failed-318 True 1020_ok_vmware_show.ttl
+- name: assert-failed-358 True 1020_ok_dummy_show.ttl
   fail:
   when: (not ansible_check_mode) and (ttl_output.failed == True)
-- name: debug-stdout 1020_ok_vmware_show.ttl
+- name: debug-stdout 1020_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-319 1020_ok_vmware_show.ttl
-  ttl:
-    filename: 1020_ok_vmware_show.ttl
+- name: test-359 1020_ok_dummy_show.ttl
+  tand0.ttl.ttl:
+    filename: 1020_ok_dummy_show.ttl
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-319 True 1020_ok_vmware_show.ttl
+- name: assert-changed-359 True 1020_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1020_ok_vmware_show.ttl
+- name: debug-stdout 1020_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 
-- name: test-320 1020_ok_vmware_show.ttl
-  ttl:
+- name: test-360 1020_ok_dummy_show.ttl
+  tand0.ttl.ttl:
     cmd: |
       ;
-      ; SSH接続先IP(localhost:2200)->vmwareテスト(vmware) show
+      ; SSH接続先IP(localhost:2200)->vmwareテスト(dummy) show
       ;
       basename file_name param1
       target_display = "vmwareのテスト"
@@ -9943,18 +10851,18 @@
       base_account = "admin"
       next_type = 2  ; 1=cisco , 2=linux , 3=qx-s
       next_display = "vmwareテスト"
-      next_ip = "vmware"
-      next_account = "root"
+      next_ip = "dummy"
+      next_account = "vmware"
       include "base.ttl"
     chdir: ../test
     ignore_result: False
   check_mode: True
   register: ttl_output
   ignore_errors: False
-- name: assert-changed-320 True 1020_ok_vmware_show.ttl
+- name: assert-changed-360 True 1020_ok_dummy_show.ttl
   fail:
   when: ttl_output.changed == True
-- name: debug-stdout 1020_ok_vmware_show.ttl
+- name: debug-stdout 1020_ok_dummy_show.ttl
   debug:
      var: ttl_output.stdout_lines
 

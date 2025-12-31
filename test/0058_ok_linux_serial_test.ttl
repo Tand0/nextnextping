@@ -9,6 +9,10 @@ if 0!=result then
     end
 endif
 
+getmodemstatus intvar
+assert result == 0 "getmodemstatus default is 0" result intvar
+
+
 ; test for speed
 setbaud  921600
 setspeed 460800
@@ -42,6 +46,9 @@ strconcat command ttl_filename
 connect command
 assert result == 2 "connect serial fail test" command
 
+getmodemstatus intvar
+assert result != 0 "getmodemstatus default is 0" result intvar
+
 command = "ping localhost"
 sendln command
 wait command
@@ -53,4 +60,10 @@ closett
 
 assert 1 "OK"
 retult = 1
+
+; テストサーバ側の制限で、
+; １回シリアル接続してから、
+; 次の接続がOKになるまでに時間が掛かるので、
+; 待ちを入れる
+pause 2
 end

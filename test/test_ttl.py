@@ -5,12 +5,12 @@ import sys
 import re
 import pathlib
 try:
-    from ttlbackground import TTLLoaderSingle
-    from ttlbackground import TTLLoaderBase
+    from ttlbackground import TtlLoaderSingle
+    from ttlbackground import TtlLoaderBase
 except ModuleNotFoundError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".")))
-    from ttlbackground import TTLLoaderSingle
-    from ttlbackground import TTLLoaderBase
+    from ttlbackground import TtlLoaderSingle
+    from ttlbackground import TtlLoaderBase
 try:
     from nextnextping.pyttl import pyttl
 except ModuleNotFoundError:
@@ -19,7 +19,7 @@ except ModuleNotFoundError:
 
 
 def test_paramater():
-    """ パラメータ関係のテスト """
+    """ test for pyttl paramater """
     # pyttl
     # 何もないときにメッセージが出る
     ok_flag = True
@@ -67,7 +67,7 @@ def test_paramater():
     my_pyttl(ok_flag, dummy_argv, False, False)
 
 
-class TTLLoader(TTLLoaderBase):
+class TtlLoader(TtlLoaderBase):
     def __init__(self):
         super().__init__()
 
@@ -96,7 +96,7 @@ class TTLLoader(TTLLoaderBase):
         #
         for file in files:
             #
-            if self.closeFlag:
+            if self.close_flag:
                 assert 1, "test NG get close event!"
             #
             #
@@ -144,17 +144,17 @@ def my_pyttl(ok_flag, dummy_argv, check_mode, ignore_result):
 
 
 def test_load_ttl():
-    """ ttlファイルが動作するか確認する """
-    tTLLoader = TTLLoader()
-    tTLLoader.start()
+    """ test for ttl loader """
+    loader = TtlLoader()
+    loader.start()
     #
 
 
 def main():
     if len(sys.argv) <= 1:
         # 何も指定しなかった場合
-        tTLLoaderSingle = TTLLoaderSingle()
-        tTLLoaderSingle.start()
+        loader = TtlLoaderSingle()
+        loader.start()
         #
         sys.exit(-1)
         #
@@ -166,8 +166,8 @@ def main():
             # 相対パスなら絶対パスに書き換える
             file_name = pathlib.Path.cwd() / file_name
         file_name = str(file_name)
-        tTLLoader = TTLLoader()
-        tTLLoader.start(files=[file_name])
+        loader = TtlLoader()
+        loader.start(files=[file_name])
         #
 
 

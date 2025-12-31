@@ -1,0 +1,70 @@
+error=''
+assert 1  "connect start"
+connect 'localhost:2200 /ssh /auth=password /user=ix /passwd=bbb'
+assert result == 2  "connect" result  ; 接続できている
+
+wait 'Router#'
+assert result == 1 result
+
+sendln 'configure'
+wait 'configure'
+assert result == 1 result
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'interface GigaEthernet0.0'
+wait 'Router(config-if)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'vlan 208'
+wait 'Router(config-vlan)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'svinterface name'
+wait 'Router(svintr-config)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'device name'
+wait 'Router(device-config)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'router ospf'
+wait 'Router(config-ospf)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'router bgp 1'
+wait 'Router(config-bgp)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'pppoe-client name'
+wait 'Router(config-pppoe)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'exit'
+wait 'Router#'
+assert result == 1 result
+
+closett
+
+result = 1

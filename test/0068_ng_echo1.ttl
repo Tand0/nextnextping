@@ -1,0 +1,3 @@
+setecho 1
+
+result = 1

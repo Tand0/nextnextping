@@ -2,8 +2,8 @@
     "docs": "https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html", 
     "results": [
         {
-            "message": "The test `ansible-test sanity --test validate-modules` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html)] failed with 1 error:", 
-            "output": "plugins/modules/ttl.py:0:0: python-syntax-error: Python SyntaxError while parsing module"
+            "message": "The test `ansible-test sanity --test validate-modules` [[explain](https://docs.ansible.com/ansible-core/2.20/dev_guide/testing/sanity/validate-modules.html)] failed with 2 errors:", 
+            "output": "plugins/modules/ttl.py:0:0: doc-default-does-not-match-spec: Argument 'cmd' in argument_spec defines default as (None) but documentation defines default as ('None')\nplugins/modules/ttl.py:0:0: doc-default-does-not-match-spec: Argument 'filename' in argument_spec defines default as (None) but documentation defines default as ('None')"
         }
     ], 
     "verified": false

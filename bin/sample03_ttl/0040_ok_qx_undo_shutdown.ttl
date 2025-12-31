@@ -1,6 +1,6 @@
 ;INPUT_START
 
-basename file_name param1
+; basename file_name param1
 target_display = "pingを打つ装置"
 target_type = 3  ; 1=ping, 2=traceroute, 3=show run
 base_display = "SSH接続する装置"
@@ -9,15 +9,15 @@ base_account = "boo"
 next_ssh = 2  ;  "0=Windows, 1=SSHログイン", "2=SSH踏み台"
 next_display = "SSHからさらに接続する装置"
 next_ip  = "qx"  ; 踏み台SSHのIPアドレス
-next_account = "xxx"  ; 踏み台先のIPアドレス
+next_account = "qx"  ; 踏み台先のIPアドレス
 
 ; 特殊コマンドの開始
 my_command_int = 5
 my_command[ 0] = 'system-view'
 my_command[ 1] = 'interface gigabitethernet 1/0/1'
 my_command[ 2] = 'undo shutdown'
-my_command[ 3] = 'quit'
-my_command[ 4] = 'quit'
+my_command[ 3] = 'exit'
+my_command[ 4] = 'exit'
 ; 特殊コマンドの終了
 
 getdir include_dir

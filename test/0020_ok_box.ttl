@@ -1,16 +1,44 @@
+;
+passwordbox "message" "title"
+assert 1 result inputstr
 
+inputbox "message" "title"
+assert 1 result inputstr
 
-strdim msg 3
-msg[0] = 'バナナ'
-msg[1] = 'りんご'
-msg[2] = 'みかん'
+dirnamebox "dirnamebox"
+assert 1 result inputstr
 
-listbox '好きな食べ物を選んでください' 'あなたへの問い' msg
-strlen inputstr
-assert 0 <= result "listbox len test" inputstr
+dirnamebox "filenamebox"
+assert 1 result inputstr
 
-yesnobox 'もう一回やりますか?' 'Tera Term'
-assert result == 1 "yesnobox test" result
+strdim msg 4
+msg[0] = 'banana'
+msg[1] = 'ringo'
+msg[2] = 'apple'
+listbox 'Select your favorite food.' 'Confirmation' msg
+assert 1 result
+if 0 <= result then
+    assert 1 result msg[result]
+    messagebox msg[result] "result"
+endif
+
+strdim msg 7
+msg[0] = 'Monday'
+msg[1] = 'Tuesday'
+msg[2] = 'Wednesday'
+msg[3] = 'Thursday'
+msg[4] = 'Friday'
+msg[5] = 'Saturday'
+msg[6] = 'Sunday'
+listbox "How's today's Week?" 'Confirmation' msg 3
+assert 1 result
+if 0 <= result then
+    assert 1 result msg[result]
+    messagebox msg[result] "result"
+endif
+
+yesnobox "yesnobox" "title"
+assert result==1 "yesnobox is YES"
 
 settitle "nextnextping test"
 gettitle titletext

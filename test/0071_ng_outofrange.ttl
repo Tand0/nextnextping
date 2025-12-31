@@ -1,0 +1,7 @@
+
+strdim msg 4
+assert 1 == msg[5] msg
+
+intdim msg6
+assert 0 == msg[5] msg
+

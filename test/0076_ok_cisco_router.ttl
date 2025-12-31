@@ -1,0 +1,55 @@
+error=''
+assert 1  "connect start"
+connect 'localhost:2200 /ssh /auth=password /user=cisco2 /passwd=bbb'
+assert result == 2  "connect" result  ; 接続できている
+
+wait 'Router#'
+assert result == 1 result
+
+sendln 'configure terminal'
+wait 'configure terminal'
+assert result == 1 result
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'vlan 208'
+wait 'Router(config-vlan)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'interface GigaEthernet0.0'
+wait 'Router(config-if)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+
+sendln 'class-map xxxx'
+wait 'Router(config-cmap)'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+sendln 'policy-map xxxx'
+wait 'Router(config-pmap)#'
+assert result == 1 result
+
+sendln 'class xxx'
+wait 'Router(config-pmap-c)#'
+assert result == 1 result
+sendln 'exit'
+wait 'Router(config-pmap)#'
+assert result == 1 result
+
+sendln 'exit'
+wait 'Router(config)#'
+assert result == 1 result
+
+
+closett
+
+result = 1

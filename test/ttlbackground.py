@@ -15,13 +15,13 @@ from serial.serialutil import SerialException
 from abc import ABC, abstractmethod
 from paramiko import SFTPServerInterface, SFTPServer, SFTPAttributes, SFTPHandle, SFTP_OK
 try:
-    from nextnextping.grammer.ttl_parser_worker import MyAbstractShell
+    from nextnextping.grammer.ttl_parser_worker import MyAbstract
     from nextnextping.grammer.ttl_parser_worker import MySerial
     from nextnextping.grammer.ttl_parser_worker import MyTelnetT0
     from nextnextping.grammer.ttl_parser_worker import MyTelnetT1
 except ModuleNotFoundError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from nextnextping.grammer.ttl_parser_worker import MyAbstractShell
+    from nextnextping.grammer.ttl_parser_worker import MyAbstract
     from nextnextping.grammer.ttl_parser_worker import MySerial
     from nextnextping.grammer.ttl_parser_worker import MyTelnetT0
     from nextnextping.grammer.ttl_parser_worker import MyTelnetT1
@@ -199,11 +199,11 @@ default via 172.29.208.1 dev eth0 proto kernel
 
 SS = '''
 Netid State   Recv-Q Send-Q                                            Local Address:Port        Peer Address:Port      Process
-u_dgr ESTAB   0      0                                                             * 16443                  * 11312     
-u_str ESTAB   0      0                                   /run/systemd/journal/stdout 172                    * 6668      
-u_str ESTAB   0      0                                                             * 10256                  * 10257     
-u_dgr ESTAB   0      0                                                             * 22548                  * 11310     
-u_dgr ESTAB   0      0                                                             * 16445                  * 16446 
+u_dgr ESTAB   0      0                                                             * 16443                  * 11312
+u_str ESTAB   0      0                                   /run/systemd/journal/stdout 172                    * 6668
+u_str ESTAB   0      0                                                             * 10256                  * 10257
+u_dgr ESTAB   0      0                                                             * 22548                  * 11310
+u_dgr ESTAB   0      0                                                             * 16445                  * 16446
 '''.replace('\n', '\r\n')
 
 
@@ -212,7 +212,7 @@ class MyTelnetT1Server(MyTelnetT1):
     def init_sender(self):
         ''' server '''
         self.echo = True
-        self.print('test res IAC DO ECHO')
+        self.print('test res IAC WLL ECHO')
         self.send_binary(MyTelnetT1._IAC + MyTelnetT1._WILL + MyTelnetT1._ECHO)
         self.send('''Trying 127.0.0.1...
 Connected to localhost.
@@ -252,72 +252,105 @@ Ubuntu 22.04.5 LTS
 
 
 class StubServer(paramiko.ServerInterface):
-    ''' SSHサーバの実装 '''
+    ''' Stub Server '''
 
     def __init__(self):
-        ''' コンストラクタ '''
+        ''' __init__ '''
         self.event = threading.Event()
         self.sftp_flag = False
+        self.command_flag = None
         self.username = 'anonymouse'
 
+    @typing.override
     def check_channel_request(self, kind, chanid):
-        ''' セッションの許可 '''
+        ''' channel request '''
         # print(f"test check_channel_request kind={kind} ")
         if kind == 'session':
             return paramiko.OPEN_SUCCEEDED
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
+    @typing.override
     def check_auth_password(self, username, password):
-        ''' パスワードチェック '''
+        ''' allowed authentication for password '''
         print(f"test username={username}  password=*****")
         self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
+    @typing.override
     def check_auth_publickey(self, username, key):
-        ''' 認証の許可 '''
+        ''' allowed authentication for publickey '''
+        print(f"test username={username}  publickey=*****")
+        self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
+    @typing.override
     def check_auth_gssapi_with_mic(
         self, username, gss_authenticated=paramiko.AUTH_FAILED, cc_file=None
     ):
-        ''' 認証の許可 '''
+        ''' allowed authentication for gssapi with mic '''
+        print(f"test username={username}  check_auth_gssapi_with_mic")
+        self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
+    @typing.override
     def check_auth_gssapi_keyex(
         self, username, gss_authenticated=paramiko.AUTH_FAILED, cc_file=None
     ):
-        ''' 認証の許可 '''
+        ''' allowed authentication for gssapi '''
+        print(f"test username={username}  gss_authenticated")
+        self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
+    @typing.override
     def get_allowed_auths(self, username):
-        ''' 認証の許可 '''
+        ''' allowed authentication '''
         return 'password,publickey'
 
+    @typing.override
     def check_channel_shell_request(self, channel):
-        ''' shellの許可 '''
+        ''' shell request '''
         print('test check_channel_shell_request')
         self.sftp_flag = False
+        self.command_flag = None
         self.event.set()
         return True
 
+    @typing.override
     def check_channel_pty_request(self, channel, term, width, height, pixelwidth, pixelheight, modes):
-        ''' ptyの許可 '''
+        ''' pty requset '''
         return True
 
+    @typing.override
     def check_channel_subsystem_request(self, channel, name):
-        ''' サブシステム要求の処理 '''
-        print(f"test check_channel_subsystem_request {name}")
+        ''' subsystem request '''
+        if "sftp" != name:
+            print(f"test NG check_channel_subsystem_request {name}")
+            return False
+        print(f"test OK check_channel_subsystem_request {name}")
         self.sftp_flag = True
+        self.command_flag = None
         self.event.set()
         return super().check_channel_subsystem_request(channel, name)
 
+    @typing.override
+    def check_channel_exec_request(self, channel, command):
+        print(f"test check_channel_exec_request {command}")
+        self.sftp_flag = False
+        self.command_flag = command
+        self.event.set()
+        return True
+
     def is_sftp_flag(self) -> bool:
-        ''' sftpかどうかチェックする '''
+        ''' if sftp then true '''
         return self.sftp_flag
 
     def get_username(self) -> str:
-        ''' sftpかどうかチェックする '''
+        ''' get user name '''
         return self.username
+
+    def get_command(self) -> str:
+        ''' get command '''
+        return self.command_flag
 
 
 class StubSFTPServer (SFTPServerInterface):
@@ -496,19 +529,19 @@ class StubSFTPHandle (SFTPHandle):
 
 
 class SSHServerStarter():
-    ''' 実際のサーバ起動部分 '''
+    ''' SSH serer starter '''
 
     KEY_FILE = 'test_rsa.key'  # キーファイルの位置
 
     def __init__(self, port: int):
-        ''' コンストラクタ '''
+        ''' __init__ '''
         if os.path.isfile(SSHServerStarter.KEY_FILE):
             self.host_key = paramiko.RSAKey(filename=SSHServerStarter.KEY_FILE)
         else:
             self.host_key = paramiko.RSAKey.generate(2048)
             self.host_key.write_private_key_file(SSHServerStarter.KEY_FILE)
         #
-        self.ttlClient = None
+        self.ttl_client = None
         self.DoGSSAPIKeyExchange = True
         self.port = port
         self.stop_flag = False
@@ -520,13 +553,18 @@ class SSHServerStarter():
         self.prompt = None
         self.state = '$'
 
+        print(f"test bind port={self.port}")
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(('', self.port))
+
     def set_state(self, state: str):
-        # stateの設定
+        print(f"test set_tate {state}")
         self.state = state
 
     def cleint_close(self):
-        ''' この処理が呼ばれたらクライアントをクローズする '''
-        print('test clinet close!')
+        ''' cleint close '''
+        print(f'test clinet close! {self.port}')
         #
         local_transport = self.transport
         self.transport = None
@@ -544,11 +582,11 @@ class SSHServerStarter():
             except Exception:
                 pass
         #
-        local_ttlClient = self.ttlClient
-        self.ttlClient = None
-        if local_ttlClient is not None:
+        local_ttl_client = self.ttl_client
+        self.ttl_client = None
+        if local_ttl_client is not None:
             try:
-                local_ttlClient.close()
+                local_ttl_client.close()
             except Exception:
                 pass
         #
@@ -563,7 +601,7 @@ class SSHServerStarter():
     def close(self):
         ''' close all '''
         #
-        print('test close start!')
+        print(f'test close start! {self.port}')
         #
         self.stop()
         self.cleint_close()
@@ -577,17 +615,13 @@ class SSHServerStarter():
                 pass
 
     def stop(self):
-        ''' この処理が呼ばれたら停止する '''
+        ''' stop '''
         self.stop_flag = True
 
     def start(self):
-        ''' 実処理 '''
+        ''' Thread main '''
         # now connect
         try:
-            print(f"test bind port={self.port}")
-            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.server_socket.bind(('', self.port))
             #
             if self.server_socket is None:
                 raise paramiko.SSHException('self.server_socket is None')
@@ -612,12 +646,11 @@ class SSHServerStarter():
             print(f"test *** Caught SSHException: {str(e.__class__)} : {str(e)}")
             return 1
         finally:
-            print('test finally self.close()')
             self.close()
         return 0
 
     def invoke_accept(self):
-        ''' self.server_socket.accept()後の処理。本来であればスレッド化すべき個所 '''
+        ''' invoke accept 本来であればスレッド化すべき個所 '''
         print(f"test invoke_accept port={self.port}")
         try:
             #
@@ -654,14 +687,19 @@ class SSHServerStarter():
         return
 
     def invoke_client(self, server: StubServer):
-        ''' shellの実装 '''
+        ''' invoke client '''
         #
         if not server.event.is_set():
             print('test *** Client never asked for a shell.')
             return
 
         # print(f"test is_set() OK! f={server.is_sftp_flag()}")
-        if server.is_sftp_flag():
+        command = server.get_command()
+        if command is not None:
+            print(f'execut command {command}')
+            self.channel.send_exit_status(0)
+            return
+        elif server.is_sftp_flag():
             # SFTpのときはこちらで無限待ちをする
             try:
                 while self.transport is not None and self.transport.is_active():
@@ -675,15 +713,15 @@ class SSHServerStarter():
         # print(f"test username={username} state={self.peek_state()} p={self.prompt}")
         #
         try:
-            self.ttlClient = TtlClient()
-            self.ttlClient.set_state(self.state)
-            self.ttlClient.invoke_client_main(self.channel)
+            self.ttl_client = TtlClient()
+            self.ttl_client.set_state(self.state)
+            self.ttl_client.invoke_client_main(self.channel)
         except EOFError as e:
             print(f"test EOFError {e}")
         finally:
-            if self.ttlClient is not None:
-                self.ttlClient.close()
-                self.ttlClient = None
+            if self.ttl_client is not None:
+                self.ttl_client.close()
+                self.ttl_client = None
         #
 
 
@@ -746,10 +784,10 @@ class TelnetServerStarter(ABC):
                     raise OSError('test telnet self.client is None')
                 #
                 try:
-                    self.channel = self.channelFactory()
-                    self.ttlClient = TtlClient()
-                    self.ttlClient.set_state(self.state)
-                    self.ttlClient.invoke_client_main(self.channel)
+                    self.channel = self.channel_factory()
+                    self.ttl_client = TtlClient()
+                    self.ttl_client.set_state(self.state)
+                    self.ttl_client.invoke_client_main(self.channel)
                 except EOFError as e:
                     print(f"test EOFError {e}")
                 finally:
@@ -763,7 +801,7 @@ class TelnetServerStarter(ABC):
         return 0
 
     @abstractmethod
-    def channelFactory(self) -> MyTelnetT0:
+    def channel_factory(self) -> MyTelnetT0:
         return None
 
 
@@ -773,7 +811,7 @@ class TelnetServerStarterT0(TelnetServerStarter):
         super().__init__(port)
 
     @typing.override
-    def channelFactory(self) -> MyTelnetT0:
+    def channel_factory(self) -> MyTelnetT0:
         return MyTelnetT0(self.client)
 
 
@@ -783,7 +821,7 @@ class TelnetServerStarterT1(TelnetServerStarter):
         super().__init__(port)
 
     @typing.override
-    def channelFactory(self) -> MyTelnetT0:
+    def channel_factory(self) -> MyTelnetT0:
         return MyTelnetT1Server(self.client)
 
 
@@ -791,6 +829,34 @@ class TtlClient():
     ''' 実際のサーバ起動部分 '''
 
     TRIGGER = [
+        ['c1', '^\\s*ping\\s+', '', '', PING_CISCO],
+        ['c2', '^\\s*ping\\s+', '', '', PING_CISCO],
+        ['c2', '^\\s*show\\s+ip\\s+interface\\s+brief', '', '', SHOW_IP_INTERFACE_BRIEF],
+        ['c2', '^\\s*config(ure)?\\s+terminal', 'config', 'Router(config)# ', ''],
+        ['c2', '^\\s*show\\s+running-config', '', '', SHOW_RUNNING_CONFIG],
+        ['config', '^\\s*vlan\\s+', 'config-vlan', 'Router(config-vlan)# ', ''],
+        ['config', '^\\s*interface\\s+', 'config-if', 'Router(config-if)# ', ''],
+        ['config', '^\\s*class-map\\s+', 'config-cmap', 'Router(config-cmap)# ', ''],
+        ['config', '^\\s*policy-map\\s+', 'config-pmap', 'Router(config-pmap)# ', ''],
+        ['config-pmap', '^\\s*class\\s+', 'config-pmap-c', 'Router(config-pmap-c)# ', ''],
+        ['qx', '^\\s*display\\s+current-configuration', 'more', '-- More --', DISPLAY_CURRENT_CONFIGURATION],
+        ['qx', '^\\s*system-view', 'qx-config', '[Switch]', ''],
+        ['qx-config', '^\\s*interface\\s+gigabitethernet', 'qx-gbe', '[Switch-GigabitEthernet] ', ''],
+        ['qx-config', '^\\s*interface\\s+GigabitEthernet', 'qx-gbe', '[Switch-GigabitEthernet] ', ''],
+        ['qx-config', '^\\s*interface\\s+vlan', 'qx-vlan', '[Switch-Vlan-interface] ', ''],
+        ['qx-config', '^\\s*traffic\\s+classifier', 'qx-classifier', '[Switch-classifier] ', ''],
+        ['qx-config', '^\\s*qos\\s+policy', 'qx-qospolicy', '[Switch-qospolicy] ', ''],
+        ['qx-config', '^\\s*traffic\\s+behavior', 'qx-behavior', '[Switch-behavior] ', ''],
+        ['ix', 'configure', 'ix-config', 'Router(config)#', ''],
+        ['ix', 'enable-config', 'ix-config', 'Router(config)#', ''],
+        ['ix-config', '^interface\\s+', 'ix-config-if', 'Router(config-if)#', ''],
+        ['ix-config', '^vlan\\s+', 'ix-config-vlan', 'Router(config-vlan)#', ''],
+        ['ix-config', '^svinterface\\s+', 'ix-config-svinterface', 'Router(svintr-config)#', ''],
+        ['ix-config', '^device\\s+', 'ix-config-device', 'Router(device-config)#', ''],
+        ['ix-config', '^router\\s+ospf', 'ix-config-ospf', 'Router(config-ospf)#', ''],
+        ['ix-config', '^router\\s+bgp\\s+', 'ix-config-bgp', 'Router(config-bgp)#', ''],
+        ['ix-config', '^pppoe-client\\s+', 'ix-config-pppoe', 'Router(config-pppoe)#', ''],
+        # ここから先は any で行くので最後にする
         ['', '^\\s*ping\\s+', '', '', PING],
         ['', '^\\s*tracert', '', '', TRACERT],
         ['', '^\\s*traceroute', '', '', TRACEROUTE],
@@ -805,23 +871,6 @@ class TtlClient():
         ['', '^ip\\s+route\\s+show\\s*$', '', '', IP_ROUTE_SHOW],
         ['', '^ip\\s+-6\\s+route\\s+show\\s*$', '', '', IP_6_ROUTE_SHOW],
         ['', '^ss\\s*$', '', '', SS],
-        ['c1', '^\\s*ping\\s+', '', '', PING_CISCO],
-        ['c2', '^\\s*show\\s+ip\\s+interface\\s+brief', '', '', SHOW_IP_INTERFACE_BRIEF],
-        ['c2', '^\\s*config(ure)?\\s+terminal', 'config', 'Router(config)# ', ''],
-        ['c2', '^\\s*ping\\s+', '', '', PING_CISCO],
-        ['c2', '^\\s*show\\s+running-config', '', '', SHOW_RUNNING_CONFIG],
-        ['config', '^\\s*vlan\\s+', 'config-vlan', 'Router(config-vlan)# ', ''],
-        ['config', '^\\s*interface\\s+', 'config-if', 'Router(config-if)# ', ''],
-        ['config', '^\\s*class-map\\s+', 'config-cmap', 'Router(config-cmap)# ', ''],
-        ['config', '^\\s*policy-map\\s+', 'config-pmap', 'Router(config-pmap)# ', ''],
-        ['config-pmap', '^\\s*class\\s+', 'config-pmap-c', 'Router(config-pmap-c)# ', ''],
-        ['qx', '^\\s*display\\s+current-configuration', 'more', '-- More --', DISPLAY_CURRENT_CONFIGURATION],
-        ['qx', '^\\s*system-view', 'qx-config', '[Switch]', ''],
-        ['qx-config', '^\\s*interface\\s+gigabitethernet', 'qx-gbe', '[Switch-GigabitEthernet] ', ''],
-        ['qx-config', '^\\s*interface\\s+vlan', 'qx-Vlan', '[Switch-Vlan-interface] ', ''],
-        ['qx-config', '^\\s*traffic\\s+classifier', 'qx-classifier', '[Switch-classifier] ', ''],
-        ['qx-config', '^\\s*qos\\s+policy', 'qx-qospolicy', '[Switch-qospolicy] ', ''],
-        ['qx-config', '^\\s*traffic\\s+behavior', 'qx-behavior', '[Switch-behavior] ', '']
     ]
 
     def __init__(self, state='$'):
@@ -845,12 +894,13 @@ class TtlClient():
         # print(f"test push_state ({state_base})")
         #
         trigger_flag = False
-        for trigger in TtlClient.TRIGGER:
-            if state_base == '':
-                continue
-            if trigger[0] == state_base or trigger[2] == state_base:
-                trigger_flag = True
-                break
+        if state_base != '':
+            for trigger in TtlClient.TRIGGER:
+                p1 = trigger[0].lower()
+                p2 = trigger[2].lower()
+                if p1 == state_base or p2 == state_base:
+                    trigger_flag = True
+                    break
         if trigger_flag:
             pass
         elif 'sudo' in state_base:
@@ -859,11 +909,13 @@ class TtlClient():
             state_base = 'c1'
         elif 'cisco2' in state_base or 'c2' in state_base:
             state_base = 'c2'
+        elif 'ix' in state_base:
+            state_base = 'ix'
         elif 'qx-s' in state_base or 'qx' in state_base:
             state_base = 'qx'
         elif 'linux' in state_base or 'ubuntu' in state_base:
             state_base = '$'
-        elif 'user' in state_base:
+        elif 'user' == state_base:
             state_base = 'user'
         elif 'pass' in state_base:
             state_base = 'pass'
@@ -891,7 +943,7 @@ class TtlClient():
         return True
 
     def update_prompt(self):
-        ''' ステートを使ってプロンプトを更新する '''
+        ''' update prompt '''
         state = self.state[-1]
         # print(f"update_prompt {state}")
         trigger_flag = False
@@ -908,7 +960,7 @@ class TtlClient():
             self.prompt = '[sudo] password for user_name:'
         elif 'c1' == state:
             self.prompt = 'Router>'  # for cisco not enable
-        elif 'c2' == state:
+        elif ('c2' == state) or ('ix' == state):
             self.prompt = 'Router# '  # for cisco enable
         elif 'qx' == state:
             self.prompt = '<Switch> '  # for qx-s
@@ -965,7 +1017,7 @@ class TtlClient():
             if index1 < 0:
                 # 改行が存在しない
                 if (self.peek_state() != 'pass') and (self.peek_state() != 'sudo'):
-                    if not isinstance(channel, MyAbstractShell) or channel.get_echo():
+                    if not isinstance(channel, MyAbstract) or channel.get_echo():
                         time.sleep(0.1)
                         channel.send(output)
                 message = message + output
@@ -981,9 +1033,9 @@ class TtlClient():
             #
             # 行単位の処理をする
             #
-
+            # print(f"test message {self.peek_state()} / {message}")
             result3 = re.search('^ssh\\s+([-_a-zA-Z0-9@]+)', message)
-            result4 = re.search('^(exit|quit)', message)
+            result4 = re.search('^(exit|quit|end)', message)
             if self.peek_state() in ['y/n', 'user', 'sudo']:
                 # print(f"test peek={self.peek_state()}")
                 self.pop_state()
@@ -1016,7 +1068,7 @@ class TtlClient():
                     if random.randint(0, 1):
                         # ランダムでパスワードを聞く
                         self.push_state('sudo')
-            elif re.search('^\\s*enable', message):
+            elif re.search('^\\s*enable$', message):
                 if self.peek_state() == 'c1':
                     # 新しい状態を積む
                     self.push_state('c2')
@@ -1029,6 +1081,7 @@ class TtlClient():
                     if self.peek_state() != trigger[0] and '' != trigger[0]:
                         continue
                     resultX = re.search(trigger[1], message)
+                    # print(f"hit! {resultX}")
                     if resultX:
                         if '' != trigger[4]:
                             channel.send(trigger[4])
@@ -1039,7 +1092,7 @@ class TtlClient():
             # プロンプトを渡す
             channel.send(f'{self.prompt}')
             message = ''
-
+        #
         print('test invoke_client_main end!')
         return
 
@@ -1051,7 +1104,7 @@ class TtlSerial():
         print('test TtlSerial start')
         self.proc = None
         self.channel = None
-        self.ttlClient = None
+        self.ttl_client = None
         #
         cmd = 'socat -d -d PTY,raw,echo=0 PTY,raw,echo=0'
         cmd = cmd.split()
@@ -1078,8 +1131,8 @@ class TtlSerial():
             while True:
                 #
                 self.channel = MySerial(self.pty[1], 9600)
-                self.ttlClient = TtlClient()
-                self.ttlClient.invoke_client_main(self.channel)
+                self.ttl_client = TtlClient()
+                self.ttl_client.invoke_client_main(self.channel)
         except EOFError as e:
             print(f"test EOFError {e}")
         except SerialException as e:
@@ -1091,8 +1144,8 @@ class TtlSerial():
             except Exception:
                 pass
             try:
-                if self.ttlClient is not None:
-                    self.ttlClient.close()
+                if self.ttl_client is not None:
+                    self.ttl_client.close()
             except Exception:
                 pass
             try:
@@ -1113,48 +1166,48 @@ class TtlSerial():
         except Exception:
             pass
         try:
-            if self.ttlClient is not None:
-                self.ttlClient = None
+            if self.ttl_client is not None:
+                self.ttl_client = None
         except Exception:
             pass
 
 
-class TTLLoaderBase():
-    ''' TTLを読み込む '''
+class TtlLoaderBase():
+    ''' load ttl '''
 
     def __init__(self):
-        ''' ttl のテストをするためのフォルダ '''
-        self.closeFlag = False
+        ''' ttl '''
+        self.close_flag = False
 
     def close(self):
-        ''' 終了する '''
-        self.closeFlag = True
+        ''' close '''
+        self.close_flag = True
 
     def start(self, files=None):
-        ''' 実処理をする '''
+        ''' Thread main '''
         #
         #
         # カレントフォルダを保持する
         current_folder = os.getcwd()
         #
-        serverStarter = SSHServerStarter(2200)
+        server = SSHServerStarter(2200)
         ttlSerial = None
         # スレッドオブジェクトを作成
-        th = threading.Thread(target=serverStarter.start, daemon=True)
+        th = threading.Thread(target=server.start, daemon=True)
         # スレッドを開始
         th.start()
         #
-        serverStarter = TelnetServerStarterT0(2201)
+        server = TelnetServerStarterT0(2201)
         ttlSerial = None
         # スレッドオブジェクトを作成
-        th = threading.Thread(target=serverStarter.start, daemon=True)
+        th = threading.Thread(target=server.start, daemon=True)
         # スレッドを開始
         th.start()
         #
-        serverStarter = TelnetServerStarterT1(2202)
+        server = TelnetServerStarterT1(2202)
         ttlSerial = None
         # スレッドオブジェクトを作成
-        th = threading.Thread(target=serverStarter.start, daemon=True)
+        th = threading.Thread(target=server.start, daemon=True)
         # スレッドを開始
         th.start()
         #
@@ -1174,8 +1227,8 @@ class TTLLoaderBase():
             # フォルダをもとに戻す
             os.chdir(current_folder)
             #
-            if serverStarter is not None:
-                serverStarter.close()
+            if server is not None:
+                server.close()
             if ttlSerial is not None:
                 ttlSerial.close()
             #
@@ -1185,7 +1238,7 @@ class TTLLoaderBase():
         pass
 
 
-class TTLLoaderSingle(TTLLoaderBase):
+class TtlLoaderSingle(TtlLoaderBase):
     def __init__(self):
         super().__init__()
 
@@ -1199,8 +1252,8 @@ class TTLLoaderSingle(TTLLoaderBase):
 
 
 def main():
-    tTLLoaderSingle = TTLLoaderSingle()
-    tTLLoaderSingle.start()
+    loader = TtlLoaderSingle()
+    loader.start()
     #
     sys.exit(-1)
 

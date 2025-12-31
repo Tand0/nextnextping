@@ -1,0 +1,51 @@
+error=''
+assert 1  "connect start"
+connect 'localhost:2200 /ssh /auth=password /user=qx /passwd=bbb'
+assert result == 2  "connect" result  ; 接続できている
+
+timeout = 5
+wait '<Switch>'
+sendln 'system-view'
+wait 'system-view'
+assert result == 1 result
+wait '[Switch]'
+assert result == 1 result
+
+sendln 'interface GigabitEthernet0.0.0'
+wait '[Switch-GigabitEthernet]'
+assert result == 1 result
+sendln 'exit'
+wait '[Switch]'
+assert result == 1 result
+
+sendln 'interface vlan201'
+wait '[Switch-Vlan-interface]'
+assert result == 1 result
+sendln 'exit'
+wait '[Switch]'
+assert result == 1 result
+
+sendln 'traffic classifier xxxx'
+wait '[Switch-classifier]'
+assert result == 1 result
+sendln 'exit'
+wait '[Switch]'
+assert result == 1 result
+
+sendln 'qos policy xxxx'
+wait '[Switch-qospolicy]'
+assert result == 1 result
+sendln 'exit'
+wait '[Switch]'
+assert result == 1 result
+
+sendln 'traffic behavior xxxx'
+wait '[Switch-behavior]'
+assert result == 1 result
+sendln 'exit'
+wait '[Switch]'
+assert result == 1 result
+
+closett
+
+result = 1

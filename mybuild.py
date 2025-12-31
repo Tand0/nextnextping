@@ -2,7 +2,7 @@
 import os
 import subprocess
 
-VERSION = 1.27
+VERSION = 1.29
 
 
 def main():

@@ -5,14 +5,16 @@ import sys
 import os
 from nextnextping.grammer.ttl_parser_worker import TtlPaserWolker
 from nextnextping.grammer.version import VERSION
+import typing
 
 
-class MyTtlPaserWolker(TtlPaserWolker):
+class PyttlTtlPaserWolker(TtlPaserWolker):
     """ my TtlPaserWolker  """
     def __init__(self):
         super().__init__()
 
-    def setLog(self, strvar):
+    @typing.override
+    def set_log(self, strvar):
         """ log setting """
         # print(f"[{strvar}]")
         print(strvar, end="")
@@ -32,7 +34,7 @@ options:
 
 
 def pyttl(argv) -> TtlPaserWolker:
-    ttlPaserWolker = None
+    worker = None
     next = 1
     if len(argv) <= next:
         print(HELP)
@@ -66,18 +68,18 @@ def pyttl(argv) -> TtlPaserWolker:
         raise FileNotFoundError(f"filename:{filename} not found\n")
 
     try:
-        ttlPaserWolker = MyTtlPaserWolker()
+        worker = PyttlTtlPaserWolker()
         if not checkmode:
             # this is not check mode
-            ttlPaserWolker.execute(filename, argv[next:], ignore_result=ignore_result)
+            worker.execute(filename, argv[next:], ignore_result=ignore_result)
         else:
             # this is check mode
-            ttlPaserWolker.include_only(filename)
+            worker.include_only(filename)
     finally:
-        if ttlPaserWolker is not None:
+        if worker is not None:
             # No matter what, the worker will be killed.
-            ttlPaserWolker.stop()
-    return ttlPaserWolker
+            worker.stop()
+    return worker
 
 
 def main():

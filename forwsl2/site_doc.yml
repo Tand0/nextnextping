@@ -1,0 +1,65 @@
+- hosts: localhost
+  become: False
+  vars:
+  tasks:
+    - name: "create from md file to html folder"
+      tand0.makedoc.makedoc:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        css_file_list: ["codehilite.css", "language_html.css"]
+        extensions: ["tables", "fenced_code", "attr_list", "codehilite"]
+        replace_list:
+          - before: 'src="./docs/([^"]+)'
+            after: 'src="\1'
+          - before: 'href="./docs/([^"]+)'
+            after: 'href="\1"'
+          - before: 'href="([^"]+)\.md'
+            after: 'href="\1.html'
+      loop:
+        - src: ../README.md
+          dest: ../nextnextping/dist/nextnextping/_internal/
+
+    - name: "create from md file to md file"
+      tand0.makedoc.makedoc:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      loop:
+        - src: ../docs/syntax.md
+          dest: collections/ansible_collections/tand0/ttl/docs/syntax.md
+        - src: ../docs/command.md
+          dest: collections/ansible_collections/tand0/ttl/docs/command.md
+
+    - name: "create from folder to html folder"
+      tand0.makedoc.makedoc:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        css_file_list: ["codehilite.css", "language_html.css"]
+        extensions: ["tables", "fenced_code", "attr_list", "codehilite"]
+        replace_list:
+          - before: 'href="([^"]+)\.md'
+            after: 'href="\1.html'
+      loop:
+        - src: ../docs/
+          dest: ../nextnextping/dist/nextnextping/_internal/
+
+    - name: "create from galaxy.yml to README.md"
+      tand0.makedoc.makedoc:
+        src: "{{ item.src }}"
+        overview: |
+          ## Overview
+
+          - You can connect via SSH using a language called TTL(Terawaros Tekitou Language), which is similar to teraterm macro, and ping other servers as stepping stones.
+
+          ### MACRO for Terawaros Tekitou Lanugage
+
+          - Usage
+              - [The macro language Terawaros Tekitou Language (TTL)](./docs/syntax.md)
+              - [TTL command reference](./docs/command.md)
+      loop:
+        - src: collections/ansible_collections/tand0/ttl/galaxy.yml
+
+    - name: "create from galaxy.yml to README.md"
+      tand0.makedoc.makedoc:
+        src: "{{ item.src }}"
+      loop:
+        - src: collections/ansible_collections/tand0/makedoc/galaxy.yml

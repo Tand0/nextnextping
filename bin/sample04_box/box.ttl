@@ -1,0 +1,45 @@
+;
+passwordbox "message" "title"
+assert 1 result inputstr
+
+inputbox "message" "title"
+assert 1 result inputstr
+
+filenamebox "filenamebox"
+assert 1 result inputstr
+
+dirnamebox "dirnamebox"
+assert 1 result inputstr
+
+strdim msg 4
+msg[0] = 'banana'
+msg[1] = 'ringo'
+msg[2] = 'apple'
+listbox 'Select your favorite food.' 'Confirmation' msg
+assert 1 result
+if 0 <= result then
+    assert 1 result msg[result]
+    messagebox msg[result] "result"
+endif
+
+strdim msg 7
+msg[0] = 'Monday'
+msg[1] = 'Tuesday'
+msg[2] = 'Wednesday'
+msg[3] = 'Thursday'
+msg[4] = 'Friday'
+msg[5] = 'Saturday'
+msg[6] = 'Sunday'
+listbox "How's today's Week?" 'Confirmation' msg 3
+assert 1 result
+if 0 <= result then
+    assert 1 result msg[result]
+    messagebox msg[result] "result"
+endif
+
+yesnobox "yesnobox" "title"
+assert result==1 "yesnobox is YES"
+
+
+result = 1
+;
