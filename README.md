@@ -99,43 +99,31 @@ $ nextnextping
 ## 開発者に向けた README
 
 - 動作確認方法
-- 以下、カレントフォルダを `.` とする
+- 初期設定
+    - Windows を購入します
+    - wsl2 をインストールします
+    - 以下、カレントフォルダを `.` とする
     - 必要なパッケージが入ってなかったら入れる ※最初のみ
     - 別のPCにインストールしたときはフォルダ名等は見直す ※最初のみ
-    - `.pypirc` を持ってきて `.` に置く。※ Python packageを改版する場合
-    - `python mybuild.py` の中にある `VERSION=` 情報を変更する。最後が0になるの数値は使わないこと
-    - `python mybuild.py` を実行する。※ pyinstaller が動きます
-    - `pytest -s` を実行する
-        - すべての test にパスすることを確認する
-        - layer port 2000 は SSH/SFTP server Mock です
-        - layer port 2001 は telnet server Mock です。ネゴシエーションしません
-        - layer port 2002 は telnet server Mock です。ネゴシエーションします
-        - linux の場合 `socat` コマンドを使って仮想 serial port の `/dev/pts/XX` を生成します
+    - `.pypirc` を持ってきて `.` に置きます ※ Python packageを改版する場合
+    - pipを使い requirement.txt を見て必要なパッケージを入れます
+- ビルドの実行
+    - `./mybuild.py` の中にある `VERSION=` 情報を変更する。最後が0になるの数値は使わないこと
     - `wsl` を起動する
-        - `wsl` の中で `pytest -s` を実行する
-            - すべての test にパスすることを確認する
-        - `wsl` の中で `python3 test/ttlbackground.py` を起動しっぱなにする
-            - `wsl` の中で実行しないと後続の `site.yml` が正常動作しません
-            - Mock の ssh や scp  、telnetサーバを起動します
-    - もう一枚コマンドプロンプトを起動して `wsl` を起動する
-        - `cd ../bin` に移動する
-            - `nextnextping` を実行して動作に問題ないことを確認する
-                - wsl の tkinterで文字化けするのは font が入ってないせい
-                - `sudo apt install fonts-noto-cjk` で font を入れること
-        - `cd ./forwsl2` に移動する
-            - `wsl` の中で `ansible-playbook site.yml` を実行する
-            - すべての test にパスすることを確認する
-    - ここからリリースのフェーズになります
-        - `./dest` 配下に公開に必要なファイル群ができあがる
-        - `wsl` の中で `ansible-playbook site_pypi.yml` を実行して PyPi にアップロードする
-        - 2つのコマンドプロンプトを `wsl` を `exit` で抜ける
+        - `wsl` の中で `forwsl2` に移動し `python3 make.py` を起動する
+        - すべての test にパスすることを確認する
+    - エラーが出た時は、指示に従って見直す
+- 動作確認
+    - `./bin` フォルダに移動し `nextnextping` が動くことを確認します
+- リリース処理
+    - `wsl` の中で `forwsl2` に移動し  `ansible-playbook site_pypi.yml` を実行して PyPi にアップロードする
     - ansible-galaxy に登録する
+        - `./dest` 配下に公開に必要なファイル群ができあがっている
         - [ansible-galaxy tand0.ttl](https://galaxy.ansible.com/ui/repo/published/tand0/ttl/)
         - [ansible-galaxy tand0.makedoc](https://galaxy.ansible.com/ui/repo/published/tand0/makedoc/)
     - githubに登録する
+        - `./dest` 配下に公開に必要なファイル群ができあがっている
         - `git add .`
         - `git commit . -m "DOCUMENT"`
         - `git push`
-    - エラーが出た時は、指示に従って見直す
-        - pyinstall, pytest など必要なパッケージが入ってないとエラーになります
-        - フォルダ名は環境に合わせて修正が必要です
+- enjoy!

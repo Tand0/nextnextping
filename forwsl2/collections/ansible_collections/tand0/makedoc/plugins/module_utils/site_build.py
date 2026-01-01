@@ -150,15 +150,8 @@ h5 {
 '''
 
 
-BASE = '../'
-INTERNAL = 'nextnextping/dist/nextnextping/_internal/'
-
-
 def main():
-    check_mode = False
-    #
-    site_import(BASE + 'test/', BASE + 'forwsl2/site_import.yml', check_mode)
-    # print(f'changed={changed}')
+    pass
 
 
 def makedoc_filename(src: str, dest: str, check_mode: bool, css_file_list, extensions, replace_list, overview) -> bool:
@@ -470,65 +463,6 @@ def makedoc_filename_src_is_galaxy(src: str, dest: str, check_mode: bool, css_fi
             doc_dict = yaml.safe_load(f.read())
             html = html + dict_to_md(0, doc_dict)
     return file_save(dest, html, check_mode) | changed
-
-
-def site_import(src: str, site_import: str, check_mode: bool) -> bool:
-    files = []
-    for file in os.listdir(src):
-        if '.ttl' not in file:
-            continue
-        if 'base.ttl' in file:
-            continue
-        files.append(file)
-    text = ''
-    j = 0
-    for file in files:
-        for i in [0, 1, 2, 3]:
-            j = j + 1
-            ok_flag = True
-            if '_ok_' in file:
-                ok_flag = True
-            else:
-                ok_flag = False
-            text = text + f'- name: test-{j} {file}\n'
-            text = text + '  tand0.ttl.ttl:\n'
-            if i == 0 or i == 2:
-                text = text + '    filename: ' + file + '\n'
-            else:
-                text = text + '    cmd: |\n'
-                text = text + print_cmd(src, '      ', file)
-            text = text + '    chdir: ../test\n'
-            text = text + '    ignore_result: False\n'
-            text = text + f'  check_mode: {2 <= i}\n'
-            text = text + '  register: ttl_output\n'
-            text = text + '  ignore_errors: ' + str(not ok_flag) + '\n'
-            if i < 2:
-                text = text + f'- name: assert-failed-{j} {str(ok_flag)} {file}\n'
-                text = text + '  fail:\n'
-                text = text + '  when: (not ansible_check_mode) and (ttl_output.failed == ' + str(ok_flag) + ')\n'
-            else:
-                if ok_flag:
-                    text = text + f'- name: assert-changed-{j} {str(ok_flag)} {file}\n'
-                    text = text + '  fail:\n'
-                    text = text + '  when: ttl_output.changed == True\n'
-            if ok_flag:
-                text = text + f'- name: debug-stdout {file}\n'
-                text = text + '  debug:\n'
-                text = text + '     var: ttl_output.stdout_lines\n\n'
-    # print(f'{text}', end='')
-    return file_save(site_import, text, check_mode)
-
-
-def print_cmd(src: str, base: str, file: str) -> str:
-    src = os.path.join(src, file)
-    with open(src, 'r', encoding='utf-8') as f:
-        md_text = f.read()
-    buffer = ''
-    for text in md_text.splitlines():
-        if text.strip() == '':
-            continue
-        buffer = buffer + base + text.strip() + '\n'
-    return buffer
 
 
 if __name__ == '__main__':
