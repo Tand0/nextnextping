@@ -860,6 +860,7 @@ class SplitEscape():
         return ansi_escape.sub('', text)
         '''
         result = ''
+        one_hit_flag = False
         for char in text:
             if self.split_escape_state == 0:
                 if char == "\x1b":
@@ -871,13 +872,24 @@ class SplitEscape():
                 self.split_escape_buffer = self.split_escape_buffer + char
                 if char == '[':
                     self.split_escape_state = 2
+                elif (char == 'c'
+                      or char == '6'
+                      or char == '7'
+                      or char == '8'
+                      or char == '9'
+                      or char == 'M'
+                      or char == 'm'):
+                    self.split_escape_state = 0
+                    self.split_escape_buffer = ''
                 else:
                     result = result + self.split_escape_buffer
-                    self.split_escape_state == 0
+                    self.split_escape_state = 0
                     self.split_escape_buffer = ''
-            else:
+            elif self.split_escape_state < 50:
                 self.split_escape_buffer = self.split_escape_buffer + char
-                if '0' <= char and char <= '9':
+                if not one_hit_flag and char == '?':
+                    self.split_escape_state = 50
+                elif '0' <= char and char <= '9':
                     pass
                 elif char == ';':
                     self.split_escape_state = self.split_escape_state + 1
@@ -885,13 +897,35 @@ class SplitEscape():
                         result = result + self.split_escape_buffer
                         self.split_escape_state = 0
                         self.split_escape_buffer = ''
-                elif char == 'm':
+                elif (('a' <= char and char <= 'z')
+                      or ('A' <= char and char <= 'Z')
+                      or char == '@'):
+                    self.split_escape_state = 0
+                    self.split_escape_buffer = ''
+                else:
+                    result = result + "[" + self.split_escape_buffer + "]"
+                    self.split_escape_state = 0
+                    self.split_escape_buffer = ''
+                #
+                one_hit_flag = True
+                #
+            elif self.split_escape_state == 50:
+                self.split_escape_buffer = self.split_escape_buffer + char
+                if '0' <= char and char <= '9':
+                    pass
+                elif (char == 'h'
+                      or char == 'l'
+                      or char == 'c'
+                      or char == 'J'
+                      or char == 'K'):
                     self.split_escape_state = 0
                     self.split_escape_buffer = ''
                 else:
                     result = result + self.split_escape_buffer
                     self.split_escape_state = 0
                     self.split_escape_buffer = ''
+            else:
+                break
         return result
 
 

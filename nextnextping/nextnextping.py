@@ -1074,7 +1074,7 @@ class NextNextPing():
         with open(file_name, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
-    def next_text_load(self, file_name: str):
+    def next_text_load(self, file_name: str) -> str:
         data = ''
         try:
             with open(file_name, 'r', encoding='utf-8') as f:
@@ -1340,6 +1340,9 @@ class NextNextPing():
                 message = message + str(d)
         self.status_var.set(message)
 
+    def on_select_double_button(self):
+        self.on_select_double('dummy')
+
     def on_select_double(self, _):
 
         selected = self.tree.selection()
@@ -1374,6 +1377,32 @@ class NextNextPing():
         self.log_text.insert(1.0, string)
         #
         self.notebook.select(2)
+
+    def on_select_double_ttl(self):
+        string = "No text"
+        selected = self.tree.selection()
+        if not selected:
+            self.log_text.delete('1.0', tk.END)
+            self.log_text.insert(1.0, string)
+            return
+        item_id = selected[0]
+        values = self.tree.item(item_id, 'values')
+        type = values[3]
+        command = values[4]
+        if 'ttl' != type:
+            self.log_text.delete('1.0', tk.END)
+            self.log_text.insert(1.0, f"Not ttl. type={type}")
+            return
+        #
+        base_dir = self.init['setting']
+        base_dir = os.path.abspath(base_dir)  # 絶対パスに変換
+        base_dir = os.path.dirname(base_dir)  # フォルダのみ抽出
+        command = os.path.join(base_dir, command)  # フォルダのみ抽出
+        string = "; " + command + "\n"
+        string = string + self.next_text_load(command)
+        #
+        self.log_text.delete('1.0', tk.END)
+        self.log_text.insert(1.0, string)
 
     INIT_DATA = {
         'setting': 'setting.txt',  # 設定ファイル
@@ -1518,6 +1547,10 @@ class NextNextPing():
         # tab3
         #
         tab3 = tk.Frame(self.notebook)
+        top_frame = tk.Frame(tab3)
+        top_frame.pack(side=tk.TOP)
+        tk.Button(top_frame, text='Log', command=self.on_select_double_button).pack(side=tk.LEFT)
+        tk.Button(top_frame, text='Ttl', command=self.on_select_double_ttl).pack(side=tk.LEFT)
         self.notebook.add(tab3, text='log')
         #
         main_frame = ttk.Frame(tab3)

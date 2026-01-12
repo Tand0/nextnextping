@@ -2,12 +2,12 @@
 import os
 import subprocess
 
-VERSION = 1.29
+VERSION = 1.31
 
 
 def main():
     """ main """
-    print("hello build version {str(VERSION)}")
+    print(f"hello build version {str(VERSION)}")
     make_version()
     installer()
 

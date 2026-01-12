@@ -871,6 +871,7 @@ class TtlClient():
         ['', '^ip\\s+route\\s+show\\s*$', '', '', IP_ROUTE_SHOW],
         ['', '^ip\\s+-6\\s+route\\s+show\\s*$', '', '', IP_6_ROUTE_SHOW],
         ['', '^ss\\s*$', '', '', SS],
+        ['', 'clear', '', '', "\033[H\033[J"]
     ]
 
     def __init__(self, state='$'):
